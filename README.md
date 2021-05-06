@@ -3,15 +3,16 @@
 
 #### A Region-and-Trajectory Movement Matching for Multiple Turn-counts at Road Intersection on Edge Device ([The 5th AI City Challenge Track 1 - CVPR 2021](https://www.aicitychallenge.org/2021-challenge-tracks/))
 
-## Download whole framework in [Download framework](https://o365skku-my.sharepoint.com/:f:/g/personal/duongtran_o365_skku_edu/Es1rQ1QUdRZGkWy7oG7AvzcBv3nlcCwbLMvAM97VHPMEzg?e=KNzUA6)
+
 
 ---
 ### A. Evaluation on Nvidia Jetson Xavier NX
 
+### Download whole framework in [Download framework](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=SPreAg)
+
 #### I. Video Data Import
 
 1. Add video files to both folders:
-   - **/data/aicity2021_final/video**
    - **/data/aicity2021_final_trt/video**
    
 
@@ -20,12 +21,6 @@
 ```
 AIC2021_Track1_SKKU_Automation_Lab
 ├── data
-│   ├── aicity2021_final
-│   │   ├── video
-│   │   │   ├── cam_1.mp4
-│   │   │   ├── cam_1_dawn.mp4
-│   │   │   ...
-│   │   │   └── cam_20.mp4
 │   ├── aicity2021_final_trt
 │   │   ├── video
 │   │   │   ├── cam_1.mp4
@@ -73,7 +68,7 @@ AIC2021_Track1_SKKU_Automation_Lab
 $ source /path/to/aic2021venv/bin/activate
 ```
 
-4. Build **.engine** TensorRT models (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
+4. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
 
 ```shell
 $ bash bin/run_convert_yolov5s6.sh
@@ -81,23 +76,11 @@ $ bash bin/run_convert_yolov5s6.sh
 
 #### III. Inference and Result Upload
 
-1. Inference using TensorRT version of YOLOv5s6 with:
+1. Inference using TensorRT version of YOLOv5s6 in folder ""**AIC2021_Track1_SKKU_Automation_Lab**" with:
 
 ```shell
 $ bash bin/run_inference_trt.sh
 ```
 
 The final result will be in **data/aicity2021_final_trt/track1.txt**.
-
-2. Inference using Original version of YOLOv5s6 with:
-
-```shell
-$ bash bin/run_inference.sh
-```
-
-The final result will be in **/data/aicity2021_final/outputs/track1.txt**.
-
-
-
-
 
