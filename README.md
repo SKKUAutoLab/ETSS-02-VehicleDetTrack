@@ -12,7 +12,7 @@
 
 #### I. Video Data Import
 
-1. Add video files to both folders:
+1. Add video files to folder:
    - **/data/aicity2021_final_trt/video**
    
 
@@ -76,7 +76,7 @@ AIC2021_Track1_SKKU_Automation_Lab
 
 #### III. Inference and Result Upload
 
-1. Inference using TensorRT version of YOLOv5s6 in folder ""**AIC2021_Track1_SKKU_Automation_Lab**" with:
+1. Inference using TensorRT version of YOLOv5s6 in folder "**AIC2021_Track1_SKKU_Automation_Lab**" with:
 
     ```shell
     $ bash bin/run_inference_trt.sh
