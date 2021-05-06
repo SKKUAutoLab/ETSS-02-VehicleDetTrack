@@ -64,23 +64,23 @@ AIC2021_Track1_SKKU_Automation_Lab
 
 3. Activate environment in Terminal with:
 
-```shell
-$ source /path/to/aic2021venv/bin/activate
-```
+    ```shell
+    $ source /path/to/aic2021venv/bin/activate
+    ```
 
 4. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
 
-```shell
-$ bash bin/run_convert_yolov5s6.sh
-```
+    ```shell
+    $ bash bin/run_convert_yolov5s6.sh
+    ```
 
 #### III. Inference and Result Upload
 
 1. Inference using TensorRT version of YOLOv5s6 in folder ""**AIC2021_Track1_SKKU_Automation_Lab**" with:
 
-```shell
-$ bash bin/run_inference_trt.sh
-```
+    ```shell
+    $ bash bin/run_inference_trt.sh
+    ```
 
 The final result will be in **data/aicity2021_final_trt/track1.txt**.
 
