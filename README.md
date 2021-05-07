@@ -8,7 +8,7 @@
 ---
 ### A. Evaluation on Nvidia Jetson Xavier NX
 
-### Download the whole framework [HERE](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=SPreAg).
+### Download the whole framework [HERE](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=PtgW8X).
 
 
 #### I. Video Data Import
