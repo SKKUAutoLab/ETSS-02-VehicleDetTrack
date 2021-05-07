@@ -8,16 +8,15 @@
 ---
 ### A. Evaluation on Nvidia Jetson Xavier NX
 
-### Download whole framework in [Download framework](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=SPreAg)
+### Download the whole framework [HERE](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=SPreAg).
 
 
 #### I. Video Data Import
 
-1. Add video files to folder:
-   - **/data/aicity2021_final_trt/video**
+Add video files to **/data/aicity2021_final_trt/video**.
    
 
-2. The final folder structure should be as following:
+The program folder structure should be as following:
 
 ```
 AIC2021_Track1_SKKU_Automation_Lab
@@ -45,7 +44,7 @@ AIC2021_Track1_SKKU_Automation_Lab
 * MAGMA: 
    * Download [MAGMA library](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EZh8ORGHhwRNp6d1zzTcRUUBZJkl48K4jXBL_ZeqJ0uf-g?e=WYrawP).
    * Extract **magma** folder to **/usr/local** (root permission required).
-      * The final structure is as below:
+      * The folder structure should be as below:
          ```
          usr
          ├── local
