@@ -10,6 +10,7 @@
 
 ### Download whole framework in [Download framework](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=SPreAg)
 
+
 #### I. Video Data Import
 
 1. Add video files to folder:
@@ -32,7 +33,10 @@ AIC2021_Track1_SKKU_Automation_Lab
 
 #### II. Environment Setup
 
-1. Install required libraries:
+1. Hardware requirement:
+* **SWAP size need increase to 16GB**.
+
+2. Install required libraries:
 
 * OpenBlas: 
    ```shell  
@@ -59,16 +63,16 @@ AIC2021_Track1_SKKU_Automation_Lab
          source ~/.bashrc
         ```   
 
-2. Download preconfigured [virtualenv environment](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EdIjzexL9Q9Kiy_fZecUyu8BrW-cC1Q66E31vIP6QqbCwA?e=H5gBfV) and extract **aic2021venv** folder.
+3. Download preconfigured [virtualenv environment](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EdIjzexL9Q9Kiy_fZecUyu8BrW-cC1Q66E31vIP6QqbCwA?e=H5gBfV) and extract **aic2021venv** folder.
 
 
-3. Activate environment in Terminal with:
+4. Activate environment in Terminal with:
 
     ```shell
     $ source /path/to/aic2021venv/bin/activate
     ```
 
-4. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
+5. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
 
     ```shell
     $ bash bin/run_convert_yolov5s6.sh
