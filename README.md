@@ -34,7 +34,7 @@ AIC2021_Track1_SKKU_Automation_Lab
 #### II. Environment Setup
 
 1. Hardware requirement:
-* **SWAP size need increase to 16GB**.
+* **SWAP size need increase to 16GB before running**.
 
 2. Install required libraries:
 
