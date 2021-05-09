@@ -62,16 +62,13 @@ AIC2021_Track1_SKKU_Automation_Lab
          source ~/.bashrc
         ```   
 
-3. Download preconfigured [virtualenv environment](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EdIjzexL9Q9Kiy_fZecUyu8BrW-cC1Q66E31vIP6QqbCwA?e=H5gBfV) and extract **aic2021venv** folder.
-
-
-4. Activate environment in Terminal with:
+3. Activate environment in Terminal with:
 
     ```shell
     $ source /path/to/aic2021venv/bin/activate
     ```
 
-5. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
+4. Build **.engine** TensorRT models in folder "**AIC2021_Track1_SKKU_Automation_Lab**" (*[more details](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov5#how-to-run-yolov5s-as-example)*):
 
     ```shell
     $ bash bin/run_convert_yolov5s6.sh
