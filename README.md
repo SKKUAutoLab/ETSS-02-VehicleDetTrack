@@ -62,7 +62,7 @@ AIC2021_Track1_SKKU_Automation_Lab
          source ~/.bashrc
         ```   
 
-3. Activate environment in Terminal with:
+3. Activate environment in Terminal with (**aic2021venv** folder):
 
     ```shell
     $ source /path/to/aic2021venv/bin/activate
