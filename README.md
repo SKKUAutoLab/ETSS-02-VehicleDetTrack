@@ -1,15 +1,9 @@
 ### Automation Lab, Sungkyunkwan University
-# 2021 AI CITY CHALLENGE - TRACK 1
 
-#### A Region-and-Trajectory Movement Matching for Multiple Turn-counts at Road Intersection on Edge Device ([The 5th AI City Challenge Track 1 - CVPR 2021](https://www.aicitychallenge.org/2021-challenge-tracks/))
-
-
+#### A Region-and-Trajectory Traffic Flow Estimation 
 
 ---
 ### A. Evaluation on Nvidia Jetson Xavier NX
-
-### Download the whole framework [HERE](https://o365skku-my.sharepoint.com/:u:/g/personal/duongtran_o365_skku_edu/EVqRPiGVYX5HukS0EVnDPw0BzuAWnr67Vo3p-dPeuxoTvg?e=PtgW8X).
-
 
 #### I. Video Data Import
 
