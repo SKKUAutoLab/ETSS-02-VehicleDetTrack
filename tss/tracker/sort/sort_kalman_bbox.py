@@ -1,13 +1,7 @@
 # ==================================================================== #
 # File name: sort_kalman_bbox.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/30/2021
-#
-# Subclassing guide:
-# 1. Later when subclassing, you should implement a single file that contains
-#    both subclasses of ``Track`` and ``Tracker``.
-# 2. The package (i.e, the .py filename) should be in the template:
-#    {tracker}_{track_motion_model}_{feature_used_to_track}
 # ==================================================================== #
 # from __future__ import annotations
 
