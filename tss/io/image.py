@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: image.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # Image IO operations.
@@ -82,25 +82,7 @@ class ImageReader(object):
 # MARK: - ImageWriter
 
 class ImageWriter(object):
-	"""Video Writer
-	
-	Attributes:
-		output_dir (str):
-		
-		file (str, optional):
-			The video file or image folder. By default, assume all video are put inside ``aicity2021/video/``.
-		dims (tuple):
-			Input size as [C, H, W]. This is also used to reshape the input aicity2021.
-		frame_rate (int):
-			The frame rate of the video.
-		fourcc (str):
-			The file type of video
-				# *'MP4V : MP4 -> this type can open on ubuntu
-				# *'XVID': AVI
-				# *'MJPG': AVI
-				# *'WMV1': AVI
-	"""
-	
+
 	# MARK: Magic Functions
 	
 	def __init__(

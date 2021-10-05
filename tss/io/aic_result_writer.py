@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: aic_result_writer.py
-# Author: Long H. Pham, Duong N.-N. Tran, and Hung N. Phan
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # Implement common io operations for text aicity2021 type.
