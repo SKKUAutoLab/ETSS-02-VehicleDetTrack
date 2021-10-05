@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: __init__.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/30/2021
 #
 # ``tracker`` API consists of several trackers that share the same interface.

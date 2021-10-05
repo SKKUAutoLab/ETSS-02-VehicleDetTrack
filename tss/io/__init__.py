@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: __init__.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/30/2021
 # ==================================================================== #
 from .aic_result_writer import compress_all_result
