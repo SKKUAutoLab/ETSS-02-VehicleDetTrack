@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: video.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # Video IO operations.
@@ -23,30 +23,6 @@ from tss.utils import printe
 # MARK: - VideoReader
 
 class VideoReader(object):
-	"""Video Reader.
-	
-	Attributes:
-		dataset (string, optional):
-			The name of the dataset to work on.
-		file (string, optional):
-			The video file or image folder. By default, assume all video are put inside ``aicity2021/video/``.
-		stream (string, optional):
-			If we run directly with the input stream, ``stream`` must be of some value.
-			By default ``null`` means run with video file defined in ``path``.
-		dims (tuple):
-			Input size as [C, H, W]. This is also used to reshape the input.
-		frame_rate (int):
-			The frame rate of the video.
-		batch_size (int, Optional):
-			Number of samples in one forward & backward pass.
-		cap (VideoCapture):
-			The VideoCapture object from OpenCV.
-		num_frames (int):
-			Total number of frames in the video.
-		frame_idx (int):
-			The current frame index.
-	"""
-	
 	# MARK: Magic Functions
 	
 	def __init__(
@@ -181,25 +157,6 @@ class VideoReader(object):
 # MARK: - VideoWriter
 
 class VideoWriter(object):
-	"""Video Writer
-	
-	Attributes:
-		output_dir (str):
-		
-		file (str, optional):
-			The video file or image folder. By default, assume all video are put inside ``aicity2021/video/``.
-		dims (tuple):
-			Input size as [C, H, W]. This is also used to reshape the input aicity2021.
-		frame_rate (int):
-			The frame rate of the video.
-		fourcc (str):
-			The file type of video
-				# *'MP4V': MP4 -> this type can open on ubuntu
-				# *'XVID': AVI
-				# *'MJPG': AVI
-				# *'WMV1': AVI
-	"""
-	
 	# MARK: Magic Functions
 	
 	def __init__(
@@ -211,7 +168,7 @@ class VideoWriter(object):
 		fourcc    : Optional[str]        = "mp4v",
 		**kwargs
 	):
-		super().__init__(**kwargs)
+		super().__init__()
 		self.output_dir   = output_dir
 		self.file         = file
 		self.dims         = dims
