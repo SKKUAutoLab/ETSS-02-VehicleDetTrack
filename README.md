@@ -6,7 +6,7 @@
 
 #### I. Video Data Import
 
-Add video files to **/data/aicity2021_final_trt/video**.
+Add video files to **/data/aicity2021_final/video**.
    
 
 The program folder structure should be as following:
