@@ -7,4 +7,3 @@
 # ==================================================================== #
 from . import *
 from .yolov5 import YOLOv5
-from .yolov5trt import YOLOv5TRT
