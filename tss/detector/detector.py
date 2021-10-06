@@ -2,10 +2,6 @@
 # File name: tracker.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# ``Detector`` base class for all variant of detector models.
-# It define a unify template to guarantee the input and output of all
-# detectors are the same.
 # ==================================================================== #
 import abc
 import os

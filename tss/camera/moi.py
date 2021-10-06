@@ -2,8 +2,6 @@
 # File name: moi.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# Movement of Interest ``MOI`` defines the movement of the road used for matching road_objects movement.
 # ==================================================================== #
 # from __future__ import annotations
 

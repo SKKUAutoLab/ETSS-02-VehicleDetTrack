@@ -2,9 +2,6 @@
 # File name: detection.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# ``Detection`` class for storing newly detected object from detector model.
-# The attributes includes: bounding box, confident score, class, uuid
 # ==================================================================== #
 import uuid
 from timeit import default_timer as timer

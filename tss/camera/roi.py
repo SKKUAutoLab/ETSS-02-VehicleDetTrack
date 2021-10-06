@@ -2,8 +2,6 @@
 # File name: roi.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# ``ROI`` stores the region of interest.
 # ==================================================================== #
 # from __future__ import annotations
 
