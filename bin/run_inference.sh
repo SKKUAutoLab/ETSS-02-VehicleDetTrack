@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python main.py --dataset aicity2021_final
+python main.py --dataset aicity2021_final --write_video
 
