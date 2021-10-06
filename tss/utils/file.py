@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: file.py
-# Author: Long H. Pham
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/29/2021
 # ==================================================================== #
 import os

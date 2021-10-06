@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: __init__.py
-# Author: Long H. Pham
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 12/21/2020
 # ==================================================================== #
 from .config import add_dirs_to_config

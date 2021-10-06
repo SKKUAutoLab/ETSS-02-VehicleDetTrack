@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: dir.py
-# Author: Long H. Pham
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
 # ==================================================================== #
 import os

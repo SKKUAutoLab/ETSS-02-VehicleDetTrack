@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: print.py
-# Author: Long H. Pham
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/18/2021
 # ==================================================================== #
 from sty import bg, ef, fg, rs
