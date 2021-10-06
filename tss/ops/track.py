@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: track.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/29/2021
 #
 # Implements common operations on track.

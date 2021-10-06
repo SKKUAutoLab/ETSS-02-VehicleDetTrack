@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: moi.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # Movement of Interest ``MOI`` defines the movement of the road used for matching road_objects movement.

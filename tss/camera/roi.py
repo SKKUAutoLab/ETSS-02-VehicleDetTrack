@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: roi.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # ``ROI`` stores the region of interest.

@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: bbox.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
 #
 # Implements common operations on label.

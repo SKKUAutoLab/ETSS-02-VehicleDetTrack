@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: general_object.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 #
 # Base class for storing road_objects. It shares some common attributes from

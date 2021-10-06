@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: detection.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
 #
 # ``Detection`` class for storing newly detected object from detector model.

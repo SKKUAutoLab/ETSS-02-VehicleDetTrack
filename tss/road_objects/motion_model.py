@@ -1,6 +1,6 @@
 # ==================================================================== #
 # File name: motion_model.py
-# Author: Long H. Pham and Duong N.-N. Tran
+# Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/31/2021
 #
 # Subclassing guide:
