@@ -33,7 +33,7 @@ detector:
   api: "pytorch"
   name: "yolov5"
   variant: "yolov5s6"
-  weights: "yolov5s6/yolov5s6_aicity2021_cam_1.pt"
+  weights: "yolov5s6/yolov5s6_aicity2021.pt"
   dataset: *dataset
   dims: [3, 768, 768]
   min_confidence: 0.4

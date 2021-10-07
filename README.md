@@ -31,9 +31,16 @@ Region-and-Trajectory-TFE
 
 ---
 
-#### II. Data preparation
+#### II. Reference
 
-##### a. Change running file
+##### a. Weight 
+
+Download weight from "link" then put it into:
+```
+tss/detector/yolov5/weights/yolov5s6
+```
+
+##### b. Change running file
 
 Change the name of yaml file which belong to each video in "main.py"
 
@@ -51,7 +58,7 @@ And the running script
 bash bin/run_inference.sh
 ```
 
-##### b. Get the result
+##### c. Get the result
 
 ```
 Region-and-Trajectory-TFE
