@@ -24,7 +24,6 @@ Region-and-Trajectory-TFE
 │   ├── aicity2021_final
 │   │   ├── video
 │   │   │   ├── cam_1.mp4
-│   │   │   ├── cam_2.mp4
 │   │   │   ...
 │   │   │   └── cam_7.mp4
 ...
