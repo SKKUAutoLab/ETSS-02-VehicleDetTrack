@@ -2,9 +2,6 @@
 # File name: camera.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# ``Camera`` class contains all necessary modules and the main loop for
-# detection and tracking vehicles. It also counts and visualize results.
 # ==================================================================== #
 import os
 from timeit import default_timer as timer
@@ -36,12 +33,8 @@ from .roi import ROI
 
 class Camera(object):
     """Camera
-    
-    Attributes:
-        config (dict):
-            The camera's config.
     """
-    
+
     # MARK: Magic Functions
     
     def __init__(
@@ -214,12 +207,6 @@ class Camera(object):
     
     def post_process(self, image: np.ndarray, elapsed_time: float):
         """Post processing step.
-
-        Args:
-            image (np.ndarray):
-                The image.
-            elapsed_time (float):
-                The elapsed time per iteration.
         """
         # TODO: Visualize results
         if not self.visualize and not self.write_video:
@@ -233,15 +220,6 @@ class Camera(object):
     
     def draw(self, drawing: np.ndarray, elapsed_time: float):
         """Visualize the results on the drawing.
-        
-        Args:
-            drawing (np.ndarray):
-                The drawing canvas.
-            elapsed_time (float):
-                The elapsed time per iteration.
-                
-        Returns:
-            The drawn canvas.
         """
         # TODO: Draw ROI
         [roi.draw(drawing=drawing) for roi in self.rois]

@@ -2,8 +2,6 @@
 # File name: aic_result_writer.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# Implement common io operations for text aicity2021 type.
 # ==================================================================== #
 import os
 import time
@@ -56,16 +54,6 @@ video_map = {
 
 class AICResultWriter(object):
 	"""IO class to output the counting results in only ONE camera.
-	
-	Attributes:
-		output_dir (string):
-			The path to the directory storing the counting results.
-		start_time (float):
-			The moment when the TexIO is initialized.
-		video_id (int):
-			The numeric identifier of input camera stream.
-		result_writer (io stream):
-			The file writer to export the counting results.
 	"""
 	
 	# MARK: Magic Function
@@ -105,18 +93,6 @@ class AICResultWriter(object):
 		vehicles: List[GMO],
 	):
 		""" Write counting result from a list of tracked vehicles.
-		
-		Each line in the output format of AI City Challenge contains:
-		<gen_time> <video_id> <frame_id> <MOI_id> <vehicle_class_id>
-			<gen_time>:         [float] is the generation time until this frame’s output is generated, from the start of the program execution, in seconds
-			<video_id>:         [int] is the video numeric identifier, starting with 1
-			<frame_id>:         [int] represents the frame count for the current frame in the current video, starting with 1.
-			<MOI_id>:           [int] denotes the the movement numeric identifier of the movement of that video.
-			<vehicle_class_id>: [int] is the road_objects classic numeric identifier, where 1 stands for “car” and 2 represents “truck”.
-		
-		Args:
-			vehicles (list):
-				The list of tracked vehicles, using general moving object.
 		"""
 		# TODO: Print all the GMO to the file
 		for vehicle in vehicles:
@@ -137,13 +113,6 @@ def compress_all_result(
 	output_name: Optional[str] = None
 ):
 	"""  Compress all result of video into one file
-	
-	Args:
-		output_dir (str):
-			The directory of output track1.txt will be written
-		output_name:
-			The final compress result name
-				e.g.: "track1.txt"
 	"""
 	output_dir      = output_dir  if (output_dir is not None) else data_dir
 	output_name     = output_name if (output_name is not None) else "track1"

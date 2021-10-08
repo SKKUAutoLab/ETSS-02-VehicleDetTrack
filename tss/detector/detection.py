@@ -21,26 +21,6 @@ from tss.ops import bbox_xyxy_center
 
 class Detection(object):
 	"""Detection Data Class.
-	
-	Convert raw detected output from detector to easy to use namespace.
-	
-	Attributes:
-		id (UUID):
-			The object unique ID.
-		frame_index (int):
-			The index of frame when the Detection is created.
-		timestamp (float):
-			The time when the Detection is created.
-		bbox (np.ndarray):
-			The bounding box points as [top_left x, top_left y, bottom_right x, bottom_right y].
-		polygon (np.ndarray):
-			The list of points.
-		confidence (float):
-			The confidence score.
-		label (dict):
-			The label dict.
-		roi_uuid (int):
-			The ROI's id the object is in. Else None.
 	"""
 	
 	# MARK: Magic Functions
@@ -92,18 +72,6 @@ class Detection(object):
 		color     : Optional[Tuple[int, int, int]] = None
 	) -> np.ndarray:
 		"""Draw the road_objects into the ``drawing``.
-		
-		Args:
-			drawing (np.ndarray):
-				The drawing canvas.
-			bbox (bool):
-				Should draw the detected bbox?
-			polygon (bool):
-				Should draw polygon?
-			label (bool):
-				Should draw label?
-			color (tuple):
-				The primary color
 		"""
 		color = color if color is not None else self.label.color
 		

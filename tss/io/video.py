@@ -2,8 +2,6 @@
 # File name: video.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# Video IO operations.
 # ==================================================================== #
 import os
 from typing import Optional
@@ -58,35 +56,17 @@ class VideoReader(object):
 	
 	def __len__(self):
 		""" Get the len of video.
-		
-		Returns:
-			(int):
-				>0 if the offline video
-				-1 if the online video
 		"""
 		return self.num_frames  # number of frame, [>0 : video, -1 : online_stream]
 	
 	def __iter__(self):
 		""" The returns an iterator from them.
-		
-		Returns:
-			self (VideoInputStream):
-				For definition __next__ below
 		"""
 		self.frame_idx = 0
 		return self
 	
 	def __next__(self):
 		""" The next iterator for capture video 
-			e.g.:
-				>>> video_stream = VideoReader("cam_1.mp4")
-				>>> for image, frame_idx in enumerate(video_stream):
-		
-		Returns:
-			frame_indexes (list):
-				The list of image indexes in the video.
-			images (list):
-				The list of np.array images from OpenCV.
 		"""
 		if self.frame_idx >= self.num_frames:
 			raise StopIteration
@@ -113,14 +93,6 @@ class VideoReader(object):
 	
 	def create_online_stream(self):
 		""" Create the capture for online camera
-				stream_pipe = 'rtsp://192.168.1.64/1'  # IP camera
-				stream_pipe = 'rtsp://username:password@192.168.1.64/1'  # IP camera with login
-				stream_pipe = 'http://wmccpinetop.axiscam.net/mjpg/video.mjpg'  # IP golf camera
-		Returns:
-			cap (VideoCapture):
-				The object VideoCapture of OpenCV.
-			num_frames (int): =-1
-				The online camera doesnt have number of frame.
 		"""
 		if is_video_stream(stream=self.stream):
 			self.cap = cv2.VideoCapture(self.stream)  # stream
@@ -131,12 +103,6 @@ class VideoReader(object):
 		
 	def create_video_stream(self):
 		""" Create the capture for video
-
-		Returns:
-			cap (VideoCapture):
-				The object VideoCapture of OpenCV.
-			num_frames (int):
-				The total of frame in this video.
 		"""
 		# TODO: Get path to video file
 		video_file = os.path.join(data_dir, self.dataset, "video", self.file)
@@ -186,9 +152,6 @@ class VideoWriter(object):
 		
 	def __del__(self):
 		""" Close the writing stream
-		
-		Returns:
-
 		"""
 		self.close_video_writer()
 		
@@ -207,12 +170,6 @@ class VideoWriter(object):
 		
 	def write_frame(self, image: np.ndarray):
 		""" Add one frame to writing video.
-		
-		We have to scale image before write.
-		
-		Args:
-			image (np.ndarray):
-				The image for writing of shape [H, W, C].
 		"""
 		# TODO: Convert to channel last
 		image = image_channel_last(image=image)

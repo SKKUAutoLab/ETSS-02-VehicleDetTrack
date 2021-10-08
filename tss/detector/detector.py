@@ -28,32 +28,6 @@ from tss.utils import select_device
 
 class Detector(metaclass=abc.ABCMeta):
 	"""Detector Base Class.
-	
-	Attributes:
-		api (string):
-			Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
-		name (string):
-			The name of the detector model.
-		variant (string):
-			The detector model's variant name.
-		weights (string):
-			The path to the pretrained weights.
-		dataset (string):
-			Name of the dataset on which the weights has been trained.
-		dims (tuple):
-			Input size as [C, H, W]. This is also used to reshape the input aicity2021.
-		min_confidence (float):
-			Detection confidence threshold. Disregard all detections that have  a confidence lower than this value.
-		nms_max_overlap (float):
-			Maximum detection overlap (non-maxima suppression threshold).
-		model (nn.Module):
-			The pretrained model.
-		device (string):
-			Cuda device, i.e. 0 or 0,1,2,3 or cpu
-		labels (list):
-			A list of all labels' dicts.
-		label_ids (list)"
-			A list of all labels' train id.
 	"""
 	
 	# MARK: Magic Functions
@@ -105,17 +79,6 @@ class Detector(metaclass=abc.ABCMeta):
 		images       : Union[Tensor, np.ndarray]
 	) -> Union[List[Detection], List[List[Detection]]]:
 		"""Detect road_objects in the image.
-		
-		Args:
-			frame_indexes (int):
-				The list of image indexes in the video.
-			images (Tensor or np.array):
-				The list of np.array images of shape [BHWC]. If the images is of Tensor type, we assume it has already been normalized.
-		
-		Returns:
-			batch_detections (list):
-				A list of ``Detection``.
-				A list of ``Detection`` in batch.
 		"""
 		# TODO: Safety check
 		if self.model is None:
@@ -138,18 +101,6 @@ class Detector(metaclass=abc.ABCMeta):
 	
 	def prepare_input(self, images: Union[Tensor, np.ndarray]) -> Tensor:
 		"""Prepare the model's input for the forward pass.
-		
-		Convert to Tensor, resize, change dims to [CHW] and normalize.
-		
-		Override this function if you want a custom preparation pipeline.
-		
-		Args:
-			images (Tensor or np.array):
-				The list of np.array images of shape [BHWC]. If the images is of Tensor type, we assume it has already been normalized.
-		
-		Returns:
-			input (Tensor):
-				The prepared image [BCHW] with B=1.
 		"""
 		printw("Prepare input has not been implemented yet")
 		pass
@@ -160,44 +111,18 @@ class Detector(metaclass=abc.ABCMeta):
 		images       : Union[Tensor, np.ndarray]
 	) -> Union[List[Detection], List[List[Detection]]]:
 		"""Define the forward pass logic of the ``model``.
-		
-		Args:
-			frame_indexes (int):
-				The list of image indexes in the video.
-			images (Tensor or np.array):
-				The list of np.array images of shape [BHWC]. If the images is of Tensor type, we assume it has already been normalized.
-
-		Returns:
-			batch_detections (list):
-				A list of ``Detection``.
-				A list of ``Detection`` in batch.
 		"""
 		printe("Forward pass has not been implemented yet")
 		raise NotImplementedError
 		
 	def suppress_wrong_labels(self, detections: List):
 		"""Suppress any wrong labels.
-		
-		Args:
-			detections (list):
-				List of valid ``Vehicle`` road_objects, defined in the Object Detector template.
-
-		Returns:
-			valid_detections (list):
-				List of corrected label road_objects.
 		"""
 		valid_detections = [d for d in detections if self.is_correct_label(d.label)]
 		return valid_detections
 	
 	def is_correct_label(self, label: Optional[Dict]):
 		"""Check if the label is allowed in our application.
-		
-		Args:
-			label (dict, Optional):
-				The label dict.
-
-		Returns:
-			True or false.
 		"""
 		if label.train_id in self.label_ids:
 			return True
@@ -205,33 +130,12 @@ class Detector(metaclass=abc.ABCMeta):
 	
 	def suppress_low_confident(self, detections: List):
 		"""Suppress detections of low-confidence.
-
-		Args
-			detections (list):
-				List of valid ``Vehicle`` road_objects, defined in the Object Detector template.
-
-		Returns:
-			valid_detections (list):
-				List of high-confident ``Vehicle`` road_objects.
-
 		"""
 		valid_detections = [d for d in detections if d.confidence >= self.min_confidence]
 		return valid_detections
 	
 	def non_max_suppression(self, detections: List):
 		"""Suppress overlapping detections (high-level).
-		
-		Original code from [1]_ has been adapted to include confidence score.
-
-		.. [1] http://www.pyimagesearch.com/2015/02/16/faster-non-maximum-suppression-python/
-		
-		Args:
-			detections (list):
-				List of high-confident ``Vehicle`` road_objects, defined in the Object Detector template.
-
-		Returns:
-			detections (list):
-				List of non-overlapped ``Vehicle`` road_objects.
 		"""
 		# TODO: Extract detection bounding boxes and scores
 		boxes  = np.array([d.bbox       for d in detections])

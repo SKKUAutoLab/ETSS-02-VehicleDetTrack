@@ -2,8 +2,6 @@
 # File name: image.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# Image IO operations.
 # ==================================================================== #
 import glob
 import os
@@ -46,24 +44,12 @@ class ImageReader(object):
 		
 	def __iter__(self):
 		""" The returns an iterator from them.
-		
-		Returns:
-			self (ImageInputStream):
-				For __next__
 		"""
 		self.frame_idx = 0
 		return self
 	
 	def __next__(self):
 		""" The next iterator for capture video
-			e.g.:
-				>>> video_stream = ImageInputStream("cam_1.mp4")
-				>>> for image, frame_idx  in enumerate(ImageInputStream):
-		Returns:
-			image (list):
-				The list of image file from opencv with np.array type
-			frame_idx (list) :
-				The index of last input frame
 		"""
 		images    = []
 		frame_ids = []
@@ -104,11 +90,6 @@ class ImageWriter(object):
 	
 	def write_frame(self, images: List[np.ndarray]):
 		""" Add batch of frames to folder.
-		
-		Args:
-			images (list):
-		Returns
-			True or False: successful or unsuccessful writing image.
 		"""
 		try:
 			for image in images:
