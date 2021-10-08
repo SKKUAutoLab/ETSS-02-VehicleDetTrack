@@ -4,12 +4,32 @@
 
 ---
 
-#### I. Data preparation
+### I. Installation
+
+1. Download & install Miniconda or Anaconda from https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+
+
+2. NVidia CUDA environment requirement:
+    * CUDA 11.0
+    * cuDNN 8.0.5
+
+
+3. Open new Terminal, create new conda environment named skku and activate it with following commands:
+```shell
+conda create --name skku_automationlab python=3.8
+
+conda activate skku_automationlab
+```
+
+---
+
+#### II. Data preparation
 
 ##### a. Data download
 
 Go to the website of AI-City Challenge to get the dataset.
 
+- https://www.aicitychallenge.org/2021-data-and-evaluation/
 
 ##### b. Video data import
 
@@ -29,7 +49,7 @@ Region-and-Trajectory-TFE
 
 ---
 
-#### II. Reference
+#### III. Reference
 
 ##### a. Weight 
 
