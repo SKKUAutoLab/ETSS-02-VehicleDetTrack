@@ -21,6 +21,10 @@ conda create --name skku_automationlab python=3.8
 conda activate skku_automationlab
 ```
 
+4. Go to "**automationlab_object_detection**" folder and execute following commands
+```shell
+pip install -r requirements.txt
+```
 ---
 
 #### II. Data preparation
