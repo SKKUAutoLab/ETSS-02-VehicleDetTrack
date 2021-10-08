@@ -57,7 +57,7 @@ Region-and-Trajectory-TFE
 
 ##### a. Weight 
 
-Download weight from "link" then put it into:
+Download weight from [Release](https://github.com/SKKU-AutoLab-VSW/Region-and-Trajectory-TFE/releases/tag/v1.0.0-alpha) then put it into:
 ```
 tss/detector/yolov5/weights/yolov5s6
 ```
