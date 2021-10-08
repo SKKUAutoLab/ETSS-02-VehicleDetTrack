@@ -2,8 +2,6 @@
 # File name: track.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/29/2021
-#
-# Implements common operations on track.
 # ==================================================================== #
 from math import asin
 from math import cos
@@ -39,16 +37,6 @@ def get_distance_function(name: str) -> Callable[[np.ndarray, np.ndarray], float
 
 def chebyshev_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Chebyshev distance.
-	
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	n = array_x.shape[0]
 	ret = -1 * np.inf
@@ -61,16 +49,6 @@ def chebyshev_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def cosine_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Cosine distance.
-	
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	n = array_x.shape[0]
 	xy_dot = 0.
@@ -85,16 +63,6 @@ def cosine_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def euclidean_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Euclidean distance.
-	
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	n   = array_x.shape[0]
 	ret = 0.0
@@ -105,19 +73,6 @@ def euclidean_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def hausdorff_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Hausdorff distance.
-	
-	euclidean_distance, manhattan_distance, chebyshev_distance, cosine_distance, haversine_distance
-		could be use for this function
-		
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	cmax = 0.0
 	for i in range(len(array_x)):
@@ -136,16 +91,6 @@ def hausdorff_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def haversine_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Haversine distance.
-	
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	R = 6378.0
 	radians = np.pi / 180.0
@@ -161,16 +106,6 @@ def haversine_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def manhattan_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 	""" Calculation of Manhattan distance.
-	
-	Args:
-		array_x (np.ndarray):
-			The first array.
-		array_y (np.ndarray):
-			The second array.
-			
-	Returns:
-		distance (float):
-			The distance value.
 	"""
 	n = array_x.shape[0]
 	ret = 0.
@@ -183,16 +118,6 @@ def manhattan_distance(array_x: np.ndarray, array_y: np.ndarray) -> float:
 
 def angle_between_arrays(array1: np.ndarray, array2: np.ndarray) -> float:
 	""" Calculate angle of 2 trajectories
-	
-	Args:
-		array1 (np.ndarray):
-			The first vector
-		array2 (np.ndarray):
-			The second vector
-	
-	Returns:
-		angle (float):
-			The relative angle between two trajectories.
 	"""
 	vec1 = np.array([array1[-1][0] - array1[0][0], array1[-1][1] - array1[0][1]])
 	vec2 = np.array([array2[-1][0] - array2[0][0], array2[-1][1] - array2[0][1]])

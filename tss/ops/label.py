@@ -2,8 +2,6 @@
 # File name: bbox.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# Implements common operations on label.
 # ==================================================================== #
 from typing import *
 
@@ -19,20 +17,6 @@ def get_label(
 	train_id : Optional[int] = None,
 ) -> Optional[Dict]:
 	"""
-
-	Args:
-		labels (list):
-			The list of all labels' dicts.
-		name (str):
-			The label's name to search from ``labels``.
-		id (int):
-			The label's id to search from ``labels``.
-		train_id (int):
-			The label's train id to search from ``labels``.
-
-	Returns:
-		label (Dict, Optional):
-			The label dict.
 	"""
 	for label in labels:
 		if (name is not None) and hasattr(label, "name") and (name == label.name):
@@ -49,14 +33,6 @@ def get_label(
 
 def get_majority_label(object_labels: List[Dict]) -> Dict:
 	"""Get the most popular label of the road_objects.
-	
-	Args:
-		object_labels (list):
-			The list of object's labels.
-	
-	Returns:
-		label (dict):
-			The label that has max appearances.
 	"""
 	# TODO: Count number of appearance of each label.
 	unique_labels = Munch()

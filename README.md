@@ -1,10 +1,10 @@
 ### Automation Lab, Sungkyunkwan University
 
-#### A Region-and-Trajectory Traffic Flow Estimation 
+## A Region-and-Trajectory Traffic Flow Estimation 
 
 ---
 
-### I. Installation
+#### I. Installation
 
 1. Download & install Miniconda or Anaconda from https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
 

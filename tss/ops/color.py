@@ -2,7 +2,6 @@
 # File name: color.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/29/2021
-# Implements common operations on color.
 # ==================================================================== #
 from ordered_enum import OrderedEnum
 

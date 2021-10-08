@@ -2,8 +2,6 @@
 # File name: image.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# Implements common operations on image aicity2021.
 # ==================================================================== #
 from typing import Tuple
 from typing import Union
@@ -25,19 +23,6 @@ def letterbox(
 	scaleup    : bool = True
 ):
 	"""
-
-	Args:
-		image (np.ndarray):
-			The image to scale.
-		new_shape (int or tuple):
-			The new shape of the image.
-		color (tuple):
-		auto (bool):
-		scale_fill (bool):
-		scaleup (bool):
-
-	Returns:
-	
 	"""
 	# Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232
 	shape = image.shape[:2]  # current shape [height, width]
@@ -80,16 +65,6 @@ def padded_resize_image(
 	size : Tuple[int, int]
 ) -> np.ndarray:
 	"""Perform pad and resize image.
-
-	Args:
-		images (np.ndarray):
-			The list of image or a single one.
-		size (tuple):
-			The desired size as [HW].
-
-	Returns:
-		image (np.ndarray):
-			The converted image.
 	"""
 	if images.ndim == 4:
 		images = [letterbox(img, new_shape=size)[0] for img in images]
@@ -108,15 +83,6 @@ def resize_image_cv2(
 	size : Tuple[int, int]
 ) -> np.ndarray:
 	"""Resize image using OpenCV functions. Additionally, also convert image shape to channel last
-	
-	Args:
-		image (np.ndarray):
-			Image, should be of shape [HWC].
-		size (tuple):
-			The size as [HW].
-
-	Returns:
-		image (np.ndarray)
 	"""
 	if is_channel_first(image=image):
 		image = image_channel_last(image=image)
@@ -131,19 +97,6 @@ def resize_image_cv2(
 
 def is_channel_first(image: np.ndarray) -> bool:
 	"""Return the checking position of channel value is FIRST
-	
-	e.g.:   [CHW] or [BCHW]: mean return True
-			[HWC] or [BHWC]: mean return False
-	
-	In case of ndim==4, assume B is always first. Else, it is your problem.
-	
-	Args:
-		image (np.array):
-			The input image for checking.
-	
-	Returns:
-		position (bool):
-			True or False: First or Last value in image.
 	"""
 	if image.ndim == 3:
 		if image.shape[0] < image.shape[1] and image.shape[0] < image.shape[2]:
@@ -162,33 +115,12 @@ def is_channel_first(image: np.ndarray) -> bool:
 
 def is_channel_last(image: np.ndarray) -> bool:
 	"""Return the checking position of channel value is LAST
-	
-	e.g.:   [CHW] or [BCHW]: mean return False
-			[HWC] or [BHWC]: mean return True
-			
-	In case of ndim==4, assume B is always first. Else, it is your problem.
-	
-	Args:
-		image (np.array):
-			The input image for checking.
-			
-	Returns:
-		position (bool):
-			True or False: Last or First value in image.
 	"""
 	return not is_channel_first(image)
 
 
 def image_channel_first(image: np.ndarray) -> np.ndarray:
 	"""Reshape image into shape of [CHW] or [BCHW].
-	
-	Args:
-		image (np.ndarray):
-			image of any shape.
-			
-	Returns:
-		image (np.ndarray):
-			image of shape [CHW] or [BCHW].
 	"""
 	if is_channel_first(image):
 		return image
@@ -204,14 +136,6 @@ def image_channel_first(image: np.ndarray) -> np.ndarray:
 
 def image_channel_last(image: np.ndarray) -> np.ndarray:
 	"""Reshape image into shape of [HWC] or [BHWC].
-	
-	Args:
-		image (np.ndarray):
-			image of any shape.
-			
-	Returns:
-		image (np.ndarray):
-			image of shape [HWC] or [BHWC].
 	"""
 	if is_channel_last(image):
 		return image
