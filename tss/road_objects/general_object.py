@@ -2,9 +2,6 @@
 # File name: general_object.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
-#
-# Base class for storing road_objects. It shares some common attributes from
-# ``modules.detector.detection.Detection``
 # ==================================================================== #
 # from __future__ import annotations
 
@@ -29,30 +26,6 @@ from tss.ops import get_majority_label
 
 class GeneralObject(metaclass=abc.ABCMeta):
 	"""General Object.
-	
-	Requires:
-		This is an abstract class. It is required to be subclassed with the motion model.
-		In case you want to use it without tracking or counting functions.
-	
-	Attributes:
-		id (UUID):
-			The object unique ID.
-		frame_indexes (list):
-			List of the frame index that the object has been successfully detected and tracked.
-		timestamps (list):
-			List of time (seconds / milliseconds) when the object is being detected.
-		bboxes (list):
-			List of bounding box points as [top_left x, top_left y, bottom_right x, bottom_right y].
-		polygons (list):
-			List of the object's contour.
-		trajectory (list):
-			List of center points.
-		confidence (float):
-			The confidence score.
-		labels (list):
-			List of label's dict.
-		trajectory (np.ndarray):
-			An array of bboxes' center
 	"""
 	
 	# MARK: Class Property
@@ -140,14 +113,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	@classmethod
 	def go_from_detection(cls, detection: Detection, **kwargs):
 		"""Create ``GeneralObject`` object from ``Detection`` object.
-		
-		Args:
-			detection (Detection):
-				The newly detection.
-				
-		Returns:
-			go (GeneralObject):
-				The ``GeneralObject`` object.
 		"""
 		return cls(
 			frame_index = detection.frame_index,
@@ -173,22 +138,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		**kwargs
 	):
 		"""Update GeneralObject with new values.
-		
-		Args:
-			frame_index (int):
-				The frame index that the object has been successfully detected and tracked.
-			timestamp (float):
-				The time (seconds / milliseconds) when the object is updated.
-			bbox (np.ndarray):
-				Coordinate of bounding box [x, y, x, y] obtained straight from the detector model .
-			clip_bbox (np.ndarray):
-				Coordinate of bounding box [x, y, x, y] after being clipped to the image size.
-			confidence (float):
-				The confidence score of bounding box.
-			label (dict):
-				The label from Label object of bounding box.
-			polygon (np.ndarray, Optional):
-				The object's contour.
 		"""
 		# TODO: Append value to lists
 		self.frame_indexes.append(frame_index)

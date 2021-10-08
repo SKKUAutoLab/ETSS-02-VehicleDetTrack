@@ -20,19 +20,6 @@ from tss.road_objects.moving_model import MovingState
 
 class GMO(GeneralObject, MotionModel, MovingModel):
 	"""GMO (General Moving Object) = GeneralObject + MotionModel + CountingModel
-	
-	This class includes update functions to the object.
-	
-	Requires:
-		This is an abstract class. It is required to be subclassed.
-	
-	Attributes:
-		- Same attributes as ``GeneralObject``
-		- Same attributes as ``MotionModel``
-		- Same attributes as ``CountingModel``
-		
-		state (State):
-			The current state of the road_objects.
 	"""
 	
 	# MARK: Class Property
@@ -54,13 +41,6 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	@classmethod
 	def gmo_from_detection(cls, detection: Detection, **kwargs):
 		"""Create ``GMO`` object from ``Detection`` object.
-		
-		Args:
-			detection (Detection):
-		
-		Returns:
-			gmo (GMO):
-				The GMO object.
 		"""
 		return cls(
 			frame_index = detection.frame_index,
@@ -76,10 +56,6 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	
 	def update_gmo(self, detection: Detection):
 		"""Update the whole GMO object with newly matched ``Detection``.
-
-		Args:
-			detection (Detection):
-				The newly matched ``Detection`` object.
 		"""
 		# TODO: First update ``GeneralObject``
 		self.update_go_from_detection(detection=detection)
@@ -89,17 +65,6 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		
 	def update_moving_state(self, rois: List[ROI], **kwargs):
 		"""Update the current state of the road_objects.
-		
-		The state diagram is as follow:
-		
-				(exist >= 10 frames)  (road_objects cross counting line)   (after being counted
-				(in roi)                                                    by counter)
-		_____________          _____________                  ____________        ___________        ________
-		| Candidate | -------> | Confirmed | ---------------> | Counting | -----> | Counted | -----> | Exit |
-		-------------          -------------                  ------------        -----------        --------
-			  |                       |                                                                  ^
-			  |_______________________|__________________________________________________________________|
-								(mark by tracker when road_objects's max age > threshold)
 		"""
 		roi = next((roi for roi in rois if roi.uuid == self.roi_uuid), None)
 		if roi is None:
@@ -136,9 +101,6 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 
 	def draw(self, drawing, **kwargs):
 		"""Draw the object into the ``drawing`` based on the current moving_state.
-		
-		Args:
-			**kwargs: Same as ``general_object.GeneralObject.draw()``
 		"""
 		if self.is_confirmed:
 			GeneralObject.draw(self, drawing=drawing, label=False, **kwargs)

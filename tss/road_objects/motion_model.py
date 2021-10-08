@@ -2,10 +2,6 @@
 # File name: motion_model.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/31/2021
-#
-# Subclassing guide:
-# 1. The package (i.e, the .py filename) should be in the template:
-#    {motion_model}_{feature_used_to_track}
 # ==================================================================== #
 import abc
 
@@ -16,22 +12,6 @@ from tss.utils import printe
 
 class MotionModel(metaclass=abc.ABCMeta):
 	"""Motion Model.
-	
-	This class represents the motion model of an individual tracked object. It is used for tracking the moving object.
-	
-	Attributes:
-		hits (int):
-			The number of frame has that track appear
-		hit_streak (int):
-			The number of "consecutive"'" frame has that track appear
-		age (int):
-			The number of frame while the track is alive, from Candidate -> Deleted
-		time_since_update (int):
-			The number of 'consecutive' frame that track disappear
-		history ():
-			Store all the 'predict' position of track in z-bouding box value,
-				these position appear while no bounding matches the track
-				if any bounding box matches the track, then history = []
 	"""
 	
 	# MARK: Magic Functions
@@ -63,9 +43,6 @@ class MotionModel(metaclass=abc.ABCMeta):
 	
 	def update_motion_state(self, **kwargs):
 		"""Updates the state of the motion model with observed features.
-		
-		Args:
-			Input the specific features used to update the motion model.
 		"""
 		printe("``update()`` has not been implemented yet")
 		raise NotImplementedError

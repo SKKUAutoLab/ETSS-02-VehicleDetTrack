@@ -2,9 +2,6 @@
 # File name: moving_model.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/31/2021
-#
-# Moving model depicts the current state of the moving object with respects to
-# the camera's ROI and MOI
 # ==================================================================== #
 import enum
 from typing import Optional
@@ -29,16 +26,6 @@ class MovingState(enum.Enum):
 # noinspection PyMissingOrEmptyDocstring
 class MovingModel(object):
 	"""Moving Model.
-	
-	Moving model depicts the current state of the moving object with respects to the camera's ROI and MOI
-	
-	Attributes:
-		moving_state (MovingState):
-			The current state of the moving object with respect to camera's ROIs.
-		roi_uuid (int):
-			The id of the ROI that the current moving object is in.
-		moi_uuid (int):
-			The id of the MOI that the current moving object is best fitted to.
 	"""
 	
 	# MARK: Magic Functions
@@ -101,17 +88,6 @@ class MovingModel(object):
 	
 	def update_moving_state(self, **kwargs):
 		"""Update the current state of the road_objects.
-		
-		One recommendation of the the state diagram is as follow:
-		
-				(exist >= 10 frames)  (road_objects cross counting line)   (after being counted
-				(in roi)                                               by counter)
-		_____________          _____________                  ____________        ___________        ________
-		| Candidate | -------> | Confirmed | ---------------> | Counting | -----> | Counted | -----> | Exit |
-		-------------          -------------                  ------------        -----------        --------
-			  |                       |                                                                  ^
-			  |_______________________|__________________________________________________________________|
-								(mark by tracker when road_objects's max age > threshold)
 		"""
 		printe("``update_moving_state()`` has not been implemented yet.")
 		raise NotImplementedError
