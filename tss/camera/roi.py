@@ -26,14 +26,6 @@ from tss.utils import printe
 
 class ROI(object):
 	"""ROI (Region of Interest)
-	
-	Attributes:
-		uuid (int):
-			The roi's id.
-		points (np.ndarray):
-			List of points in the roi.
-		shape_type (string):
-			The shape type
 	"""
 	
 	# MARK: Magic Functions
@@ -78,16 +70,6 @@ class ROI(object):
 		**kwargs
 	) :
 		"""Load roi from external .json file.
-		
-		Args:
-			file (str):
-				Give the roi file. Example a path "..data/aicity2021/rmois/cam_n.json", so provides ``cam_n.json``.
-			dataset (str, optional):
-				The name of the dataset to work on.
-			
-		Returns:
-			rois (list):
-				Return the list of Roi in the image.
 		"""
 		# TODO: Get json file
 		if dataset:
@@ -116,12 +98,6 @@ class ROI(object):
 		rois
 	):
 		"""A static method to check if a given bbox belong to one of the many rois in the image.
-
-		Args:
-			detections (list):
-				The list of detection.
-			rois (list):
-				The list of Roi in the image.
 		"""
 		for d in detections:
 			d.roi_uuid = ROI.find_roi_for_bbox(bbox_xyxy=d.bbox, rois=rois)
@@ -132,16 +108,6 @@ class ROI(object):
 		rois
 	) -> Optional[int]:
 		"""A static method to check if a given bbox belong to one of the many ROIs in the image.
-
-		Args:
-			bbox_xyxy (np.ndarray):
-				The bbox coordinates as [x, y, x, y].
-			rois (list):
-				The list of ROI in the image.
-		
-		Returns:
-			roi_id (int):
-				The ROI's id that the object is in. Else None.
 		"""
 		for roi in rois:
 			if roi.is_center_in_or_touch_roi(bbox_xyxy=bbox_xyxy, compute_distance=True) >= -50:
@@ -150,16 +116,6 @@ class ROI(object):
 	
 	def is_bbox_in_or_touch_roi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
 		""" Check the bounding box touch ROI or not
-		
-		Args:
-			bbox_xyxy (np.ndarray):
-				The bbox coordinates as [x, y, x, y].
-			compute_distance (bool):
-				Should calculate the distance from bbox coordinates to roi?
-		
-		Returns:
-			(int)
-				positive (inside), negative (outside), or zero (on an edge)
 		"""
 		tl = cv2.pointPolygonTest(self.points, (bbox_xyxy[0], bbox_xyxy[1]), compute_distance)
 		tr = cv2.pointPolygonTest(self.points, (bbox_xyxy[2], bbox_xyxy[1]), compute_distance)
@@ -175,16 +131,6 @@ class ROI(object):
 	
 	def is_center_in_or_touch_roi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
 		""" Check the bounding box touch ROI or not.
-		
-		Args:
-			bbox_xyxy (np.ndarray):
-				The bbox coordinates as [x, y, x, y].
-			compute_distance (bool):
-				Should calculate the distance from center to roi?
-		
-		Returns:
-			(int)
-				positive (inside), negative (outside), or zero (on an edge)
 		"""
 		c_x = (bbox_xyxy[0] + bbox_xyxy[2]) / 2
 		c_y = (bbox_xyxy[1] + bbox_xyxy[3]) / 2
@@ -194,10 +140,6 @@ class ROI(object):
 
 	def draw(self, drawing: np.ndarray):
 		"""Draw the ROI.
-		
-		Args:
-			drawing (np.ndarray):
-				The drawing canvas.
 		"""
 		color = colors.GREEN.value
 		pts   = self.points.reshape((-1, 1, 2))
