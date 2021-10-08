@@ -45,12 +45,6 @@ tests_dir    = os.path.join(root_dir, "tests")             # "workspaces/workspa
 
 def create_dirs(dirs: List[str], delete_existing: bool = False):
     """Check and create directories if they are not found.
-
-    Args:
-        dirs (list):
-            Directories to create if they are not found.
-        delete_existing (bool):
-            If "True", delete existing directory and recreate.
     """
     try:
         for d in dirs:
@@ -70,26 +64,12 @@ def create_dirs(dirs: List[str], delete_existing: bool = False):
 
 def list_subdirs(current_dir: str) -> List[str]:
     """List all subdirectories.
-
-    Args:
-        current_dir (string):
-            The current dir.
-
-    Returns:
-        List of subdirectories names.
     """
     return [d for d in os.listdir(current_dir) if os.path.isdir(os.path.join(current_dir, d))]
 
 
 def list_files(patterns: List[str]) -> List[str]:
     """List all files that match the desired extension.
-
-    Args:
-        patterns (list):
-            Directories that contains the files.
-
-    Returns:
-        A list of absolute paths.
     """
     image_paths = []
     for pattern in patterns:
@@ -107,14 +87,6 @@ def list_files(patterns: List[str]) -> List[str]:
 
 def delete_files(dirs: List[str], extension: str = "", recursive: bool = True):
     """Delete all files in directories that match the desired extension.
-
-    Args:
-        dirs: (list)
-            Directories that contains the files.
-        extension (string):
-            The file extension.
-        recursive (bool):
-            Search subdirectories if any.
     """
     for d in dirs:
         if os.path.exists(d):
@@ -125,10 +97,6 @@ def delete_files(dirs: List[str], extension: str = "", recursive: bool = True):
 
 def delete_files_matching(patterns: List[str]):
     """Delete all files that match the desired patterns.
-
-    Args:
-        patterns (list):
-            Specify the file path patterns.
     """
     for pattern in patterns:
         files = glob(pattern)

@@ -16,17 +16,6 @@ def select_device(
 	batch_size: int = None
 ):
 	"""Select the device to run the model.
-	
-	Args:
-		model_name (string):
-			Name of the model.
-		device (string):
-			Name of device for running.
-		batch_size (int):
-			Number of samples in one forward & backward pass.
-
-	Returns:
-		GPUs or CPU
 	"""
 	# device = 'cpu' or '0' or '0,1,2,3'
 	s = f"{model_name}"  # string

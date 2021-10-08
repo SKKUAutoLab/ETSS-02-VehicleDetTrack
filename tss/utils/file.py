@@ -13,13 +13,6 @@ import os
 
 def is_image_file(file: str) -> bool:
 	""" Check if is a image file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	image_formats = [".bmp", ".jpg", ".jpeg", ".png", ".ppm", ".bmp"]  # Acceptable image suffixes
 	if os.path.isfile(path=file):
@@ -31,13 +24,6 @@ def is_image_file(file: str) -> bool:
 
 def is_json_file(file: str) -> bool:
 	""" Check if is .json file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	if os.path.isfile(path=file):
 		extension = os.path.splitext(file)[1]
@@ -48,13 +34,6 @@ def is_json_file(file: str) -> bool:
 
 def is_torch_saved_file(file: str) -> bool:
 	""" Check if is a .pt or .pth file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	if os.path.isfile(path=file):
 		extension = os.path.splitext(file)[1]
@@ -65,13 +44,6 @@ def is_torch_saved_file(file: str) -> bool:
 
 def is_engine_saved_file(file: str) -> bool:
 	""" Check if is a .pt or .pth file.
-
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	if os.path.isfile(path=file):
 		extension = os.path.splitext(file)[1]
@@ -82,13 +54,6 @@ def is_engine_saved_file(file: str) -> bool:
 
 def is_txt_file(file: str) -> bool:
 	""" Check if is .txt file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-			
-	Returns:
-		True or False.
 	"""
 	if os.path.isfile(path=file):
 		extension = os.path.splitext(file)[1]
@@ -99,13 +64,6 @@ def is_txt_file(file: str) -> bool:
 
 def is_video_file(file: str) -> bool:
 	""" Check if is a video file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	video_formats = [".mov", ".avi", ".mp4", ".mpg", ".mpeg", ".m4v", ".wmv", ".mkv"]  # Acceptable video suffixes
 	if os.path.isfile(path=file):
@@ -117,25 +75,12 @@ def is_video_file(file: str) -> bool:
 
 def is_video_stream(stream: str) -> bool:
 	"""Check if the given stream is of correct format.
-	
-	Args:
-		stream (str):
-	
-	Returns:
-		True or False.
 	"""
 	return "rtsp" in stream
 
 
 def is_yaml_file(file: str) -> bool:
 	""" Check if is a .yaml file.
-	
-	Args:
-		file (str):
-			The file or path with extension.
-
-	Returns:
-		True or False.
 	"""
 	if os.path.isfile(path=file):
 		extension = os.path.splitext(file)[1]

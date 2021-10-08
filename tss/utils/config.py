@@ -18,13 +18,6 @@ from . import dir
 
 def process_config(config_path: str) -> Munch:
     """Process the config file that contains the model configurations.
-
-    Args:
-        config_path:
-            The config file (absolute path) that contains config values.
-            
-    Returns:
-        The config dictionary as namespace.
     """
     # TODO: Parse the configurations from the config json file provided
     config = parse_config_to_namespace(config_path=config_path)
@@ -36,13 +29,6 @@ def process_config(config_path: str) -> Munch:
 
 def parse_config_to_namespace(config_path: str) -> Optional[Dict]:
     """Parse config from file (json or yaml) to namespace.
-
-    Args:
-        config_path:
-            The config file (absolute path) that contains config values.
-
-    Returns:
-        The config dictionary as namespace.
     """
     _, file_extension = os.path.splitext(config_path)
     config_dict = None
@@ -61,13 +47,6 @@ def parse_config_to_namespace(config_path: str) -> Optional[Dict]:
 
 def parse_config_from_json(json_path: str) -> Dict:
     """Get the config values from the json file (should be found in the "configs" folder).
-
-    Args:
-        json_path:
-            The json file that contains config values.
-
-    Returns:
-        The config dictionary.
     """
     with open(json_path, "r") as config_file:
         config_dict = json.load(config_file)
@@ -76,13 +55,6 @@ def parse_config_from_json(json_path: str) -> Dict:
 
 def parse_config_from_yaml(yaml_path: str) -> Dict:
     """Get the config values from the yaml file (should be found in the "configs" folder).
-
-    Args:
-        yaml_path:
-            The yaml file that contains config values.
-
-    Returns:
-        The config dictionary.
     """
     with open(yaml_path, "r") as config_file:
         config_dict = yaml.load(config_file, Loader=yaml.FullLoader)
@@ -91,13 +63,6 @@ def parse_config_from_yaml(yaml_path: str) -> Dict:
 
 def add_dirs_to_config(config: Dict) -> Munch:
     """Define necessary dir paths to the config dictionary.
-
-    Args:
-        config:
-            The model config dictionary as namespace.
-
-    Returns:
-        The config dictionary (as namespace) + dir.
     """
     # TODO: Define output_dir
     data_output_dir   = os.path.join(dir.data_dir, config.data.dataset, "outputs")
