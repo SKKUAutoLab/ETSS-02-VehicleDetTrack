@@ -10,7 +10,6 @@
 
 Go to the website of AI-City Challenge to get the dataset.
 
-* https://www.aicitychallenge.org/
 
 ##### b. Video data import
 
@@ -24,7 +23,6 @@ Region-and-Trajectory-TFE
 │   ├── aicity2021_final
 │   │   ├── video
 │   │   │   ├── cam_1.mp4
-│   │   │   ...
 │   │   │   └── cam_7.mp4
 ...
 ```
@@ -66,7 +64,6 @@ Region-and-Trajectory-TFE
 │   ├── aicity2021_final
 │   │   ├── result
 │   │   │   ├── cam_1.mp4
-│   │   │   ...
 │   │   │   └── cam_7.mp4
 ...
 ```
