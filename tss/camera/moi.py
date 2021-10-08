@@ -30,22 +30,6 @@ from tss.utils import printe
 
 class MOI(object):
 	"""MOI (Movement of Interest)
-	
-	Attributes:
-		uuid (int):
-			The moi's unique id.
-		points (list):
-			List of tracks in the MOI.
-		shape_type (string):
-			The shape type.
-		offset (int):
-		
-		distance_function (callable):
-			The distance function
-		distance_threshold (float):
-			The maximum distance for counting with track
-		angle_threshold (float):
-			The maximum angle for counting with track
 	"""
 	# MARK: Magic Functions
 
@@ -104,16 +88,6 @@ class MOI(object):
 		**kwargs
 	):
 		"""Load moi's points from external .json file.
-		
-		Args:
-			file (string):
-				Give the roi file. Example a path "..data/aicity2021/roi_data/cam_n.json", so provides ``cam_n.json``.
-			dataset (string, optional):
-				The name of the dataset to work on.
-		
-		Returns:
-			mois (list):
-				Return the list of Moi road_objects.
 		"""
 		# TODO: Get json file
 		if dataset:
@@ -143,14 +117,6 @@ class MOI(object):
 		shape_type: str = "linestrip"
 	):
 		"""A static method to check if a list of given moving objects belong to one of the MOIs in the image.
-
-		Args:
-			gmos (list):
-				The list of moving object.
-			mois (list):
-				The list of MOIs in the image.
-			shape_type (string):
-				The shape of MOI to check. Can be ["polygon", "linestrip"].
 		"""
 		if len(gmos) <= 0: return
 		polygon_mois   = [m for m in mois if m.shape_type == "polygon"]
@@ -171,16 +137,6 @@ class MOI(object):
 		mois
 	) -> Optional[int]:
 		"""A static method to check if a given bbox belong to one of the many MOIs in the image.
-
-		Args:
-			bbox_xyxy (np.ndarray):
-				The bbox coordinates as [x, y, x, y].
-			mois (list):
-				The list of MOI in the image.
-		
-		Returns:
-			moi_id (int):
-				The MOI's id that the object is in. Else None.
 		"""
 		for moi in mois:
 			if moi.is_center_in_or_touch_moi(bbox_xyxy=bbox_xyxy) > 0:
@@ -193,16 +149,6 @@ class MOI(object):
 		mois
 	) -> Tuple[int, float]:
 		"""Find the Moi that best matched with the object's track.
-		
-		Args:
-			object_track (np.ndarray):
-				The object's track as an array of points.
-			mois (list):
-				List of MOI.
-
-		Returns:
-			(id, min_dist):
-				The best match moi's id and min distance.
 		"""
 		# TODO: Calculate distances between object track and all mois' tracks
 		distances = []
@@ -226,48 +172,18 @@ class MOI(object):
 	
 	def distances_with_track(self, object_track: np.ndarray) -> List[float]:
 		"""Calculate the distance between object's track to the MOI's tracks.
-		
-		If distance > self.distance_threshold, return None.
-		
-		Args:
-			object_track (np.ndarray):
-				The object's trajectory as an array of points.
-				
-		Returns:
-			distances (np.ndarray):
-				distance values between object's track with each track array.
 		"""
 		distance = self.distance_function(self.points, object_track)
 		return None if (distance > self.distance_threshold) else distance
 	
 	def angles_with_track(self, object_track: np.ndarray) -> List[float]:
 		"""Calculate the angle between object's track to the MOI's tracks
-		
-		If angle > self.angle_threshold, return None.
-		
-		Args:
-			object_track (np.ndarray):
-				The object's trajectory as an array of points.
-				
-		Returns:
-			angles (np.ndarray):
-				angle values between object's track with each track array.
 		"""
 		angle = angle_between_arrays(self.points, object_track)
 		return None if (angle > self.angle_threshold) else angle
 	
 	def is_center_in_or_touch_moi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
 		""" Check the bounding box touch MOI or not.
-		
-		Args:
-			bbox_xyxy (np.ndarray):
-				The bbox coordinates as [x, y, x, y].
-			compute_distance (bool):
-				Should calculate the distance from center to moi?
-		
-		Returns:
-			(int)
-				positive (inside), negative (outside), or zero (on an edge)
 		"""
 		c_x = (bbox_xyxy[0] + bbox_xyxy[2]) / 2
 		c_y = (bbox_xyxy[1] + bbox_xyxy[3]) / 2
@@ -277,14 +193,6 @@ class MOI(object):
 	
 	def draw(self, drawing: np.ndarray):
 		"""Draw the ROI.
-		
-		Args:
-			drawing (np.ndarray):
-				The drawing canvas.
-		
-		Returns:
-			drawing (np.ndarray):
-				The drawing canvas.
 		"""
 		# TODO: Draw MOI's direction
 		pts = self.points.reshape((-1, 1, 2))
