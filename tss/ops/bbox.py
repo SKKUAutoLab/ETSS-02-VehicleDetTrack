@@ -6,6 +6,7 @@
 from typing import Tuple
 
 import numpy as np
+
 # MARK: - Non-modifying Ops
 from torch import Tensor
 
@@ -132,7 +133,6 @@ def clip_bbox_xyxy(
 ) -> Tensor:
 	"""Clip bounding xyxy bounding boxes to image size [H, W].
 	"""
-	#
 	bbox_xyxy[:, 0].clamp_(0, image_size[1])  # x1
 	bbox_xyxy[:, 1].clamp_(0, image_size[0])  # y1
 	bbox_xyxy[:, 2].clamp_(0, image_size[1])  # x2

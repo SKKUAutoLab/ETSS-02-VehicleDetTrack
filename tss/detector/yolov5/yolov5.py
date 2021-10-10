@@ -29,10 +29,6 @@ from .api.utils.general import non_max_suppression
 
 class YOLOv5(Detector):
 	"""YOLOv5 detector model.
-	
-	Attributes:
-		model_config (str):
-			The path to the config file for each yolov5 variant model.
 	"""
 	
 	# MARK: Magic Functions

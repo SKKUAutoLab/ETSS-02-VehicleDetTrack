@@ -2,9 +2,6 @@
 # File name: __init__.py
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/27/2021
-#
-# ``detector`` API consists of several detector models that share the same interface.
-# Hence, they can be swap easily.
 # ==================================================================== #
 from typing import Dict
 

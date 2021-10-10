@@ -17,36 +17,7 @@ from tss.utils import printe
 # The numeric identifier of input camera stream
 video_map = {
     "cam_1":      1,
-    "cam_1_dawn": 2,
-    "cam_1_rain": 3,
-    "cam_2":      4,
-    "cam_2_rain": 5,
-    "cam_3":      6,
-    "cam_3_rain": 7,
-    "cam_4":      8,
-    "cam_4_dawn": 9,
-    "cam_4_rain": 10,
-    "cam_5":      11,
-    "cam_5_dawn": 12,
-    "cam_5_rain": 13,
-    "cam_6":      14,
-    "cam_6_snow": 15,
     "cam_7":      16,
-    "cam_7_dawn": 17,
-    "cam_7_rain": 18,
-    "cam_8":      19,
-    "cam_9":      20,
-    "cam_10":     21,
-    "cam_11":     22,
-    "cam_12":     23,
-    "cam_13":     24,
-    "cam_14":     25,
-    "cam_15":     26,
-    "cam_16":     27,
-    "cam_17":     28,
-    "cam_18":     29,
-    "cam_19":     30,
-    "cam_20":     31
 }
 
 
