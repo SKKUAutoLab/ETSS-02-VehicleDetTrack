@@ -27,25 +27,6 @@ from tss.utils import printe
 
 class Tracker(metaclass=abc.ABCMeta):
 	"""Tracker Base Class.
-	
-	Attributes:
-		api (str):
-			Name of the API that the tracker model is implemented from
-		name (str):
-			Name of the tracker method.
-		max_age (int):
-			The time to store the track before deleting,
-				that mean track could live in max_age frame with no match bounding box, consecutive frame that track disappear
-		min_hits (int):
-			The number of frame which has matching bounding box of the detected object
-				before the object is considered becoming the track
-		iou_threshold (float):
-			The Intersection over Union between two track with their bounding box
-		frame_count (int):
-			The current index of reading frame,
-				The number of input frame with detection
-		tracks (list):
-			A list of ``Track``.
 	"""
 	
 	# MARK: Magic Functions

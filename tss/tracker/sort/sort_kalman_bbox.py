@@ -25,15 +25,10 @@ np.random.seed(0)
 
 class KalmanBBoxTrack(GMO):
 	"""Kalman Bounding Box Track
-	
-	This class represents the motion model as Kalman Filter of an individual tracked object observed as bbox.
-	
-	Attributes:
-		Same attributes as ``GMO``.
 	"""
-	
+
 	# MARK: Magic Functions
-	
+
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 
