@@ -25,8 +25,7 @@ from tss.ops import get_majority_label
 # MARK: - GeneralObject
 
 class GeneralObject(metaclass=abc.ABCMeta):
-	"""General Object.
-	"""
+
 	
 	# MARK: Class Property
 	
@@ -60,60 +59,49 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	
 	@property
 	def last_frame_index(self) -> np.ndarray:
-		"""Get the latest frame index of the object."""
 		return self.frame_indexes[-1]
 	
 	@property
 	def last_timestamp(self) -> float:
-		"""Get the last time the object has been updated."""
 		return self.timestamps[-1]
 	
 	@property
 	def current_bbox(self) -> np.ndarray:
-		"""Get the latest det_bbox of the object."""
 		return self.bboxes[-1]
 	
 	@property
 	def current_bbox_center(self) -> np.ndarray:
-		"""Get the latest center of the object."""
 		return bbox_xyxy_center(bbox_xyxy=self.bboxes[-1])
 	
 	@property
 	def current_polygon(self) -> np.ndarray:
-		"""Get the latest bbox of the object."""
 		return self.polygons[-1]
 	
 	@property
 	def trajectory(self) -> np.ndarray:
-		"""Get the trajectory of the object."""
 		return self._trajectory
 	
 	@property
 	def travelled_distance(self) -> np.ndarray:
-		"""Get the trajectory of the object."""
 		return distance_between_points(self._trajectory[0], self._trajectory[-1])
 	
 	@property
 	def current_label(self) -> Dict:
-		"""Get the latest label of the object."""
 		return self.labels[-1]
 	
 	@property
 	def label_by_majority(self) -> Dict:
-		"""Get the most popular label of the object."""
 		return get_majority_label(object_labels=self.labels)
 	
 	@property
 	def label_id_by_majority(self) -> int:
-		"""Get the most popular label's id of the object."""
 		return self.label_by_majority.id
 	
 	# MARK: Configure
 	
 	@classmethod
 	def go_from_detection(cls, detection: Detection, **kwargs):
-		"""Create ``GeneralObject`` object from ``Detection`` object.
-		"""
+
 		return cls(
 			frame_index = detection.frame_index,
 			timestamp   = detection.timestamp,
@@ -137,9 +125,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		timestamp  : float                = timer(),
 		**kwargs
 	):
-		"""Update GeneralObject with new values.
-		"""
-		# TODO: Append value to lists
 		self.frame_indexes.append(frame_index)
 		self.timestamps.append(timestamp)
 		self.bboxes.append(bbox)
@@ -148,16 +133,10 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		if polygon:
 			self.polygons = np.append(self.polygons, [polygon], axis=0)
 			
-		# TODO: Update trajectory
 		if distance_between_points(self.trajectory[-1], self.current_bbox_center) >= GeneralObject.min_travelled_distance:
 			self._trajectory = np.append(self._trajectory, [self.current_bbox_center], axis=0)
 	
 	def update_go_from_detection(self, detection: Detection, **kwargs):
-		"""Update GeneralObject with from a detection.
-		
-		Args:
-			detection (Detection):
-		"""
 		self.update_go(
 			frame_index = detection.frame_index,
 			timestamp   = detection.timestamp,
@@ -179,24 +158,9 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		trajectory: bool = False,
 		color     : Optional[Tuple[int, int, int]] = None
 	):
-		"""Draw the object into the ``drawing``.
-		
-		Args:
-			drawing (np.ndarray):
-				The drawing canvas.
-			bbox (bool):
-				Should draw the detected bbox?
-			polygon (bool):
-				Should draw polygon?
-			label (bool):
-				Should draw label?
-			trajectory (bool):
-				Should draw trajectory?
-			color (tuple):
-				The primary color
-		"""
+
 		color = color if color is not None else self.label_by_majority.color
-		
+
 		if bbox:
 			curr_bbox = self.current_bbox
 			cv2.rectangle(img=drawing, pt1=(curr_bbox[0], curr_bbox[1]), pt2=(curr_bbox[2], curr_bbox[3]), color=color, thickness=2)
