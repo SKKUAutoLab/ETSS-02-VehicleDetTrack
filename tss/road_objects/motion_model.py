@@ -11,9 +11,7 @@ from tss.utils import printe
 # MARK: - MotionModel
 
 class MotionModel(metaclass=abc.ABCMeta):
-	"""Motion Model.
-	"""
-	
+
 	# MARK: Magic Functions
 	
 	def __init__(
@@ -34,28 +32,19 @@ class MotionModel(metaclass=abc.ABCMeta):
 	
 	@property
 	def matching_features(self):
-		"""Return the features used to matched tracked objects with new detections.
-		"""
 		printe("``matching_features()`` has not been implemented yet")
 		raise NotImplementedError
 
 	# MARK: Update
 	
 	def update_motion_state(self, **kwargs):
-		"""Updates the state of the motion model with observed features.
-		"""
 		printe("``update()`` has not been implemented yet")
 		raise NotImplementedError
 	
 	def predict_motion_state(self):
-		"""Advances the state of the motion model and returns the predicted estimate.
-		"""
 		printe("``predict()`` has not been implemented yet")
 		raise NotImplementedError
 
 	def current_motion_state(self):
-		"""
-		Returns the current motion model estimate.
-		"""
 		printe("``current_estimate()`` has not been implemented yet")
 		raise NotImplementedError
