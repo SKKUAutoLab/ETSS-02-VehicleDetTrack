@@ -11,9 +11,6 @@ from sty import RgbFg, Style
 
 def prints(s: str):
     """Print normal status.
-
-    Args:
-        s:
     """
     s = fg.li_green + s + fg.rs
     print(s)
@@ -21,9 +18,6 @@ def prints(s: str):
 
 def printw(s: str):
     """Print warning.
-
-    Args:
-        s:
     """
     s = fg.li_yellow + s + fg.rs
     print(s)
@@ -31,9 +25,6 @@ def printw(s: str):
 
 def printe(s: str):
     """PrintError.
-
-    Args:
-        s:
     """
     s = fg.li_red + s + fg.rs
     print(s)
