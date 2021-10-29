@@ -290,15 +290,6 @@ class FileCount(object):
 		return cv2.imread(self.list_imgs[self.frame_id_current])
 
 	def get_array_count(self, total_frame_count : int = -1):
-		"""
-
-		Args:
-			total_frame_count (int):
-				number of frame we need to extract
-		Returns:
-			arr_count (np.ndarray):
-				binary array
-		"""
 		# TODO: check number of frame to get
 		if 0 > total_frame_count or total_frame_count > int(self.video_info['frame_num']):
 			total_frame_count = int(self.video_info['frame_num'])
@@ -329,15 +320,4 @@ class FileCount(object):
 
 
 if __name__ == "__main__":
-	# print(dir(CountUnit))
-	# print(dir(FileCount))
-	# print(dir(list()))
-	copyfile("/media/sugarubuntu/Data/2_Workspace/tracking/EndToEndTracking/evaluation/result/gt_txt/cam_1.txt",
-			 "/media/sugarubuntu/Data/2_Workspace/tracking/EndToEndTracking/evaluation/result/gt_txt_test/cam_1.txt")
-
-	file_count = FileCount(
-		path_file   = "/media/sugarubuntu/Data/2_Workspace/tracking/EndToEndTracking/evaluation/result/gt_txt_test/cam_1.txt",
-		path_images = "/media/sugarubuntu/DataSKKU/1_Dataset/AI_City_Challenge/2021/AI_City_generated_data/1",
-		video_info  = {'frame_num': 3000, 'movement_num': 4, 'id': 1}
-	)
-	file_count.write_file_txt()
+	pass
