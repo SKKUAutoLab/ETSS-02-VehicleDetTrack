@@ -15,7 +15,7 @@ munch
 
 # logging -------------------------------------
 tensorboard>=2.4.1
-# wandb
+wandb
 
 # plotting ------------------------------------
 seaborn>=0.11.0
