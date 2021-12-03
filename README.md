@@ -27,6 +27,8 @@ pip install -r requirements.txt
 ```
 ---
 
+5. (Optional) Docker will be updated soon
+
 #### II. Data preparation
 
 ##### a. Data download
