@@ -1,7 +1,7 @@
 ### Automation Lab, Sungkyunkwan University
 
 #### GitHub Stats
-[![Download Count](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/RnT-TFE/total.svg?style=for-the-badge)](https://github.com/SKKU-AutoLab-VSW/RnT-TFE/releases)
+[![Download Count](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/RnT-TFE/total.svg?)](https://github.com/SKKU-AutoLab-VSW/RnT-TFE/releases)
 
 ## A Region-and-Trajectory Traffic Flow Estimation 
 
