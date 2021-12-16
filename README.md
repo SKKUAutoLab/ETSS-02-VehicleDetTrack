@@ -2,6 +2,8 @@
 
 ## A Region-and-Trajectory Traffic Flow Estimation 
 
+[![Download Count](https://img.shields.io/github/downloads/SKKU-AutoLab-VSW/RnT-TFE/total.svg?style=for-the-badge)](https://github.com/SKKU-AutoLab-VSW/RnT-TFE/releases)
+
 ---
 
 #### I. Installation
