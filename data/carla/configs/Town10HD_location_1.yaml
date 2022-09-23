@@ -1,0 +1,55 @@
+---
+camera_name: &camera_name "cam_1"
+  # Camera name is also used as the unique ID (NO FILE EXTENSION).
+  
+data:
+  dataset: &dataset "aicity2021_final"
+  file: "cam_1.mp4"
+  stream: null
+  dims: &dims [3, 576, 768]
+  frame_rate: 10
+  batch_size: 4
+
+output:
+  file: "cam_1_results.mp4"
+  dims: *dims
+  write_image: false
+  write_video: false
+  frame_rate: 10
+  fourcc: "mp4v"
+
+roi:
+  dataset: *dataset
+  file: "cam_1.json"
+    
+moi:
+  dataset: *dataset
+  file: "cam_1.json"
+  distance_function: "hausdorff"
+  distance_threshold: 300
+  angle_threshold: 45
+
+detector:
+  api: "pytorch"
+  name: "yolov5"
+  variant: "yolov5s6"
+  weights: "yolov5s6/yolov5s6_aicity2021.pt"
+  dataset: *dataset
+  dims: [3, 768, 768]
+  min_confidence: 0.4
+  nms_max_overlap: 0.4
+  device: "0"
+
+tracker:
+  api: "scikit-learn"
+  name: "sort_kalman_bbox"
+  max_age: 10
+  min_hit: 3
+  iou_threshold: 0.2
+
+gmo:
+  min_entering_distance: 1
+  min_traveled_distance: 40
+  min_hit_streak: 1
+  max_age: 1
+...
