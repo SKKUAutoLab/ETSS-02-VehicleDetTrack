@@ -20,12 +20,12 @@ from tss.utils import process_config
 parser = argparse.ArgumentParser(description="Config parser")
 parser.add_argument(
 	"--dataset",
-	default="aicity2021_final",
+	default="carla",
 	help="The dataset to run on."
 )
 parser.add_argument(
 	"--config",
-	default="cam_1.yaml",
+	default="Town10HD_location_1.yaml",
 	help="The config file for each camera. The final path to the config file is: TSS/data/[dataset]/configs/[config]/"
 )
 parser.add_argument(
@@ -51,9 +51,6 @@ def main():
 	args          = parser.parse_args()
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
 	camera_hprams = process_config(config_path=config_path)
-
-	# DEBUG:
-	print(camera_hprams.detector)
 
 	# TODO: Define camera
 	camera = Camera(config=camera_hprams, visualize=args.visualize, write_video=args.write_video)

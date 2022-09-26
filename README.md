@@ -15,8 +15,8 @@
 
 
 2. NVidia CUDA environment requirement:
-    * CUDA 11.0
-    * cuDNN 8.0.5
+    * CUDA 11.3
+    * cuDNN 8.3.2
 
 
 3. Open new Terminal, create new conda environment named skku and activate it with following commands:
@@ -55,6 +55,11 @@ Region-and-Trajectory-TFE
 │   │   ├── video
 │   │   │   ├── cam_1.mp4
 │   │   │   └── cam_7.mp4
+│   │   │   ...
+│   ├── carla
+│   │   ├── video
+│   │   │   ├── Town10HD_location_1.mp4
+│   │   │   ...
 ...
 ```
 
@@ -76,7 +81,7 @@ Change the name of yaml file which belong to each video in "main.py"
 ```python
 parser.add_argument(
 	"--config",
-	default="cam_1.yaml",
+	default="Town10HD_location_1.yaml",
 	help="The config file for each camera. The final path to the config file is: TSS/data/[dataset]/configs/[config]/"
 )
 ```
