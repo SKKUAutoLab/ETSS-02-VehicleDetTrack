@@ -13,6 +13,8 @@ import numpy as np
 from munch import Munch
 from tqdm.auto import tqdm
 
+import torch
+
 from tss.detector import get_detector
 from tss.io import AICResultWriter
 from tss.io import VideoReader
@@ -85,16 +87,22 @@ class Camera(object):
 				self.video_reader is None or \
 				self.result_writer is None:
 			printw("Camera have not been fully configured. Please check again.")
+			printw(f"{self.rois=}\n"
+				   f"{self.mois=}\n"
+				   f"{self.detector=}\n"
+				   f"{self.tracker=}\n"
+				   f"{self.video_reader=}\n"
+				   f"{self.result_writer=}\n")
 
 		if self.visualize:
 			cv2.namedWindow("image", cv2.WINDOW_KEEPRATIO)
 
 	def configure_labels(self):
 		"""Configure the labels."""
-		dataset_dir    = os.path.join(data_dir, self.config.data.dataset)
-		labels         = parse_config_from_json(json_path=os.path.join(dataset_dir, "labels.json"))
-		labels         = Munch.fromDict(labels)
-		self.labels    = labels.labels
+		dataset_dir = os.path.join(data_dir           , self.config.data.dataset)
+		labels      = parse_config_from_json(json_path = os.path.join(dataset_dir, "labels.json"))
+		labels      = Munch.fromDict(labels)
+		self.labels = labels.labels
 
 	def configure_roi(self):
 		"""Configure the camera's ROIs."""
@@ -158,46 +166,49 @@ class Camera(object):
 
 		# TODO: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
-		for frame_indexes, images in self.video_reader:
-			if len(frame_indexes) == 0:
-				break
 
-			# TODO: Detect (in batch)
-			images = padded_resize_image(images=images, size=self.detector.dims[1:3])
-			batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
+		# NOTE: phai them cai nay khong la bi memory leak
+		with torch.no_grad():
+			for frame_indexes, images in self.video_reader:
+				if len(frame_indexes) == 0:
+					break
 
-			# TODO: Associate detections with ROI (in batch)
-			for idx, detections in enumerate(batch_detections):
-				ROI.associate_detections_to_rois(detections=detections, rois=self.rois)
-				batch_detections[idx] = [d for d in detections if d.roi_uuid is not None]
+				# TODO: Detect (in batch)
+				images = padded_resize_image(images=images, size=self.detector.dims[1:3])
+				batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
 
-			# TODO: Track (in batch)
-			for idx, detections in enumerate(batch_detections):
-				self.tracker.update(detections=detections)
-				self.gmos = self.tracker.tracks
+				# TODO: Associate detections with ROI (in batch)
+				for idx, detections in enumerate(batch_detections):
+					ROI.associate_detections_to_rois(detections=detections, rois=self.rois)
+					batch_detections[idx] = [d for d in detections if d.roi_uuid is not None]
 
-				# TODO: Update moving state
-				for gmo in self.gmos:
-					gmo.update_moving_state(rois=self.rois)
-					gmo.timestamps.append(timer())
+				# TODO: Track (in batch)
+				for idx, detections in enumerate(batch_detections):
+					self.tracker.update(detections=detections)
+					self.gmos = self.tracker.tracks
 
-				# TODO: Associate gmos with MOI
-				in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-				MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
-				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
-				MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+					# TODO: Update moving state
+					for gmo in self.gmos:
+						gmo.update_moving_state(rois=self.rois)
+						gmo.timestamps.append(timer())
 
-				# TODO: Count
-				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-				self.result_writer.write_counting_result(vehicles=countable_gmos)
-				for gmo in countable_gmos:
-					gmo.moving_state = MovingState.Counted
+					# TODO: Associate gmos with MOI
+					in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+					MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
+					to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+					MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
 
-				# TODO: Visualize and Debug
-				elapsed_time = timer() - start_time
-				self.post_process(image=images[idx], elapsed_time=elapsed_time)
+					# TODO: Count
+					countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+					self.result_writer.write_counting_result(vehicles=countable_gmos)
+					for gmo in countable_gmos:
+						gmo.moving_state = MovingState.Counted
 
-			pbar.update(len(frame_indexes))  # Update pbar
+					# TODO: Visualize and Debug
+					elapsed_time = timer() - start_time
+					self.post_process(image=images[idx], elapsed_time=elapsed_time)
+
+				pbar.update(len(frame_indexes))  # Update pbar
 
 		# TODO: Finish
 		pbar.close()

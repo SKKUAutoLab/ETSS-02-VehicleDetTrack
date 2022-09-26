@@ -117,6 +117,16 @@ class ROI(object):
 	def is_bbox_in_or_touch_roi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
 		""" Check the bounding box touch ROI or not
 		"""
+		# DEBUG:
+		# print(type(self.points))
+		# print(self.points)
+		# print((bbox_xyxy[0], bbox_xyxy[1]))
+		# Convert from [n, 2] to [n, 1, 2], new format of opencv
+		# points = np.array([[point] for point in self.points])
+		# print(type(points))
+		# print(points)
+		# print((bbox_xyxy[0], bbox_xyxy[1]))
+
 		tl = cv2.pointPolygonTest(self.points, (bbox_xyxy[0], bbox_xyxy[1]), compute_distance)
 		tr = cv2.pointPolygonTest(self.points, (bbox_xyxy[2], bbox_xyxy[1]), compute_distance)
 		br = cv2.pointPolygonTest(self.points, (bbox_xyxy[2], bbox_xyxy[3]), compute_distance)

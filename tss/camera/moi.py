@@ -3,7 +3,7 @@
 # Author: Automation Lab - Sungkyunkwan University
 # Date created: 03/28/2021
 # ==================================================================== #
-# from __future__ import annotations
+from __future__ import annotations
 
 import os
 from typing import Callable
@@ -13,7 +13,7 @@ from typing import Tuple
 from typing import Union
 
 import numpy as np
-from cv2 import cv2
+import cv2
 from munch import Munch
 
 from tss.road_objects import GMO

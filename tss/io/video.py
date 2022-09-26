@@ -10,6 +10,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 
+from tss.ops import is_channel_last
 from tss.ops import image_channel_last
 from tss.ops import resize_image_cv2
 from tss.utils import data_dir
@@ -172,8 +173,18 @@ class VideoWriter(object):
 		""" Add one frame to writing video.
 		"""
 		# TODO: Convert to channel last
+		# DEBUG:
+		# print(f"{self.video_writer=}")
+		# print(f"{image.shape=}")
+		# print(f"{self.dims[1:3]=}")
 		image = image_channel_last(image=image)
+		# print(f"{image.shape=}")
 		image = resize_image_cv2(image=image, size=self.dims[1:3])
+		# DEBUG:
+		# print(f"{image.shape=}")
+		# print(f"{self.dims=}")
+		# print()
+
 		self.video_writer.write(image)
 	
 	def close_video_writer(self):

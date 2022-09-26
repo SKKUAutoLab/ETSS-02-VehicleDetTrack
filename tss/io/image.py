@@ -93,6 +93,9 @@ class ImageWriter(object):
 		"""
 		try:
 			for image in images:
+				# DEBUG:
+				# print(image.shape)
+
 				if is_channel_last(image):
 					cv2.imwrite(image, os.path.join(self.output_dir, f"{self.image_name}{self.extension}"))
 				else:

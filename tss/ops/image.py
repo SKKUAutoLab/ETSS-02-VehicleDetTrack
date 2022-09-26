@@ -88,7 +88,7 @@ def resize_image_cv2(
 		image = image_channel_last(image=image)
 	
 	if image.shape[0] != size[0] or image.shape[1] != size[1]:
-		image = cv2.resize(src=image, dsize=(size[0:2]), interpolation=cv2.INTER_LINEAR)
+		image = cv2.resize(src=image, dsize=tuple((size[1], size[0])), interpolation=cv2.INTER_LINEAR)
 	
 	return image
 	

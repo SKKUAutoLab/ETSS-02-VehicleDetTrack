@@ -25,3 +25,6 @@
 *.zip
 *.rar
 *.so
+
+# Folder
+*/outputs/
