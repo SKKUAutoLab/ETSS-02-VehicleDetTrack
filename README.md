@@ -5,11 +5,10 @@
 
 
 
-## A Region-and-Trajectory Traffic Flow Estimation 
+# A Region-and-Trajectory Traffic Flow Estimation 
 
----
 
-#### I. Installation
+### I. Installation
 
 1. Download & install Miniconda or Anaconda from https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
 
@@ -34,15 +33,15 @@ pip install -r requirements.txt
 
 5. (Optional) Docker will be updated soon
 
-#### II. Data preparation
+### II. Data preparation
 
-##### a. Data download
+#### a. Data download
 
 Go to the website of AI-City Challenge to get the dataset.
 
 - https://www.aicitychallenge.org/2021-data-and-evaluation/
 
-##### b. Video data import
+#### b. Video data import
 
 Add video files to **/data/aicity2021_final/video**.
    
@@ -65,16 +64,16 @@ Region-and-Trajectory-TFE
 
 ---
 
-#### III. Reference
+### III. Reference
 
-##### a. Weight 
+#### a. Weight 
 
 Download weight from [Release](https://github.com/SKKU-AutoLab-VSW/Region-and-Trajectory-TFE/releases/tag/v1.0.0-alpha) then put it into:
 ```
 tss/detector/yolov5/weights/yolov5s6
 ```
 
-##### b. Change running file
+#### b. Change running file
 
 Change the name of yaml file which belong to each video in "main.py"
 
@@ -92,7 +91,7 @@ And the running script
 bash bin/run_inference.sh
 ```
 
-##### c. Get the result
+#### c. Get the result
 
 ```
 Region-and-Trajectory-TFE
