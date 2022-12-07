@@ -9,7 +9,7 @@ from munch import Munch
 
 from .detection import Detection
 from .detector import Detector
-from .yolov5 import YOLOv5
+from .yolov5v5 import YOLOv5 as YOLOv5v5
 
 # MARK: - Lookup Table
 
@@ -27,5 +27,7 @@ def get_detector(hparams: Dict, **kwargs) -> Detector:
 	hparams = hparams if isinstance(hparams, Munch) else Munch(hparams)
 	name    = hparams.name
 	
-	if name == "yolov5":  # detector :: name
-		return YOLOv5(**hparams, **kwargs)
+	if name == "yolov5v5":
+		return YOLOv5v5(**hparams, **kwargs)
+	elif name == "yolov5v7":
+		return YOLOv5v5(**hparams, **kwargs)

@@ -49,7 +49,13 @@ video_map = {
 	"cam_18"             : 29,
 	"cam_19"             : 30,
 	"cam_20"             : 31,
-	"Town10HD_location_1": 32
+	"Town10HD_location_1": 32,
+	"Town10HD_location_2": 33,
+	"Town10HD_location_3": 34,
+	"Town10HD_location_4": 35,
+	"Town10HD_location_5": 36,
+	"Town10HD_location_6": 37,
+	"Town10HD_location_7": 38
 }
 
 

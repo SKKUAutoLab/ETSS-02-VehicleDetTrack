@@ -10,7 +10,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 
-from tss.ops import is_channel_last
+
 from tss.ops import image_channel_last
 from tss.ops import resize_image_cv2
 from tss.utils import data_dir
@@ -79,10 +79,18 @@ class VideoReader(object):
 				self.frame_idx += 1
 				if self.frame_idx >= self.num_frames:
 					break
+				# DEBUG:
+				# print(f"{self.cap.isOpened()=}")
+				# print(self.cap.read())
+
 				ret_val, image = self.cap.read()
+
+				# DEBUG:
+				# print("*******")
+
 				frame_indexes.append(self.frame_idx)
 				images.append(image)
-				
+
 			return frame_indexes, np.array(images)
 	
 	def __del__(self):

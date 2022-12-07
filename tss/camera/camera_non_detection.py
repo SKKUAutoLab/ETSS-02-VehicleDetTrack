@@ -1,9 +1,11 @@
 # ==================================================================== #
-# File name: camera.py
+# File name: camera_non_detection.py
 # Author: Automation Lab - Sungkyunkwan University
-# Date created: 03/27/2021
+# Date created: 09/27/2022
 # ==================================================================== #
 import os
+import sys
+import glob
 from timeit import default_timer as timer
 from typing import Dict
 from typing import List
@@ -27,14 +29,15 @@ from tss.tracker import get_tracker
 from tss.utils import data_dir
 from tss.utils import parse_config_from_json
 from tss.utils import printw
+from tss.detector import Detection
 from .moi import MOI
 from .roi import ROI
 
 
-# MARK: - Camera
+# MARK: - Camera Non Detection
 
-class Camera(object):
-	"""Camera
+class CameraNonDetection(object):
+	"""Camera Non Detection
 	"""
 
 	# MARK: Magic Functions
@@ -157,6 +160,58 @@ class Camera(object):
 
 	# MARK: Processing
 
+	def load_all_detection(self, folder_path):
+		video_detections = []
+
+		label_conversion = {
+			'10' : Munch({ "name": "car"   , "id": 1, "train_id": 0, "category": "vehicle", "catId": 1, "color": [0, 0, 142] }),  # pedestrian :: car
+			'4'  : Munch({ "name": "people", "id": 2, "train_id": 1, "category": "vehicle", "catId": 1, "color": [0, 0, 70 ] })   # vehicle    :: truck
+		}
+
+		size_ori = [1280.0, 720.0]
+		size_new = [768.0, 448.0]
+
+		# Load txt
+		list_txts     = glob.glob(os.path.join(folder_path, "*.txt"))
+		def order_name(elem):
+			return int(os.path.splitext(os.path.basename(elem))[0])
+		list_txts.sort(key=order_name)
+
+		frame_indexes = 0
+		for txt_path in tqdm(list_txts):
+			detections = []
+			idx        = 0
+			with open(txt_path, "r") as f_read:
+				lines = f_read.readlines()
+				for line in lines:
+					words = line.replace("\n", "").replace("\r", "").split(" ")
+
+					bbox_xyxy = np.array([
+						int(float(words[1]) * size_new[0] / size_ori[0] ),
+						int(float(words[2]) * size_new[1] / size_ori[1] ),
+						int(float(words[3]) * size_new[0] / size_ori[0] ),
+						int(float(words[4]) * size_new[1] / size_ori[1] )
+					], np.int32)
+
+					# Wrong size bounding box
+					if bbox_xyxy[0] == bbox_xyxy[2] or \
+							bbox_xyxy[1] == bbox_xyxy[3]:
+						continue
+
+					detections.append(
+						Detection(
+							frame_index = frame_indexes + idx,
+							bbox        = bbox_xyxy,
+							confidence  = 1.0,
+							label       = label_conversion[words[0]]
+						)
+					)
+					idx = idx + 1
+			video_detections.append(detections)
+			frame_indexes = frame_indexes + 1
+
+		return video_detections
+
 	def run(self):
 		"""The main processing loop.
 		"""
@@ -164,18 +219,37 @@ class Camera(object):
 		start_time = timer()
 		self.result_writer.start_time = start_time
 
+		# load detection from txts
+		video_detections  = self.load_all_detection(f"/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/RnT-TFE/data/carla/bbox/{self.config['camera_name']}/")
+		index_batch_frame = 0
+
 		# TODO: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
-		# NOTE: phai them cai nay khong la bi memory leak
+		# NOTE: phai them cai nay khong la bi memory leak, out of memory, GPU memory
 		with torch.no_grad():
 			for frame_indexes, images in self.video_reader:
+
 				if len(frame_indexes) == 0:
 					break
 
 				# TODO: Detect (in batch)
 				images = padded_resize_image(images=images, size=self.detector.dims[1:3])
-				batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
+				# batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
+				batch_detections = []
+				for index_frame, detections in enumerate(video_detections):
+					if index_batch_frame <= index_frame < index_batch_frame + len(frame_indexes):
+						batch_detections.append(detections)
+				index_batch_frame = index_batch_frame + len(frame_indexes)
+
+				# DEBUG:
+				# print(batch_detections)
+				# print(len(batch_detections))
+				# print(batch_detections.shape)
+				# print(images[0].shape)
+				# print(self.detector.dims)
+				# print(self.video_reader.dims)
+				# sys.exit()
 
 				# TODO: Associate detections with ROI (in batch)
 				for idx, detections in enumerate(batch_detections):
@@ -239,12 +313,10 @@ class Camera(object):
 		# TODO: Draw Vehicles
 		[gmo.draw(drawing=drawing) for gmo in self.gmos]
 		# TODO: Draw frame index
-		# NOTE: Write frame rate
 		fps  = self.video_reader.frame_idx / elapsed_time
 		text = f"Frame: {self.video_reader.frame_idx}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
 		font = cv2.FONT_HERSHEY_SIMPLEX
 		org  = (20, 30)
-		# NOTE: show the framerate on top left
-		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
-		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
+		cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
+		cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing

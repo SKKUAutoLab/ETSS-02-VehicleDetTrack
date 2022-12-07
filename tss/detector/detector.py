@@ -57,7 +57,7 @@ class Detector(metaclass=abc.ABCMeta):
 		self.min_confidence  = min_confidence
 		self.nms_max_overlap = nms_max_overlap
 		self.model           = None
-		self.device          = select_device(device)
+		self.device          = select_device(device=device)
 		
 		# NOTE: NEVER LOAD MODEL HERE
 		
