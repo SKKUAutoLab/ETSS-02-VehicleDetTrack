@@ -29,5 +29,7 @@ def get_detector(hparams: Dict, **kwargs) -> Detector:
 	
 	if name == "yolov5v5":
 		return YOLOv5v5(**hparams, **kwargs)
-	elif name == "yolov5v7":
+	elif name == "yolov5v7":  # TODO: not yet implement
+		return YOLOv5v5(**hparams, **kwargs)
+	elif name == "yolov7":  # TODO: implementing
 		return YOLOv5v5(**hparams, **kwargs)
