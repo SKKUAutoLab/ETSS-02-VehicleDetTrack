@@ -15,7 +15,7 @@ data:
     # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
   frame_rate: 10
     # The frame rate of the video.
-  batch_size: 4 
+  batch_size: 32
     # Number of samples in one forward & backward pass.
 
 output:
@@ -54,11 +54,11 @@ moi:
 detector:
   api: "pytorch"
     # Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
-  name: "yolov5"
+  name: "yolov5v5"
     # The name of the detector model.
   variant: "yolov5s6"
     # The detector model's variant name.
-  weights: "yolov5s6/yolov5s6_aicity2021.pt"
+  weights: "yolov5s6/yolov5s6_aicity2021_cam_8.pt"
     # The pretrained weights file.
   dataset: *dataset
     # The dataset base on aicity2021 above, mean base on contest, app
