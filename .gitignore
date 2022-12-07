@@ -27,4 +27,8 @@
 *.so
 
 # Folder
-*/outputs/
+/data/aicity2021_final/outputs/
+/data/carla/outputs/
+/data/aicity2021_final/rmois_description/
+/data/carla/rmois_description/
+/data/carla/bbox/
