@@ -10,6 +10,7 @@ from munch import Munch
 from .detection import Detection
 from .detector import Detector
 from .yolov5v5 import YOLOv5 as YOLOv5v5
+from .yolov7 import YOLOv7 as YOLOv7
 
 # MARK: - Lookup Table
 
@@ -29,7 +30,5 @@ def get_detector(hparams: Dict, **kwargs) -> Detector:
 	
 	if name == "yolov5v5":
 		return YOLOv5v5(**hparams, **kwargs)
-	elif name == "yolov5v7":  # TODO: not yet implement
-		return YOLOv5v5(**hparams, **kwargs)
 	elif name == "yolov7":  # TODO: implementing
-		return YOLOv5v5(**hparams, **kwargs)
+		return YOLOv7(**hparams, **kwargs)
