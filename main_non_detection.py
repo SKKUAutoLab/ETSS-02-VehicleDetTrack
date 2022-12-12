@@ -9,10 +9,10 @@ import argparse
 import os
 from timeit import default_timer as timer
 
-from tss.camera import CameraNonDetection
-from tss.utils import data_dir
-from tss.utils import prints
-from tss.utils import process_config
+from tfe.camera import CameraNonDetection
+from tfe.utils import data_dir
+from tfe.utils import prints
+from tfe.utils import process_config
 
 
 # MARK: - Args
