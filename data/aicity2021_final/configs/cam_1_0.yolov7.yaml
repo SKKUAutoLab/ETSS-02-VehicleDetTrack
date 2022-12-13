@@ -15,7 +15,7 @@ data:
     # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
   frame_rate: 10
     # The frame rate of the video.
-  batch_size: 1
+  batch_size: 32
     # Number of samples in one forward & backward pass.
 
 output:
@@ -56,9 +56,9 @@ detector:
     # Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
   name: "yolov7"
     # The name of the detector model.
-  variant: "yolov7-e6e"
+  variant: "yolov7"
     # The detector model's variant name.
-  weights: "yolov7e6/yolov7-e6e.pt"
+  weights: "yolov7/yolov7.pt"
     # The pretrained weights file.
   dataset: *dataset
     # The dataset base on aicity2021 above, mean base on contest, app

@@ -1,0 +1,7 @@
+{
+  "labels" : [
+    { "name": "other"     , "id": 0, "train_id": 2, "category": "other"  , "catId": 0, "color": [0  , 0 , 0  ] },
+    { "name": "car"       , "id": 1, "train_id": 0, "category": "vehicle", "catId": 1, "color": [0  , 0 , 142] },
+    { "name": "truck"     , "id": 2, "train_id": 1, "category": "vehicle", "catId": 1, "color": [0  , 0 , 70 ] }
+  ]
+}
