@@ -68,7 +68,7 @@ class CameraMultiprocess(object):
 	):
 		super().__init__(**kwargs)
 
-		# TODO: Define attributes
+		# NOTE: Define attributes
 		self.config = config if isinstance(config, Munch) else Munch.fromDict(config)  # A simple check just to make sure
 		self.visualize                  = visualize
 		self.write_video                = write_video
@@ -82,12 +82,12 @@ class CameraMultiprocess(object):
 		self.result_writer              = None
 		self.pbar                       = None
 
-		# TODO: Queue
+		# NOTE: Queue
 		self.frames_queue     = Queue(maxsize = queue_size)
 		self.detections_queue = Queue(maxsize = queue_size)
 		self.counting_queue   = Queue(maxsize = queue_size)
 
-		# TODO: Setup components
+		# NOTE: Setup components
 		self.configure_labels()
 		self.configure_roi()
 		self.configure_mois()
@@ -98,7 +98,7 @@ class CameraMultiprocess(object):
 		self.configure_video_writer()
 		self.configure_result_writer()
 
-		# TODO: Final check before running
+		# NOTE: Final check before running
 		self.check_components()
 
 	# MARK: Configure
@@ -178,29 +178,29 @@ class CameraMultiprocess(object):
 	# MARK: Processing
 
 	def run(self):
-		# TODO: Start timer
+		# NOTE: Start timer
 		start_time = timer()
 		self.result_writer.start_time = start_time
 
 		self.pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
-		# TODO: Threading for video reader
+		# NOTE: Threading for video reader
 		process_video_reader = multiprocessing.Process(target=self.run_video_reader)
 		process_video_reader.start()
 
-		# TODO: Threading for detector
+		# NOTE: Threading for detector
 		process_detector = multiprocessing.Process(target=self.run_detector)
 		process_detector.start()
 
-		# TODO: Threading for tracker
+		# NOTE: Threading for tracker
 		process_tracker = multiprocessing.Process(target=self.run_tracker)
 		process_tracker.start()
 
-		# TODO: Threading for result writer
+		# NOTE: Threading for result writer
 		process_result_writer = multiprocessing.Process(target=self.run_result_writer)
 		process_result_writer.start()
 
-		# TODO: Joins threads when all terminate
+		# NOTE: Joins threads when all terminate
 		process_video_reader.join()
 		process_detector.join()
 		process_tracker.join()
@@ -210,75 +210,75 @@ class CameraMultiprocess(object):
 		for frame_indexes, images in self.video_reader:
 			if len(frame_indexes) == 0:
 				break
-			# TODO: Push frame index and images to queue
+			# NOTE: Push frame index and images to queue
 			self.frames_queue.put([frame_indexes, images])
 
-		# TODO: Push None to queue to act as a stopping condition for next thread
+		# NOTE: Push None to queue to act as a stopping condition for next thread
 		self.frames_queue.put([None, None])
 
 	def run_detector(self):
 		with torch.no_grad():
 			while True:
-				# TODO: Get frame indexes and images from queue
+				# NOTE: Get frame indexes and images from queue
 				(frame_indexes, images) = self.frames_queue.get()
 				if frame_indexes is None:
 					break
 
-				# TODO: Detect (in batch)
+				# NOTE: Detect (in batch)
 				images = padded_resize_image(images=images, size=self.detector.dims[1:3])
 				batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
 
-				# TODO: Associate detections with ROI (in batch)
+				# NOTE: Associate detections with ROI (in batch)
 				for idx, detections in enumerate(batch_detections):
 					ROI.associate_detections_to_rois(detections=detections, rois=self.rois)
 					batch_detections[idx] = [d for d in detections if d.roi_uuid is not None]
 
-				# TODO: Push detections to queue
+				# NOTE: Push detections to queue
 				self.detections_queue.put(batch_detections)
 
-		# TODO: Push None to queue to act as a stopping condition for next thread
+		# NOTE: Push None to queue to act as a stopping condition for next thread
 		self.detections_queue.put(None)
 
 	def run_tracker(self):
 		while True:
-			# TODO: Get batch detections from queue
+			# NOTE: Get batch detections from queue
 			batch_detections = self.detections_queue.get()
 
 			if batch_detections is None:
 				break
 
 			for idx, detections in enumerate(batch_detections):
-				# TODO: Track (in batch)
+				# NOTE: Track (in batch)
 				self.tracker.update(detections=detections)
 				gmos = self.tracker.tracks
 
-				# TODO: Update moving state
+				# NOTE: Update moving state
 				for gmo in gmos:
 					gmo.update_moving_state(rois=self.rois)
 					gmo.timestamps.append(timer())
 
-				# TODO: Associate gmos with MOIs
+				# NOTE: Associate gmos with MOIs
 				in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
 				MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
 				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
 				MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
 
-				# TODO: Count
+				# NOTE: Count
 				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
 				for gmo in countable_gmos:
 					gmo.moving_state = MovingState.Counted
 
-				# TODO: Push countable moving objects to queue
+				# NOTE: Push countable moving objects to queue
 				self.counting_queue.put(countable_gmos)
 
 			self.pbar.update(len(batch_detections))
 
-		# TODO: Push None to queue to act as a stopping condition for next thread
+		# NOTE: Push None to queue to act as a stopping condition for next thread
 		self.counting_queue.put(None)
 
 	def run_result_writer(self):
 		while True:
-			# TODO: Get countable moving objects from queue
+			# NOTE: Get countable moving objects from queue
 			countable_gmos = self.counting_queue.get()
 			if countable_gmos is None:
 				break

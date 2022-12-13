@@ -31,7 +31,7 @@ In path "/home/mains/stackabuse/python/sample.md":
 - PurePosixPath("/python").joinpath("edited_version"): returns ("home/mains/stackabuse/python/edited_version
 """
 
-# TODO: Inside TSS//tss/utils
+# NOTE: Inside TSS//tss/utils
 utils_dir    = os.path.dirname(os.path.abspath(__file__))  # "workspaces/workspace/TSS/tss/utils"
 tss_dir      = os.path.dirname(utils_dir)                  # "workspaces/workspace/TSS/tss"
 

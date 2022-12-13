@@ -64,17 +64,17 @@ parser.add_argument(
 def main():
 	args = parser.parse_args()
 
-	# TODO: Start timer
+	# NOTE: Start timer
 	process_start_time = timer()
 	total_camera_init_time = 0
 
 	camera_start_time = timer()
 
-	# TODO: Get camera config
+	# NOTE: Get camera config
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
 	camera_hprams = process_config(config_path=config_path)
 
-	# TODO: Define camera
+	# NOTE: Define camera
 	camera = CameraMultithread(
 		config      = camera_hprams,
 		queue_size  = args.queue_size,
@@ -82,17 +82,17 @@ def main():
 		write_video = args.write_video
 	)
 	total_camera_init_time += timer() - camera_start_time
-	# TODO: Process
+	# NOTE: Process
 	camera.run()
 
-	# TODO: End timer
+	# NOTE: End timer
 	total_process_time = timer() - process_start_time
 	prints(f"Total processing time: {total_process_time} seconds.")
 	prints(f"Total camera init time: {total_camera_init_time} seconds.")
 	prints(f"Actual processing time: {total_process_time - total_camera_init_time} seconds.")
 
 
-# # TODO: Compress result from tss.io import compress_all_result
+# # NOTE: Compress result from tss.io import compress_all_result
 # print("Compressing result")
 # output_dir = os.path.join(data_dir, args.dataset, "outputs")
 # compress_all_result(output_dir=output_dir)

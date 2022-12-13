@@ -57,7 +57,7 @@ class VideoReader(object):
 		self.num_frames = -1
 		self.frame_idx  = 0
 		
-		# TODO: Setup stream
+		# NOTE: Setup stream
 		if self.stream:
 			self.create_online_stream()
 		elif self.file:
@@ -125,7 +125,7 @@ class VideoReader(object):
 	def create_video_stream(self):
 		""" Create the capture for video
 		"""
-		# TODO: Get path to video file
+		# NOTE: Get path to video file
 		video_file = os.path.join(data_dir, self.dataset, "video", self.file)
 		if is_video_file(file=video_file):
 			self.cap        = cv2.VideoCapture(video_file)
@@ -163,7 +163,7 @@ class VideoWriter(object):
 		self.fourcc       = fourcc
 		self.video_writer = None
 		
-		# TODO: Setup video writer
+		# NOTE: Setup video writer
 		if self.file:
 			self.create_video_writer()
 		
@@ -192,7 +192,7 @@ class VideoWriter(object):
 	def write_frame(self, image: np.ndarray):
 		""" Add one frame to writing video.
 		"""
-		# TODO: Convert to channel last
+		# NOTE: Convert to channel last
 		# DEBUG:
 		# print(f"{self.video_writer=}")
 		# print(f"{image.shape=}")

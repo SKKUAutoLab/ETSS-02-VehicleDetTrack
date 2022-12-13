@@ -46,23 +46,23 @@ class YOLOv5(Detector):
 		"""
 		current_dir = os.path.dirname(os.path.abspath(__file__))  # "...detector/yolov5"
 		
-		# TODO: Simple check
+		# NOTE: Simple check
 		# i.e, "yolov5s.pt" means using yolov5s variance.
 		if self.weights is None or self.weights == "":
 			printe("No weights file has been defined!")
 			raise ValueError
 
-		# TODO: Get path to weight file
+		# NOTE: Get path to weight file
 		self.weights = os.path.join(current_dir, "weights", self.weights)
 		if not is_torch_saved_file(file=self.weights):
 			raise FileNotFoundError
 		
-		# TODO: Get path to model variant's config
+		# NOTE: Get path to model variant's config
 		model_config = os.path.join(current_dir, "configs", f"{self.variant}.yaml")
 		if not is_yaml_file(file=model_config):
 			raise FileNotFoundError
 		
-		# TODO: Define model and load weights
+		# NOTE: Define model and load weights
 		ckpt       = torch.load(self.weights)
 		state_dict = _adjust_state_dict(ckpt["model_state_dict"])
 		self.model = Model(cfg=model_config, nc=len(self.label_ids))
@@ -88,15 +88,15 @@ class YOLOv5(Detector):
 				A list of ``Detection``.
 				A list of ``Detection`` in batch.
 		"""
-		# TODO: Safety check
+		# NOTE: Safety check
 		if self.model is None:
 			printe("Model has not been defined yet!")
 			raise NotImplementedError
 	
-		# TODO: Forward Pass
+		# NOTE: Forward Pass
 		batch_detections = self.forward_pass(frame_indexes=frame_indexes, images=images)
 		
-		# TODO: Check allowed labels
+		# NOTE: Check allowed labels
 		[self.suppress_wrong_labels(detections=detections_per_frame) for detections_per_frame in batch_detections]
 		
 		return batch_detections
@@ -145,14 +145,14 @@ class YOLOv5(Detector):
 				A list of ``Detection``.
 				A list of ``Detection`` in batch.
 		"""
-		# TODO: Prepare model input
+		# NOTE: Prepare model input
 		inputs = self.prepare_input(images=images).to(self.device)
 
-		# TODO: Forward input
+		# NOTE: Forward input
 		batch_predictions = self.model(inputs, augment=False)[0]
 		batch_predictions = non_max_suppression(batch_predictions, self.min_confidence, self.nms_max_overlap, classes=self.label_ids)
 		
-		# TODO: Rescale image from model layer (768) to original image size
+		# NOTE: Rescale image from model layer (768) to original image size
 		if self.should_resize:
 			for predictions in batch_predictions:
 				det_bbox_xyxy = predictions[:, :4].cpu().detach()
@@ -162,7 +162,7 @@ class YOLOv5(Detector):
 					original_size = images.shape[1:3]
 				).round()
 		
-		# TODO: Create Detection objects
+		# NOTE: Create Detection objects
 		batch_detections = []
 		for idx, predictions in enumerate(batch_predictions):
 			detections = []

@@ -53,23 +53,23 @@ parser.add_argument(
 # MARK: - Main Function
 
 def main():
-	# TODO: Start timer
+	# NOTE: Start timer
 	process_start_time = timer()
 	camera_start_time  = timer()
 
-	# TODO: Get camera config
+	# NOTE: Get camera config
 	args          = parser.parse_args()
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
 	camera_hprams = process_config(config_path=config_path)
 
-	# TODO: Define camera
+	# NOTE: Define camera
 	camera = CameraNonDetection(config=camera_hprams, visualize=args.visualize, write_video=args.write_video)
 	camera_init_time = timer() - camera_start_time
 
-	# TODO: Process
+	# NOTE: Process
 	camera.run()
 
-	# TODO: End timer
+	# NOTE: End timer
 	total_process_time = timer() - process_start_time
 	prints(f"Total processing time: {total_process_time} seconds.")
 	prints(f"Camera init time: {camera_init_time} seconds.")

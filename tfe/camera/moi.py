@@ -101,7 +101,7 @@ class MOI(object):
 	):
 		"""Load moi's points from external .json file.
 		"""
-		# TODO: Get json file
+		# NOTE: Get json file
 		if dataset:
 			path = os.path.join(data_dir, dataset, "rmois", file)
 		else:
@@ -110,7 +110,7 @@ class MOI(object):
 			printe(f"File not found or given a wrong file type at {path}.")
 			raise FileNotFoundError
 		
-		# TODO: Create moi road_objects
+		# NOTE: Create moi road_objects
 		data      = parse_config_from_json(json_path=path)
 		data      = Munch.fromDict(d=data)
 		mois_data = data.moi
@@ -162,7 +162,7 @@ class MOI(object):
 	) -> Tuple[int, float]:
 		"""Find the Moi that best matched with the object's track.
 		"""
-		# TODO: Calculate distances between object track and all mois' tracks
+		# NOTE: Calculate distances between object track and all mois' tracks
 		distances = []
 		angles    = []
 		for moi in mois:
@@ -206,7 +206,7 @@ class MOI(object):
 	def draw(self, drawing: np.ndarray):
 		"""Draw the ROI.
 		"""
-		# TODO: Draw MOI's direction
+		# NOTE: Draw MOI's direction
 		pts = self.points.reshape((-1, 1, 2))
 		if self.shape_type == "polygon":
 			cv2.polylines(img=drawing, pts=[pts], isClosed=True, color=self.color, thickness=1, lineType=cv2.LINE_AA)
@@ -216,5 +216,5 @@ class MOI(object):
 			for i in range(len(self.points) - 1):
 				cv2.circle(img=drawing, center=tuple(self.points[i]), radius=3, color=self.color, thickness=-1, lineType=cv2.LINE_AA)
 				
-		# TODO: Draw MOI's id
+		# NOTE: Draw MOI's id
 		cv2.putText(img=drawing, text=f"{self.uuid}", fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, org=tuple(self.points[-1]), color=self.color, thickness=2)

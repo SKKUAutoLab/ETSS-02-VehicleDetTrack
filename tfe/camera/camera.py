@@ -59,7 +59,7 @@ class Camera(object):
 			**kwargs
 	):
 		super().__init__(**kwargs)
-		# TODO: Define attributes
+		# NOTE: Define attributes
 		self.config                    = config if isinstance(config, Munch) else Munch.fromDict(config)  # A simple check just to make sure
 		self.visualize                 = visualize
 		self.write_video               = write_video
@@ -73,7 +73,7 @@ class Camera(object):
 		self.result_writer             = None
 		self.gmos: List[GMO]           = []
 
-		# TODO: Setup components
+		# NOTE: Setup components
 		self.configure_labels()
 		self.configure_roi()
 		self.configure_mois()
@@ -84,7 +84,7 @@ class Camera(object):
 		self.configure_video_writer()
 		self.configure_result_writer()
 
-		# TODO: Final check before running
+		# NOTE: Final check before running
 		self.check_components()
 
 	# MARK: Configure
@@ -172,11 +172,11 @@ class Camera(object):
 	def run(self):
 		"""The main processing loop.
 		"""
-		# TODO: Start timer
+		# NOTE: Start timer
 		start_time = timer()
 		self.result_writer.start_time = start_time
 
-		# TODO: Loop through all frames in self.video_reader
+		# NOTE: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
 		# NOTE: phai them cai nay khong la bi memory leak
@@ -185,44 +185,44 @@ class Camera(object):
 				if len(frame_indexes) == 0:
 					break
 
-				# TODO: Detect (in batch)
+				# NOTE: Detect (in batch)
 				images = padded_resize_image(images=images, size=self.detector.dims[1:3])
 				batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
 
-				# TODO: Associate detections with ROI (in batch)
+				# NOTE: Associate detections with ROI (in batch)
 				for idx, detections in enumerate(batch_detections):
 					ROI.associate_detections_to_rois(detections=detections, rois=self.rois)
 					batch_detections[idx] = [d for d in detections if d.roi_uuid is not None]
 
-				# TODO: Track (in batch)
+				# NOTE: Track (in batch)
 				for idx, detections in enumerate(batch_detections):
 					self.tracker.update(detections=detections)
 					self.gmos = self.tracker.tracks
 
-					# TODO: Update moving state
+					# NOTE: Update moving state
 					for gmo in self.gmos:
 						gmo.update_moving_state(rois=self.rois)
 						gmo.timestamps.append(timer())
 
-					# TODO: Associate gmos with MOI
+					# NOTE: Associate gmos with MOI
 					in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
 					MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
 					to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
 					MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
 
-					# TODO: Count
+					# NOTE: Count
 					countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
 					self.result_writer.write_counting_result(vehicles=countable_gmos)
 					for gmo in countable_gmos:
 						gmo.moving_state = MovingState.Counted
 
-					# TODO: Visualize and Debug
+					# NOTE: Visualize and Debug
 					elapsed_time = timer() - start_time
 					self.post_process(image=images[idx], elapsed_time=elapsed_time)
 
 				pbar.update(len(frame_indexes))  # Update pbar
 
-		# TODO: Finish
+		# NOTE: Finish
 		pbar.close()
 		cv2.destroyAllWindows()
 
@@ -231,7 +231,7 @@ class Camera(object):
 	def post_process(self, image: np.ndarray, elapsed_time: float):
 		"""Post processing step.
 		"""
-		# TODO: Visualize results
+		# NOTE: Visualize results
 		if not self.visualize and not self.write_video:
 			return
 		result = self.draw(drawing=image, elapsed_time=elapsed_time)
@@ -244,13 +244,13 @@ class Camera(object):
 	def draw(self, drawing: np.ndarray, elapsed_time: float):
 		"""Visualize the results on the drawing.
 		"""
-		# TODO: Draw ROI
+		# NOTE: Draw ROI
 		[roi.draw(drawing=drawing) for roi in self.rois]
-		# TODO: Draw MOIs
+		# NOTE: Draw MOIs
 		[moi.draw(drawing=drawing) for moi in self.mois]
-		# TODO: Draw Vehicles
+		# NOTE: Draw Vehicles
 		[gmo.draw(drawing=drawing) for gmo in self.gmos]
-		# TODO: Draw frame index
+		# NOTE: Draw frame index
 		# NOTE: Write frame rate
 		fps  = self.video_reader.frame_idx / elapsed_time
 		text = f"Frame: {self.video_reader.frame_idx}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"

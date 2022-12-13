@@ -63,10 +63,10 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Update
 	
 	def update_gmo(self, detection: Detection):
-		# TODO: First update ``GeneralObject``
+		# NOTE: First update ``GeneralObject``
 		self.update_go_from_detection(detection=detection)
 		
-		# TODO: Second, update motion model
+		# NOTE: Second, update motion model
 		self.update_motion_state()
 		
 	def update_moving_state(self, rois: List[ROI], **kwargs):

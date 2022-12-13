@@ -83,7 +83,7 @@ def padded_resize_image(
 	else:
 		images = letterbox(images, new_shape=size)[0]
 
-	# TODO: Convert
+	# NOTE: Convert
 	# image = image[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
 	# image = image[:, :, ::-1]  # BGR to RGB, to 3x416x416
 	images = np.ascontiguousarray(images)

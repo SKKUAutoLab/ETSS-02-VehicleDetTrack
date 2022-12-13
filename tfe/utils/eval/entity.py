@@ -31,11 +31,11 @@ class CountUnit(object):
 
 	def __gt__(self, other):
 
-		# TODO: First check frame_id
+		# NOTE: First check frame_id
 		if self.frame_id > other.frame_id:
 			return True
 
-		# TODO: Second check movement_id
+		# NOTE: Second check movement_id
 		if self.frame_id == other.frame_id and self.movement_id > other.movement_id:
 			return True
 
@@ -47,11 +47,11 @@ class CountUnit(object):
 		return False
 
 	def __lt__(self, other):
-		# TODO: First check frame_id
+		# NOTE: First check frame_id
 		if self.frame_id < other.frame_id:
 			return True
 
-		# TODO: Second check movement_id
+		# NOTE: Second check movement_id
 		if self.frame_id == other.frame_id and self.movement_id < other.movement_id:
 			return True
 
@@ -290,13 +290,13 @@ class FileCount(object):
 		return cv2.imread(self.list_imgs[self.frame_id_current])
 
 	def get_array_count(self, total_frame_count : int = -1):
-		# TODO: check number of frame to get
+		# NOTE: check number of frame to get
 		if 0 > total_frame_count or total_frame_count > int(self.video_info['frame_num']):
 			total_frame_count = int(self.video_info['frame_num'])
 
 		arr_count = np.zeros((total_frame_count, int(self.video_info['movement_num']), 2), dtype=np.int32)
 
-		# TODO: add count value
+		# NOTE: add count value
 		for list_count in self.list_of_list_count:
 			for count_unit in list_count:
 				if count_unit.frame_id <= total_frame_count:

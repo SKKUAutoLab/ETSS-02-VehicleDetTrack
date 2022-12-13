@@ -142,7 +142,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     # EMA
     ema = ModelEMA(model) if rank in [-1, 0] else None
 
-    # TODO: Resume
+    # NOTE: Resume
 
     start_epoch, best_fitness = 0, 0.0
     if pretrained:
@@ -383,7 +383,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                 # if fi > best_fitness or epoch < 123: # Only for getiing new traing, in which the data is difference in size
                 best_fitness = fi
 
-            # TODO: Save model
+            # NOTE: Save model
 
             # SUGAR: always save model
             # best_fitness: la cai thong so de tinh cai best

@@ -54,7 +54,7 @@ class ROI(object):
 		self.shape_type = shape_type
 		self.points     = points
 
-		# TODO: Load ROI points from file
+		# NOTE: Load ROI points from file
 		if self.points is None or len(self.points) < 2:
 			printe("Insufficient number of points in the roi.")
 			raise ValueError
@@ -83,7 +83,7 @@ class ROI(object):
 	) :
 		"""Load roi from external .json file.
 		"""
-		# TODO: Get json file
+		# NOTE: Get json file
 		if dataset:
 			path = os.path.join(data_dir, dataset, "rmois", file)
 		else:
@@ -92,7 +92,7 @@ class ROI(object):
 			printe(f"File not found or given a wrong file type at {path}.")
 			raise FileNotFoundError
 		
-		# TODO: Create moi road_objects
+		# NOTE: Create moi road_objects
 		data       = parse_config_from_json(json_path=path)
 		data       = Munch.fromDict(d=data)
 		rois_data  = data.roi

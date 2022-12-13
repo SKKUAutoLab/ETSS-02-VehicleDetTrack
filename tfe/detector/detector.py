@@ -46,7 +46,7 @@ class Detector(metaclass=abc.ABCMeta):
 		labels         : Union[List[Dict], None]        = None,
 		**kwargs
 	):
-		# TODO: Define hyperparameters
+		# NOTE: Define hyperparameters
 		super().__init__(**kwargs)
 		self.api             = api
 		self.name            = name
@@ -61,7 +61,7 @@ class Detector(metaclass=abc.ABCMeta):
 		
 		# NOTE: NEVER LOAD MODEL HERE
 		
-		# TODO: Load the labels from ``config.aic_labels.json``.
+		# NOTE: Load the labels from ``config.aic_labels.json``.
 		if labels is None:
 			dataset_dir    = os.path.join(data_dir, self.dataset)
 			labels         = parse_config_from_json(json_path=os.path.join(dataset_dir, "labels.json"))
@@ -80,21 +80,21 @@ class Detector(metaclass=abc.ABCMeta):
 	) -> Union[List[Detection], List[List[Detection]]]:
 		"""Detect road_objects in the image.
 		"""
-		# TODO: Safety check
+		# NOTE: Safety check
 		if self.model is None:
 			printe("Model has not been defined yet!")
 			raise NotImplementedError
 	
-		# TODO: Forward Pass
+		# NOTE: Forward Pass
 		batch_detections = self.forward_pass(frame_indexes=frame_indexes, images=images)
 		
-		# TODO: Check allowed labels
+		# NOTE: Check allowed labels
 		[self.suppress_wrong_labels(detections=detections) for detections in batch_detections]
 		
-		# TODO: Suppress confident score
+		# NOTE: Suppress confident score
 		[self.suppress_low_confident(detections=detections) for detections in batch_detections]
 		
-		# TODO: Suppress NMS
+		# NOTE: Suppress NMS
 		[self.non_max_suppression(detections=detections) for detections in batch_detections]
 		
 		return batch_detections
@@ -137,11 +137,11 @@ class Detector(metaclass=abc.ABCMeta):
 	def non_max_suppression(self, detections: List):
 		"""Suppress overlapping detections (high-level).
 		"""
-		# TODO: Extract detection bounding boxes and scores
+		# NOTE: Extract detection bounding boxes and scores
 		boxes  = np.array([d.bbox       for d in detections])
 		scores = np.array([d.confidence for d in detections])
 		
-		# TODO: Extract road_objects indices that survive non-max-suppression
+		# NOTE: Extract road_objects indices that survive non-max-suppression
 		indices = []
 		if len(boxes) > 0:
 			boxes = boxes.astype(np.float)
@@ -179,6 +179,6 @@ class Detector(metaclass=abc.ABCMeta):
 					idxs, np.concatenate(
 						([last], np.where(overlap > self.nms_max_overlap)[0])))
 		
-		# TODO: Get exactly the vehicles surviving non-max-suppression
+		# NOTE: Get exactly the vehicles surviving non-max-suppression
 		detections = [detections[i] for i in indices]
 		return detections

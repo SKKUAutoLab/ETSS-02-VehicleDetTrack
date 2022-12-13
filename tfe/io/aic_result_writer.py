@@ -135,7 +135,7 @@ class AICResultWriter(object):
 			vehicles (list):
 				The list of tracked vehicles, using general moving object.
 		"""
-		# TODO: Print all the GMO to the file
+		# NOTE: Print all the GMO to the file
 		for vehicle in vehicles:
 			gen_time = format((vehicle.last_timestamp - self.start_time), ".2f")
 			frame_id = vehicle.last_frame_index
@@ -169,7 +169,7 @@ def compress_all_result(
 	output_name = os.path.join(output_dir, f"{output_name}.txt")
 	compress_writer = open(output_name, "w")
 
-	# TODO: Get result from each file
+	# NOTE: Get result from each file
 
 	for video_name, video_id in video_map.items():
 		video_result_path = os.path.join(output_dir, f"{video_name}.txt")
@@ -178,7 +178,7 @@ def compress_all_result(
 			printe(f"The result of {video_result_path} is not exist")
 			continue
 
-		# TODO: Read result
+		# NOTE: Read result
 		results = []
 		with open(video_result_path) as f:
 			line = f.readline()
@@ -195,10 +195,10 @@ def compress_all_result(
 					results.append(result)
 				line = f.readline()
 
-		# TODO: Sort result
+		# NOTE: Sort result
 		results = sorted(results, key=itemgetter("gen_time", "frame_id", "movement_id"))
 
-		# TODO: write result
+		# NOTE: write result
 		for result in results:
 			compress_writer.write(f"{result['gen_time']} ")
 			compress_writer.write(f"{result['video_id']} ")

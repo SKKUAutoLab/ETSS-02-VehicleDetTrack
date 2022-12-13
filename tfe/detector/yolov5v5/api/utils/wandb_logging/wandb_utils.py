@@ -227,7 +227,7 @@ class WandbLogger():
             self.val_table_map[data[3]] = data[0]
 
     def create_dataset_table(self, dataset, class_to_id, name='dataset'):
-        # TODO: Explore multiprocessing to slpit this loop parallely| This is essential for speeding up the the logging
+        # NOTE: Explore multiprocessing to slpit this loop parallely| This is essential for speeding up the the logging
         artifact = wandb.Artifact(name=name, type="dataset")
         for img_file in tqdm([dataset.path]) if Path(dataset.path).is_dir() else tqdm(dataset.img_files):
             if Path(img_file).is_dir():

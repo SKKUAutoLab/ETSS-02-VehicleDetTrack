@@ -19,10 +19,10 @@ from . import dir
 def process_config(config_path: str) -> Munch:
     """Process the config file that contains the model configurations.
     """
-    # TODO: Parse the configurations from the config json file provided
+    # NOTE: Parse the configurations from the config json file provided
     config = parse_config_to_namespace(config_path=config_path)
 
-    # TODO: Add sub-directory paths
+    # NOTE: Add sub-directory paths
     config = add_dirs_to_config(config=config)
     return config
 
@@ -40,7 +40,7 @@ def parse_config_to_namespace(config_path: str) -> Optional[Dict]:
     if config_dict is None:
         return None
 
-    # TODO: Convert the dictionary to a namespace using Munch
+    # NOTE: Convert the dictionary to a namespace using Munch
     config = Munch.fromDict(config_dict)
     return config
 
@@ -64,16 +64,16 @@ def parse_config_from_yaml(yaml_path: str) -> Dict:
 def add_dirs_to_config(config: Dict) -> Munch:
     """Define necessary dir paths to the config dictionary.
     """
-    # TODO: Define output_dir
+    # NOTE: Define output_dir
     data_output_dir   = os.path.join(dir.data_dir, config.data.dataset, "outputs")
     camera_output_dir = os.path.join(data_output_dir, config.camera_name)
     
-    # TODO: Add dirs to config
+    # NOTE: Add dirs to config
     config.dirs = Munch()
     config.dirs.data_output_dir   = data_output_dir
     config.dirs.camera_output_dir = camera_output_dir
     
-    # TODO: Create dirs
+    # NOTE: Create dirs
     dir.create_dirs(
         dirs=[
             config.dirs.data_output_dir,

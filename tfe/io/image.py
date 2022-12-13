@@ -98,7 +98,7 @@ class ImageWriter(object):
 	def __len__(self):
 		return self.frame_idx  # number of already written images
 		
-	# TODO: Setup stream
+	# NOTE: Setup stream
 	
 	def write_frame(self, images: List[np.ndarray]):
 		""" Add batch of frames to folder.
