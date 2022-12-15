@@ -28,7 +28,7 @@ def get_detector(hparams: Dict, **kwargs) -> Detector:
 	hparams = hparams if isinstance(hparams, Munch) else Munch(hparams)
 	name    = hparams.name
 	
-	if name == "yolov5v5":
+	if name == "yolov5v5":  # NOTE: the version for AI City Challenge 2021.
 		return YOLOv5v5(**hparams, **kwargs)
-	elif name == "yolov7":  # NOTE: implementing
+	elif name == "yolov7":
 		return YOLOv7(**hparams, **kwargs)
