@@ -1,0 +1,97 @@
+---
+camera_name: &camera_name "cam_12"
+  # Camera name is also used as the unique ID (NO FILE EXTENSION).
+  
+data:
+  dataset: &dataset "aicity2021_final"
+    # The name of the dataset.
+  file: "cam_12.mp4"
+    # The video file or image folder.
+    # By default, assume all video are put inside ``aicity2021/video/``.
+  stream: null
+    # If we run directly with the input stream, ``stream`` must be of some value.
+    # By default ``null`` means run with video file defined in ``path``.
+  dims: &dims [3, 448, 768]
+    # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
+  frame_rate: 10
+    # The frame rate of the video.
+  batch_size: 32
+    # Number of samples in one forward & backward pass.
+
+output:
+  file: "cam_12_results.mp4"
+    # In case of video it is the name of the output video file.
+    # In case of image folder, it is the prefix for the output images.
+  dims: *dims
+    # The output size (C, H, W). By default, the same as ``aicity2021.dims``.
+  write_image: false
+    # Should write each result image to result folder? By default: false.
+    # If true, create a folder named as in ``file`` and output images.
+  write_video: false
+    # Should concatenate the results into a video file? By default: false.
+    # If ``true``, write result to ``file``
+  frame_rate: 10
+    # The frame rate of the video.
+  fourcc: "mp4v"
+    # The file type of video.
+
+roi:
+  dataset: *dataset
+  file: "cam_12.json"
+    # Name of the roi aicity2021 file with extension.
+    
+moi:
+  dataset: *dataset
+  file: "cam_12.json"
+    # Name of the roi aicity2021 file with extension.
+  distance_function: "hausdorff"
+    # The distance function.
+  distance_threshold: 50
+    # The maximum distance for counting with track
+  angle_threshold: 45
+    # The maximum angle for counting with track
+  
+detector:
+  api: "pytorch"
+    # Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
+  name: "yolov5v5"
+    # The name of the detector model.
+  variant: "yolov5s6"
+    # The detector model's variant name.
+  weights: "yolov5s6/yolov5s6_aicity2021_cam_9_20.pt"
+    # The pretrained weights file.
+  dataset: *dataset
+    # The dataset base on aicity2021 above, mean base on contest, app
+  dims: [3, 768, 768]
+    # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
+  min_confidence: 0.2
+    # Detection confidence threshold. Disregard all detections that have  a confidence lower than this value.
+  nms_max_overlap: 0.4
+    # Maximum detection overlap (non-maxima suppression threshold).
+  device: "0"
+    # cuda device, i.e. 0 or 0,1,2,3 or cpu
+
+tracker:
+  api: "scikit-learn"
+    # Name of the API that the tracker model is implemented from. Possible values: ["scikit-learn"].
+  name: "sort_kalman_bbox"
+    # Name of the tracker.
+  max_age: 10
+    # Max number of frame keep the object before deleting.
+  min_hit: 3
+    # The number of frame which has matching bounding box of the detected object
+    # before the object is considered becoming the track.
+  iou_threshold: 0.3
+    # The Intersection over Union between two track with their bounding box.
+
+gmo:
+  min_entering_distance: 1
+    # Min distance when an object enters the ROI to be Confirmed.
+    # -1 (object touch or enter the ROI), 0 (whole object must be enter the ROI), > 0 (whole object must be in the ROI at some distance).
+  min_traveled_distance: 50
+    # Min distance between first trajectory point with last trajectory point.
+  min_hit_streak: 3
+    # Min number of "consecutive"'" frame has that track appear.
+  max_age: 1
+    # Max frame to wait until a dead track can be counted.
+...
