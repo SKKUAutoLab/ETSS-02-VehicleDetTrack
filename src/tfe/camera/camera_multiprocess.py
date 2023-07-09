@@ -182,6 +182,10 @@ class CameraMultiprocess(object):
 		start_time = timer()
 		self.result_writer.start_time = start_time
 
+		# WARNING: THIS CODE COULD NOT RUN
+		# FIX: COULD NOT RUN
+		# Because they dont share the same memory
+
 		self.pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
 		# NOTE: Threading for video reader
