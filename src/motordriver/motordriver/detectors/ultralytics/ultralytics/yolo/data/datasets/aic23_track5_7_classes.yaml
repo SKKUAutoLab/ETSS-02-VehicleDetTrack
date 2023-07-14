@@ -1,0 +1,25 @@
+# Ultralytics YOLO 🚀, GPL-3.0 license
+# VisDrone2019-DET dataset https://github.com/VisDrone/VisDrone-Dataset by Tianjin University
+# Example usage: python train.py --data VisDrone.yaml
+# parent
+# ├── yolov5
+# └── datasets
+#     └── AIC23
+
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: /media/vsw/SSD_2/sugar/dataset/AIC23_Track5_Traffic_Safety  # dataset root dir
+train: train/images  # train images (relative to 'path')  6471 images
+val: val/images  # val images (relative to 'path')  548 images
+test: val/images  # test images (optional)  1610 images
+
+# Classes
+names:
+  0: motorbike
+  1: DHelmet
+  2: DNoHelmet
+  3: P1Helmet
+  4: P1NoHelmet
+  5: P2Helmet
+  6: P2NoHelmet
+

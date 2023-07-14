@@ -1,0 +1,11 @@
+{
+  "class_labels" : [
+    { "name": "motorbike" , "id": 1, "train_id": 0, "category": "vehicle", "catId": 1, "color": [255, 59 , 48] },
+    { "name": "DHelmet"   , "id": 2, "train_id": 1, "category": "person" , "catId": 1, "color": [52 , 199, 89 ] },
+    { "name": "DNoHelmet" , "id": 3, "train_id": 2, "category": "person" , "catId": 1, "color": [0  , 122, 255 ] },
+    { "name": "P1Helmet"  , "id": 4, "train_id": 3, "category": "person" , "catId": 1, "color": [255, 149, 5 ] },
+    { "name": "P1NoHelmet", "id": 5, "train_id": 4, "category": "person" , "catId": 1, "color": [162, 132, 94 ] },
+    { "name": "P2Helmet"  , "id": 6, "train_id": 5, "category": "person" , "catId": 1, "color": [88 , 86 , 214 ] },
+    { "name": "P2NoHelmet", "id": 7, "train_id": 6, "category": "person" , "catId": 1, "color": [90 , 200, 250 ] }
+  ]
+}

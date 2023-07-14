@@ -73,6 +73,7 @@ dependencies:
       - typing-extensions # Backported and Experimental Type Hints for Python 3.7+.
       - validators        # Python Data Validation for Humans.
       - xmltodict         # Makes working with XML feel like you are working with JSON.
+      - munch             # Store data
       # UI                
       - PyQt6             # Python bindings for the Qt cross-platform application toolkit.
       - rich              # Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal.

@@ -1,0 +1,123 @@
+---
+dataset: &dataset "aic23_trafficsafety"
+# Dataset name. It is also the name of the directory inside `data_dir`.
+name: &camera_name "traffic_safety"
+# Camera name is also used as the unique ID (NO FILE EXTENSION).
+id_: *camera_name
+# Camera's unique ID.
+
+
+data:
+  type: "*.jpg"
+  # Video file or image folder. By default, assume all video are put inside
+  # `aic21_vehicle_counting/<subset>/`.
+  stream: null
+  # If we run directly with the input stream, `stream` must be of some value.
+  # By default `null` means run with video file defined in `path`.
+  shape: &shape [960, 1280, 3]
+  # Input size as [H, W, C].
+  frame_rate: &frame_rate 10
+  # Frame rate of the video.
+#  batch_size: &batch_size 16
+  # Number of samples in one forward & backward pass.
+  process_num: 3
+  # Number of processes which runs in parallel
+
+data_loader:
+  data: "images"
+  # Data source. Can be a path to an image file, a directory, a video, or
+  # a stream. It can also be a pathname pattern to images.
+  # batch_size: *batch_size
+  # Number of samples in one forward & backward pass.
+
+detector:
+  name: "yolov8_trafficsafety"
+  # Name of the detector model.
+  model_cfg:
+  # Detector model config.
+    cfg: "yolov8x6.yaml"
+    # YOLOv5 variances.
+    nc: 80
+    # Number of classes.
+  weights: "models_zoo/yolov8/yolov8x6_1280_1cls_track_5_filtered_helmet/weights/best.pt"
+  # Pretrained weights file.
+  shape: [1280, 1280, 3]
+  # Input size as [C, H, W].
+  min_confidence: 0.1
+  # Detection confidence threshold. Disregard all detections that have a
+  # confidence lower than this value.
+  nms_max_overlap: 0.1
+  # Maximum detection overlap (non-maxima suppression threshold).
+  device: &device "0"
+  # CUDDevice, i.e. 0 or 0,1,2,3 or cpu
+  batch_size: 16
+  # Number of samples in one forward & backward pass.
+  folder_out: "yolov8x6"
+  # The output folder
+  class_labels:
+    file: "class_labels_1cls.json"
+    # Config file containing class_labels.
+
+identifier:
+  name: "yolov8_trafficsafety"
+  # Name of the detector model.
+  model_cfg:
+  # Detector model config.
+    cfg: "yolov8x6.yaml"
+    # YOLOv5 variances.
+    nc: 80
+    # Number of classes.
+  weights:
+  - "models_zoo/yolov8/yolov8x6_320_7cls_crop_both_v2/weights/best.pt"
+  - "models_zoo/yolov8/yolov8x6_384_7cls_crop_both_v1/weights/best.pt"
+  - "models_zoo/yolov8/yolov8x6_448_7cls_crop_both_v1/weights/best.pt"
+  - "models_zoo/yolov8/yolov8x6_512_7cls_crop_both_v1/weights/best.pt"
+  - "models_zoo/yolov8/yolov8x6_576_7cls_crop_both_v1/weights/best_781.pt"
+  # Pretrained weights file.
+  shape: [512, 512, 3]
+  # Input size as [C, H, W].
+  min_confidence: 0.1
+  # Detection confidence threshold. Disregard all detections that have a
+  # confidence lower than this value.
+  nms_max_overlap: 0.35
+  # Maximum detection overlap (non-maxima suppression threshold).
+  device: *device
+  # CUDDevice, i.e. 0 or 0,1,2,3 or cpu
+  batch_size: 32
+  # Number of samples in one forward & backward pass.
+  folder_out: "yolov8x6"
+  # The output folder
+  class_labels:
+    file: "class_labels_7cls.json"
+    # Config file containing class_labels.
+
+data_writer:
+  dst: "outputs_s2_v8_det_v8_iden"
+  # Output video file or a directory.
+  shape: *shape
+  # Output size [H, W, C].
+  frame_rate: *frame_rate
+  # Frame rate of the video.
+  fourcc: "mp4v"
+  # Video codec. One of: ["mp4v", "xvid", "mjpg", "wmv1"].
+  dets_crop_pkl: &dets_crop_pkl "dets_crop_pkl"
+  # Store the crop detection of each result of each images
+  dets_crop_pkl_debug: "dets_crop_pkl_debug"
+  # Store the drawing result of detection of each result of each images
+  dets_crop_heuristic_pkl: &dets_crop_heuristic_pkl "dets_crop_heuristic_pkl"
+  # Store the heuristic crop detection of each result of each images
+  dets_crop_heuristic_pkl_debug: "dets_crop_heuristic_pkl_debug"
+  # Store the full heuristic detection of each result of each images
+  dets_full_pkl: &dets_full_pkl "dets_full_pkl"
+  # Store the full detection of each result of each images
+  dets_full_pkl_debug: "dets_full_pkl_debug"
+  # Store the drawing of full detection of each result of each images
+  final_result: *dets_crop_heuristic_pkl
+  # Where we get the final result
+  final_file: "final_result_s2.txt"
+  # Name of file result file
+  min_confidence: 0.88
+  # Detection confidence threshold. Disregard all detections that have a
+  # confidence lower than this value.
+
+...
