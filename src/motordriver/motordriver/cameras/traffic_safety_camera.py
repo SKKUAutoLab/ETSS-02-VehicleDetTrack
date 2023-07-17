@@ -132,6 +132,13 @@ class TrafficSafetyCamera(BaseCamera):
 		self.configs_dir = os.path.join(config_dir)
 		self.outputs_dir = os.path.join(self.root_dir, self.data_writer_cfg["dst"])
 		self.video_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
+		self.image_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
+
+		# DEBUG:
+		print(data_dir)
+		print(config_dir)
+		print(os.path.join(self.root_dir, self.data_writer_cfg["dst"]))
+		print(os.path.join(self.root_dir, self.data_loader_cfg["data"]))
 
 	def init_class_labels(self, class_labels: Union[ClassLabels, dict]):
 		"""Initialize class_labels.
@@ -231,7 +238,7 @@ class TrafficSafetyCamera(BaseCamera):
 		# NOTE: Push None to queue to act as a stopping condition for next thread
 		self.frames_queue.put([None, None])
 
-	def run_detection_video(self):
+	def run_detection(self):
 		"""Run detection model with videos
 		"""
 		# NOTE: Load dataset
@@ -329,8 +336,7 @@ class TrafficSafetyCamera(BaseCamera):
 		self.run_routine_start()
 
 		# NOTE: run
-		if self.process["run_image"]:
-			self.run_detection_video()
+		self.run_detection()
 		self.detector.clear_model_memory()
 		self.detector = None
 
