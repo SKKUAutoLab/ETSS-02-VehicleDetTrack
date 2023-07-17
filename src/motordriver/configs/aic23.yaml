@@ -18,7 +18,7 @@ data:
   # Input size as [H, W, C].
   frame_rate: &frame_rate 10
   # Frame rate of the video.
-#  batch_size: &batch_size 16
+  batch_size: &batch_size 16
   # Number of samples in one forward & backward pass.
   process_num: 3
   # Number of processes which runs in parallel
@@ -27,8 +27,12 @@ data_loader:
   data: "images"
   # Data source. Can be a path to an image file, a directory, a video, or
   # a stream. It can also be a pathname pattern to images.
-  # batch_size: *batch_size
+  batch_size: *batch_size
   # Number of samples in one forward & backward pass.
+  data_path: ""
+  # Path to the dataset
+  # - video: */*.mp4
+  # - images: dir
 
 detector:
   name: "yolov8_trafficsafety"
