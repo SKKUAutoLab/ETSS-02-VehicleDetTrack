@@ -233,7 +233,6 @@ class TrafficSafetyCamera(BaseCamera):
 		# NOTE: Push None to queue to act as a stopping condition for next thread
 		self.frames_queue.put([None, None])
 
-
 	def run_detection_video(self):
 		"""Run detection model with videos
 		"""
