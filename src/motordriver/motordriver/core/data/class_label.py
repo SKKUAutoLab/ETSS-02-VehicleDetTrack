@@ -83,7 +83,7 @@ class ClassLabels:
 		"""Create a `ClassLabels` object from a file that contains all
 		class_labels
 		"""
-		labels_dict = load(path=label_path)
+		labels_dict  = load(path=label_path)
 		class_labels = labels_dict["class_labels"]
 		class_labels = Munch.fromDict(class_labels)
 		return ClassLabels(class_labels=class_labels)

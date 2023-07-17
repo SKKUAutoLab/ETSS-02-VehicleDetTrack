@@ -8,7 +8,7 @@ export DIR_TSS=$DIR_CURRENT                         # src/motordriver
 export DIR_SOURCE=$DIR_TSS"/motordriver"            # src/motordriver/motordriver
 
 # Add data dir
-export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5/"
+export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/"
 
 # Add python path
 export PYTHONPATH=$PYTHONPATH:$PWD                              # .
@@ -21,8 +21,8 @@ START_TIME="$(date -u +%s.%N)"
 ###########################################################################################################
 
 # NOTE: COPY FILE
-cp -f $DIR_TSS"/configs/class_labels_1cls.json" $DIR_TSS"/data/class_labels_1cls.json"
-cp -f $DIR_TSS"/configs/class_labels_7cls.json" $DIR_TSS"/data/class_labels_7cls.json"
+cp -f $DIR_TSS"/configs/class_labels_1cls.json" $DIR_DATA"/class_labels_1cls.json"
+cp -f $DIR_TSS"/configs/class_labels_7cls.json" $DIR_DATA"/class_labels_7cls.json"
 
 # NOTE: DETECTION
 echo "*********"
