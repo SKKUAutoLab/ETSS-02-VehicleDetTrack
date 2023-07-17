@@ -109,13 +109,8 @@ class TrafficSafetyCamera(BaseCamera):
 
 		self.init_dirs()
 		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
-
-		if self.process["function_dets"]:
-			self.init_class_labels(class_labels=self.detector_cfg['class_labels'])
-			self.init_detector(detector=detector)
-		if self.process["function_identify"]:
-			self.init_class_labels(class_labels=self.identifier_cfg['class_labels'])
-			self.init_identifier(identifier=identifier)
+		self.init_class_labels(class_labels=self.detector_cfg['class_labels'])
+		self.init_detector(detector=detector)
 
 		self.start_time = None
 		self.pbar       = None

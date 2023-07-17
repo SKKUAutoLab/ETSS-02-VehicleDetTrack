@@ -24,7 +24,7 @@ from core.objects.instance import Instance
 from detectors.base import BaseDetector
 
 # NOTE: add model YOLOv5 source to here
-sys.path.append('src/detectors/ultralytics')
+# sys.path.append('src/detectors/ultralytics')
 
 from detectors.ultralytics.ultralytics import YOLO
 

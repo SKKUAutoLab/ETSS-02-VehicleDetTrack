@@ -30,21 +30,12 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 parser = argparse.ArgumentParser(description="Config parser")
 parser.add_argument(
-	"--config", default="c041.yaml",
+	"--config", default="aic23.yaml",
 	help="Config file for each camera. Final path to the config file."
 )
 parser.add_argument(
 	"--dataset", default="aic23_trafficsafety",
 	help="Dataset to run on."
-)
-parser.add_argument(
-	"--detection", action='store_true', help="Should run detection."
-)
-parser.add_argument(
-	"--identification", action='store_true', help="Should run identification."
-)
-parser.add_argument(
-	"--heuristic", action='store_true', help="Should run heuristic process."
 )
 parser.add_argument(
 	"--run_image", action='store_true', help="Should run detection."
@@ -76,10 +67,7 @@ def main():
 	camera_cfg["dataset"]      = args.dataset
 	camera_cfg["verbose"]      = args.verbose
 	camera_cfg["process"]      = {
-		"function_dets"        : args.detection,       # Detection
 		"run_image"            : args.run_image,       # All run with image, not video
-		"function_identify"    : args.identification,  # Identification
-		"function_heuristic"   : args.heuristic,       # Heuristic
 		"function_write_final" : args.write_final,     # Writing final results.
 	}
 

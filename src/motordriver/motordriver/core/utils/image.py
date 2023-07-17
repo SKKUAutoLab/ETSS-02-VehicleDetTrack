@@ -17,9 +17,7 @@ import torch.nn as nn
 import torchvision
 from multipledispatch import dispatch
 from torch import Tensor
-from torchvision.transforms.functional import _is_numpy
-from torchvision.transforms.functional_pil import _is_pil_image
-
+from torchvision.transforms.functional import _is_numpy, _is_pil_image
 
 from core.type.collection import is_list_of
 from core.type.type import Size2T
