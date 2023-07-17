@@ -60,10 +60,9 @@ def main():
 	# NOTE: Parse camera config
 	args        = parser.parse_args()
 	config_path = os.path.join(config_dir, args.config)
-
 	camera_cfg  = load_config(config_path)
 
-	# Update value from args
+	# NOTE: Update value from args
 	camera_cfg["dataset"]      = args.dataset
 	camera_cfg["verbose"]      = args.verbose
 	camera_cfg["process"]      = {

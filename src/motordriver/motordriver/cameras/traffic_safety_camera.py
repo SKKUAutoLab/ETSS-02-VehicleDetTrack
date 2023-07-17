@@ -178,7 +178,10 @@ class TrafficSafetyCamera(BaseCamera):
 			data_loader_cfg (dict):
 				Data loader object or a data loader's config dictionary.
 		"""
-		self.video_loader = VideoLoader(data=data_loader_cfg["data_path"], batch_size=data_loader_cfg["batch_size"])
+		if self.process["run_image"]:
+			self.data_loader = FrameLoader(data=data_loader_cfg["data_path"], batch_size=data_loader_cfg["batch_size"])
+		else:
+			self.data_loader = VideoLoader(data=data_loader_cfg["data_path"], batch_size=data_loader_cfg["batch_size"])
 		self.pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
 	def check_and_create_folder(self, attr, data_writer_cfg: dict):
@@ -219,7 +222,7 @@ class TrafficSafetyCamera(BaseCamera):
 	# MARK: Run
 
 	def run_data_reader(self):
-		for images, indexes, _, _ in self.video_loader:
+		for images, indexes, _, _ in self.data_loader:
 			if len(indexes) == 0:
 				break
 			# NOTE: Push frame index and images to queue
@@ -325,12 +328,11 @@ class TrafficSafetyCamera(BaseCamera):
 		"""Main run loop."""
 		self.run_routine_start()
 
-		# NOTE: run detection
-		if self.process["function_dets"]:
-			if self.process["run_image"]:
-				self.run_detection_video()
-			self.detector.clear_model_memory()
-			self.detector = None
+		# NOTE: run
+		if self.process["run_image"]:
+			self.run_detection_video()
+		self.detector.clear_model_memory()
+		self.detector = None
 
 		self.run_routine_end()
 
