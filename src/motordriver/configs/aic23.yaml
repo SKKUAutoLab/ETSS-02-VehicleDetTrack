@@ -32,7 +32,7 @@ data_loader:
 
 detector:
   name: "yolov8_trafficsafety"
-  # Name of the detector model.
+  # Name of the main model for detector
   model_cfg:
   # Detector model config.
     cfg: "yolov8x6.yaml"
