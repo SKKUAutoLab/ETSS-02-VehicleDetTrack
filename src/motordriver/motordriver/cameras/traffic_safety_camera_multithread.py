@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import os
+import threading
 import uuid
 import glob
 from queue import Queue
@@ -41,7 +42,7 @@ from configuration import (
 from cameras.base import BaseCamera
 
 __all__ = [
-	"TrafficSafetyCamera"
+	"TrafficSafetyCameraMultiThread"
 ]
 
 # MARK: - TrafficSafetyCamera
@@ -49,8 +50,8 @@ __all__ = [
 
 # noinspection PyAttributeOutsideInit
 
-@CAMERAS.register(name="traffic_safety_camera")
-class TrafficSafetyCamera(BaseCamera):
+@CAMERAS.register(name="traffic_safety_camera_multithread")
+class TrafficSafetyCameraMultiThread(BaseCamera):
 
 	# MARK: Magic Functions
 
@@ -184,6 +185,7 @@ class TrafficSafetyCamera(BaseCamera):
 		else:
 			self.data_loader = VideoLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
 
+		# NOTE: to keep track process
 		self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
 
 	def check_and_create_folder(self, attr, data_writer_cfg: dict):
@@ -215,6 +217,16 @@ class TrafficSafetyCamera(BaseCamera):
 
 	# MARK: Run
 
+	def run_data_reader(self):
+		for images, indexes, _, _ in self.data_loader:
+			if len(indexes) == 0:
+				break
+			# NOTE: Push frame index and images to queue
+			self.frames_queue.put([indexes, images])
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.frames_queue.put([None, None])
+
 	def run_detector(self):
 		"""Run detection model with videos
 		"""
@@ -223,10 +235,12 @@ class TrafficSafetyCamera(BaseCamera):
 
 		# NOTE: run detection
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			for images, indexes, _, _ in self.data_loader:
-				# NOTE: pre process
+			while True:
+				# NOTE: Get frame indexes and images from queue
+				(indexes, images) = self.frames_queue.get()
+
 				# if finish loading
-				if len(indexes) == 0:
+				if indexes is None:
 					break
 
 				# get size of image
@@ -281,12 +295,12 @@ class TrafficSafetyCamera(BaseCamera):
 						}
 						out_dict.append(result_dict)
 
-				# DEBUG:
-				# cv2.imwrite(
-				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
-				# 	f"{name_index_image}.jpg",
-				# 	image_draw
-				# )
+					# DEBUG:
+					# cv2.imwrite(
+					# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
+					# 	f"{name_index_image}.jpg",
+					# 	image_draw
+					# )
 
 				self.pbar.update(len(indexes))
 
@@ -294,10 +308,17 @@ class TrafficSafetyCamera(BaseCamera):
 		"""Main run loop."""
 		self.run_routine_start()
 
-		# NOTE: run
-		self.run_detector()
-		self.detector.clear_model_memory()
-		self.detector = None
+		# NOTE: Threading for video reader
+		thread_video_reader = threading.Thread(target=self.run_data_reader)
+		thread_video_reader.start()
+
+		# NOTE: Threading for detector
+		thread_detector = threading.Thread(target=self.run_detector)
+		thread_detector.start()
+
+		# NOTE: Joins threads when all terminate
+		thread_video_reader.join()
+		thread_detector.join()
 
 		self.run_routine_end()
 
@@ -309,6 +330,10 @@ class TrafficSafetyCamera(BaseCamera):
 
 	def run_routine_end(self):
 		"""Perform operations when run routine ends."""
+		# NOTE: clear detector
+		self.detector.clear_model_memory()
+		self.detector = None
+
 		cv2.destroyAllWindows()
 		self.stop_time = timer()
 

@@ -8,7 +8,7 @@ export DIR_TSS=$DIR_CURRENT                         # src/motordriver
 export DIR_SOURCE=$DIR_TSS"/motordriver"            # src/motordriver/motordriver
 
 # Add data dir
-export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/"
+export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/images"
 
 # Add python path
 export PYTHONPATH=$PYTHONPATH:$PWD                              # .
@@ -26,7 +26,7 @@ cp -f $DIR_TSS"/configs/class_labels_7cls.json" $DIR_DATA"/class_labels_7cls.jso
 
 # NOTE: DETECTION
 echo "*********"
-echo "DETECTION"
+echo "RUNNING"
 echo "*********"
 python $DIR_TSS/main.py  \
   --config aic23.yaml  \

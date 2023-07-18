@@ -6,4 +6,5 @@
 
 from __future__ import annotations
 
-from .traffic_safety_camera import *
+from .traffic_safety_camera import TrafficSafetyCamera
+from .traffic_safety_camera_multithread import TrafficSafetyCameraMultiThread
