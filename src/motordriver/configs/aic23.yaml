@@ -18,8 +18,6 @@ data:
   # Input size as [H, W, C].
   frame_rate: &frame_rate 10
   # Frame rate of the video.
-  batch_size: &batch_size 10
-  # Number of samples in one forward & backward pass.
   process_num: 3
   # Number of processes which runs in parallel
 
@@ -27,11 +25,11 @@ data_loader:
   data: "images"
   # Data source. Can be a path to an image file, a directory, a video, or
   # a stream. It can also be a pathname pattern to images.
-  batch_size: *batch_size
+  batch_size: &batch_size 10
   # Number of samples in one forward & backward pass.
-#  data_path: "/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5/images/001"
+  data_path: "001"
   # Path to the dataset
-  # - video: */*.mp4
+  # - video: *.mp4
   # - images: dir
 
 detector:
@@ -54,7 +52,7 @@ detector:
   # Maximum detection overlap (non-maxima suppression threshold).
   device: &device "0"
   # CUDDevice, i.e. 0 or 0,1,2,3 or cpu
-  batch_size: 16
+  batch_size: *batch_size
   # Number of samples in one forward & backward pass.
   folder_out: "yolov8x6"
   # The output folder

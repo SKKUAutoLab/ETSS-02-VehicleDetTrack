@@ -15,7 +15,10 @@ from time import perf_counter
 import yaml
 
 from core.utils.rich import console
-from motordriver.cameras import TrafficSafetyCamera
+from motordriver.cameras import (
+	TrafficSafetyCamera,
+	TrafficSafetyCameraMultiThread
+)
 
 from configuration import (
 	data_dir,
@@ -47,12 +50,13 @@ parser.add_argument(
 	"--verbose", action='store_true', help="Should visualize the images."
 )
 
-Camera = TrafficSafetyCamera
-
-
 # MARK: - Main Function
 
 def main():
+	# NOTE: init camera
+	# Camera = TrafficSafetyCamera
+	Camera = TrafficSafetyCameraMultiThread
+
 	# NOTE: Start timer
 	process_start_time = perf_counter()
 	camera_start_time  = perf_counter()
@@ -69,6 +73,9 @@ def main():
 		"run_image"            : args.run_image,       # All run with image, not video
 		"function_write_final" : args.write_final,     # Writing final results.
 	}
+
+	# DEBUG: show camera config
+	# print(camera_cfg)
 
 	# NOTE: Define camera
 	camera           = Camera(**camera_cfg)
