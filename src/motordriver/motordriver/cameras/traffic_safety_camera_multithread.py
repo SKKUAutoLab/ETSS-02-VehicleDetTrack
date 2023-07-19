@@ -10,6 +10,7 @@ import os
 import threading
 import uuid
 import glob
+import random
 from queue import Queue
 from operator import itemgetter
 from timeit import default_timer as timer
@@ -34,7 +35,7 @@ from core.io.video import VideoLoader
 from core.io.picklewrap import PickleLoader
 from core.factory.builder import CAMERAS
 from core.factory.builder import DETECTORS
-from detectors.base import BaseDetector
+from detectors.detector import BaseDetector
 from configuration import (
 	data_dir,
 	config_dir
@@ -44,6 +45,9 @@ from cameras.base import BaseCamera
 __all__ = [
 	"TrafficSafetyCameraMultiThread"
 ]
+
+classes_aic23 = ['motorbike', 'DHelmet', 'DNoHelmet', 'P1Helmet',
+			   'P1NoHelmet', 'P2Helmet', 'P2NoHelmet']
 
 # MARK: - TrafficSafetyCamera
 
@@ -62,6 +66,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			name         : str,
 			detector     : dict,
 			identifier   : dict,
+			tracker      : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
@@ -108,6 +113,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.data_cfg        = data
 		self.detector_cfg    = detector
 		self.identifier_cfg  = identifier
+		self.tracker_cfg     = tracker
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
 
@@ -270,7 +276,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					indexes=indexes, images=images
 				)
 
-				# NOTE: Write the detection result
+				# NOTE: Process the detection result
 				for index_b, (index_image, batch) in enumerate(zip(indexes, batch_instances)):
 				# for index_b, batch in enumerate(batch_instances):
 					# DEBUG:
@@ -314,7 +320,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 						batch_detections.append(detection_result)
 
 					# NOTE: Push detections to queue
-					self.detections_queue.put([index_image, batch_detections])
+					self.detections_queue.put([index_image, images[index_b], batch_detections])
 
 					# DEBUG:
 					# cv2.imwrite(
@@ -326,10 +332,10 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# self.pbar.update(len(indexes))
 
 		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.detections_queue.put([None, None])
+		self.detections_queue.put([None, None, None])
 
 	def run_identifier(self):
-		"""Run detection model
+		"""Run identification model
 
 		Returns:
 
@@ -338,7 +344,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			while True:
 				# NOTE: Get batch detections from queue
-				(index_image, batch_detections) = self.detections_queue.get()
+				(index_frame, frame, batch_detections) = self.detections_queue.get()
 
 				if batch_detections is None:
 					break
@@ -358,10 +364,13 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# store result each crop image
 				batch_identifications = []
 
-				# NOTE: Write the full detection result
-				for index_b, (detection_result, batch) in enumerate(zip(batch_detections, batch_instances)):
-					for index_in, instance in enumerate(batch):
+				# NOTE: Process the full identify result
+				for index_b, (detection_result, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
+					for index_in, instance in enumerate(batch_instance):
 						bbox_xyxy     = [int(i) for i in instance.bbox]
+						instance_id   = f"{int(detection_result['frame_id']):06d}" \
+										f"{int(detection_result['crop_id']):03d}" \
+										f"{index_in:02d}"
 
 						# NOTE: add the coordinate from crop image to original image
 						# DEBUG: comment doan nay neu extract anh nho
@@ -375,21 +384,56 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
 							continue
 
-						identification_dict = {
-							'video_name': detection_result['video_name'],
-							'frame_id'  : detection_result['frame_id'],
-							'crop_id'   : index_b,
-							'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
-							'class_id'  : instance.class_label["train_id"],
-							'id'        : instance.class_label["id"],
-							'conf'      : (float(detection_result["conf"]) * instance.confidence),
-							'width_img' : detection_result['width_img'],
-							'height_img': detection_result['height_img']
+						identification_result = {
+							'video_name'  : detection_result['video_name'],
+							'frame_id'    : detection_result['frame_id'],
+							'instance_id' : instance_id,
+							'bbox'        : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
+							'class_id'    : instance.class_label["train_id"],
+							'id'          : instance.class_label["id"],
+							'conf'        : (float(detection_result["conf"]) * instance.confidence),
+							'width_img'   : detection_result['width_img'],
+							'height_img'  : detection_result['height_img']
 						}
-						batch_identifications.append(identification_dict)
+						batch_identifications.append(identification_result)
 
 				# NOTE: Push identifications to queue
-				# self.identifications_queue.put([index_image, batch_identifications])
+				self.identifications_queue.put([index_frame, frame, batch_identifications])
+
+				# self.pbar.update(1)
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.identifications_queue.put([None, None, None])
+
+	def run_tracker(self):
+		with torch.no_grad():  # phai them cai nay khong la bi memory leak
+			while True:
+				# NOTE: Get batch identification from queue
+				(index_frame, frame, batch_identifications) = self.identifications_queue.get()
+
+				if batch_identifications is None:
+					break
+
+				# DEBUG:
+				# image_draw = frame.copy()
+
+				# NOTE: Write the full identify result
+				for index_in, identification_result in enumerate(batch_identifications):
+					pass
+
+					# DEBUG:
+					# plot_one_box(
+					# 	bbox = identification_result['bbox'],
+					# 	img  = image_draw,
+					# 	label= classes_aic23[identification_result['class_id']]
+					# )
+
+				# DEBUG:
+				# cv2.imwrite(
+				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
+				# 	f"{identification_result['frame_id']:04d}.jpg",
+				# 	image_draw
+				# )
 
 				self.pbar.update(1)
 
@@ -409,10 +453,15 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		thread_identifier = threading.Thread(target=self.run_identifier)
 		thread_identifier.start()
 
+		# NOTE: Threading for tracker
+		thread_tracker = threading.Thread(target=self.run_tracker)
+		thread_tracker.start()
+
 		# NOTE: Joins threads when all terminate
 		thread_data_reader.join()
 		thread_detector.join()
 		thread_identifier.join()
+		thread_tracker.join()
 
 		self.run_routine_end()
 
@@ -490,3 +539,21 @@ def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	bbox_xyxy[2] = int(min(width_img - 1, cx + 0.5 * w))
 	bbox_xyxy[3] = int(min(height_img - 1, cy + 0.5 * h))
 	return bbox_xyxy
+
+
+def plot_one_box(bbox, img, color=None, label=None, line_thickness=1):
+	"""Plots one bounding box on image img
+
+	Returns:
+
+	"""
+	tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
+	color = color or [random.randint(0, 255) for _ in range(3)]
+	c1, c2 = (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3]))
+	cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
+	if label:
+		tf = max(tl - 1, 1)  # font thickness
+		t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+		c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+		cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
+		cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)

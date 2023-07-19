@@ -33,7 +33,7 @@ from core.io.video import VideoLoader
 from core.io.picklewrap import PickleLoader
 from core.factory.builder import CAMERAS
 from core.factory.builder import DETECTORS
-from detectors.base import BaseDetector
+from detectors.detector import BaseDetector
 from configuration import (
 	data_dir,
 	config_dir

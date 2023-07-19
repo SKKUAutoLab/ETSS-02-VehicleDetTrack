@@ -74,7 +74,7 @@ identifier:
     nc: 80
     # Number of classes.
   weights:
-  - "models_zoo/yolov8/yolov8x6_576_7cls_crop_both_v1/weights/best_781.pt"
+  - "models_zoo/yolov8/yolov8x6_320_7cls_crop_both_v2/weights/best_861.pt"
   # Pretrained weights file.
   shape: [512, 512, 3]
   # Input size as [C, H, W].
@@ -94,6 +94,23 @@ identifier:
     # Config file containing class_labels.
   queue_size: 30
   # Number of slot in the queue to store the identifier result
+
+tracker:
+  name: "yolov8_trafficsafety"
+  # Name of the detector model.
+  weights:
+  - "models_zoo/yolov8/yolov8x6_576_7cls_crop_both_v1/weights/best_781.pt"
+  device: *device
+  # CUDDevice, i.e. 0 or 0,1,2,3 or cpu
+  batch_size: 32
+  # Number of samples in one forward & backward pass.
+  folder_out: "yolov8x6"
+  # The output folder
+  class_labels:
+    file: "class_labels_7cls.json"
+    # Config file containing class_labels.
+  queue_size: 30
+    # Number of slot in the queue to store the identifier result
 
 data_writer:
   dst: "output_aic23"

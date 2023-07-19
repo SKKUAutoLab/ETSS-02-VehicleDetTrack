@@ -13,7 +13,6 @@ export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/T
 # Add python path
 export PYTHONPATH=$PYTHONPATH:$PWD                              # .
 export PYTHONPATH=$PYTHONPATH:$DIR_SOURCE                       # src/motordriver/motordriver
-export PYTHONPATH=$PYTHONPATH:$DIR_SOURCE/detectors/ultralytics # src/motordriver/motordriver
 
 export CUDA_LAUNCH_BLOCKING=1
 
