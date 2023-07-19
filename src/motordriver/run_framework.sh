@@ -24,13 +24,17 @@ START_TIME="$(date -u +%s.%N)"
 cp -f $DIR_TSS"/configs/class_labels_1cls.json" $DIR_DATA"/class_labels_1cls.json"
 cp -f $DIR_TSS"/configs/class_labels_7cls.json" $DIR_DATA"/class_labels_7cls.json"
 
-# NOTE: DETECTION
-echo "*********"
+# NOTE: RUNNING
+echo "*******"
 echo "RUNNING"
-echo "*********"
+echo "*******"
 python $DIR_TSS/main.py  \
   --config aic23.yaml  \
   --run_image
+
+echo "******"
+echo "ENDING"
+echo "******"
 
 ###########################################################################################################
 END_TIME="$(date -u +%s.%N)"

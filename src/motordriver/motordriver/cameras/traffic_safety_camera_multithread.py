@@ -97,6 +97,10 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				Size of queue store the information
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
+		# NOTE: Init attributes
+		self.start_time = None
+		self.pbar       = None
+
 		# NOTE: Define attributes
 		self.process      = process
 		self.verbose      = verbose
@@ -107,9 +111,6 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
 
-		self.start_time = None
-		self.pbar       = None
-
 		self.init_dirs()
 		self.init_data_loader(data_loader_cfg=self.data_loader_cfg)
 		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
@@ -118,9 +119,9 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.init_identifier(identifier=identifier)
 
 		# NOTE: Queue
-		self.frames_queue     = Queue(maxsize = queue_size)
-		self.detections_queue = Queue(maxsize = queue_size)
-		self.counting_queue   = Queue(maxsize = queue_size)
+		self.frames_queue          = Queue(maxsize = self.data_loader_cfg['queue_size'])
+		self.detections_queue      = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.identifications_queue = Queue(maxsize = self.identifier_cfg['queue_size'])
 
 	# MARK: Configure
 
@@ -276,7 +277,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					# image_draw = images[index_b].copy()
 
 					# store result each frame
-					out_dict = []
+					batch_detections = []
 
 					for index_in, instance in enumerate(batch):
 						# name_index_image = f"{index_image:08d}_{index_in:08d}"
@@ -310,7 +311,10 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 							'width_img' : width_img,
 							'height_img': height_img
 						}
-						out_dict.append(result_dict)
+						batch_detections.append(detection_result)
+
+					# NOTE: Push detections to queue
+					self.detections_queue.put([index_image, batch_detections])
 
 					# DEBUG:
 					# cv2.imwrite(
@@ -319,22 +323,94 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					# 	image_draw
 					# )
 
-				self.pbar.update(len(indexes))
+				# self.pbar.update(len(indexes))
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.detections_queue.put([None, None])
+
+	def run_identifier(self):
+		"""Run detection model
+
+		Returns:
+
+		"""
+		# NOTE: Run identification
+		with torch.no_grad():  # phai them cai nay khong la bi memory leak
+			while True:
+				# NOTE: Get batch detections from queue
+				(index_image, batch_detections) = self.detections_queue.get()
+
+				if batch_detections is None:
+					break
+
+				# Load crop images
+				crop_images = []
+				indexes = []
+				for detection_result in batch_detections:
+					crop_images.append(detection_result['crop_img'])
+					indexes.append(detection_result['crop_id'])
+
+				# NOTE: Identify batch of instances
+				batch_instances = self.identifier.detect(
+					indexes=indexes, images=crop_images
+				)
+
+				# store result each crop image
+				batch_identifications = []
+
+				# NOTE: Write the full detection result
+				for index_b, (detection_result, batch) in enumerate(zip(batch_detections, batch_instances)):
+					for index_in, instance in enumerate(batch):
+						bbox_xyxy     = [int(i) for i in instance.bbox]
+
+						# NOTE: add the coordinate from crop image to original image
+						# DEBUG: comment doan nay neu extract anh nho
+						bbox_xyxy[0] += int(detection_result["bbox"][0])
+						bbox_xyxy[1] += int(detection_result["bbox"][1])
+						bbox_xyxy[2] += int(detection_result["bbox"][0])
+						bbox_xyxy[3] += int(detection_result["bbox"][1])
+
+						# if size of bounding box is very small
+						if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
+								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
+							continue
+
+						identification_dict = {
+							'video_name': detection_result['video_name'],
+							'frame_id'  : detection_result['frame_id'],
+							'crop_id'   : index_b,
+							'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
+							'class_id'  : instance.class_label["train_id"],
+							'id'        : instance.class_label["id"],
+							'conf'      : (float(detection_result["conf"]) * instance.confidence),
+							'width_img' : detection_result['width_img'],
+							'height_img': detection_result['height_img']
+						}
+						batch_identifications.append(identification_dict)
+
+				# NOTE: Push identifications to queue
+				# self.identifications_queue.put([index_image, batch_identifications])
+
+				self.pbar.update(1)
 
 	def run(self):
 		"""Main run loop."""
 		self.run_routine_start()
 
-		# NOTE: Threading for video reader
-		thread_video_reader = threading.Thread(target=self.run_data_reader)
-		thread_video_reader.start()
+		# NOTE: Threading for data reader
+		thread_data_reader = threading.Thread(target=self.run_data_reader)
+		thread_data_reader.start()
 
 		# NOTE: Threading for detector
 		thread_detector = threading.Thread(target=self.run_detector)
 		thread_detector.start()
 
+		# NOTE: Threading for identifier
+		thread_identifier = threading.Thread(target=self.run_identifier)
+		thread_identifier.start()
+
 		# NOTE: Joins threads when all terminate
-		thread_video_reader.join()
+		thread_data_reader.join()
 		thread_detector.join()
 		thread_identifier.join()
 

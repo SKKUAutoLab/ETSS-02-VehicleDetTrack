@@ -31,6 +31,8 @@ data_loader:
   # Path to the dataset
   # - video: *.mp4
   # - images: dir
+  queue_size: *batch_size
+  # Number of slot in the queue to store the frame
 
 detector:
   name: "yolov8_trafficsafety"
@@ -57,8 +59,10 @@ detector:
   folder_out: "yolov8x6"
   # The output folder
   class_labels:
-    file: "class_labels_7cls.json"
+    file: "class_labels_1cls.json"
     # Config file containing class_labels.
+  queue_size: 30
+  # Number of slot in the queue to store the detection result
 
 identifier:
   name: "yolov8_trafficsafety"
@@ -88,6 +92,8 @@ identifier:
   class_labels:
     file: "class_labels_7cls.json"
     # Config file containing class_labels.
+  queue_size: 30
+  # Number of slot in the queue to store the identifier result
 
 data_writer:
   dst: "output_aic23"
