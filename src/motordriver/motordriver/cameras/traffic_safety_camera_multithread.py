@@ -115,6 +115,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
 		self.init_class_labels(class_labels=self.detector_cfg['class_labels'])
 		self.init_detector(detector=detector)
+		self.init_identifier(identifier=identifier)
 
 		# NOTE: Queue
 		self.frames_queue     = Queue(maxsize = queue_size)
@@ -172,6 +173,22 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			self.detector = DETECTORS.build(**detector)
 		else:
 			raise ValueError(f"Cannot initialize detector with {detector}.")
+
+	def init_identifier(self, identifier: Union[BaseDetector, dict]):
+		"""Initialize identifier.
+
+		Args:
+			identifier (BaseDetector, dict):
+				Identifier object or a identifier's config dictionary.
+		"""
+		console.log(f"Initiate Identifier.")
+		if isinstance(identifier, BaseDetector):
+			self.identifier = identifier
+		elif isinstance(identifier, dict):
+			identifier["class_labels"] = self.class_labels
+			self.identifier = DETECTORS.build(**identifier)
+		else:
+			raise ValueError(f"Cannot initialize detector with {identifier}.")
 
 	def init_data_loader(self, data_loader_cfg: dict):
 		"""Initialize data loader.
@@ -262,7 +279,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					out_dict = []
 
 					for index_in, instance in enumerate(batch):
-						name_index_image = f"{index_image:08d}_{index_in:08d}"
+						# name_index_image = f"{index_image:08d}_{index_in:08d}"
 						bbox_xyxy = [int(i) for i in instance.bbox]
 
 						# if size of bounding box is very small
@@ -281,7 +298,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 						# print(bbox_xyxy)
 						# cv2.rectangle(image_draw, (bbox_xyxy[0], bbox_xyxy[1]), (bbox_xyxy[2], bbox_xyxy[3]), (125, 125, 125), 4, cv2.LINE_AA)  # filled
 
-						result_dict = {
+						detection_result = {
 							'video_name': self.data_loader_cfg['data_path'],
 							'frame_id'  : index_image,
 							'crop_id'   : index_in,
@@ -319,6 +336,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		# NOTE: Joins threads when all terminate
 		thread_video_reader.join()
 		thread_detector.join()
+		thread_identifier.join()
 
 		self.run_routine_end()
 
@@ -336,6 +354,8 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 
 		cv2.destroyAllWindows()
 		self.stop_time = timer()
+		if self.pbar is not None:
+			self.pbar.close()
 
 	def postprocess(self, image: np.ndarray, *args, **kwargs):
 		"""Perform some postprocessing operations when a run step end.

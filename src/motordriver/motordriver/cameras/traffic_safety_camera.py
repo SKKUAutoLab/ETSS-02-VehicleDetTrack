@@ -267,7 +267,7 @@ class TrafficSafetyCamera(BaseCamera):
 						# print(bbox_xyxy)
 						# cv2.rectangle(image_draw, (bbox_xyxy[0], bbox_xyxy[1]), (bbox_xyxy[2], bbox_xyxy[3]), (125, 125, 125), 4, cv2.LINE_AA)  # filled
 
-						result_dict = {
+						detection_result = {
 							'video_name': self.data_loader_cfg['data_path'],
 							'frame_id'  : index_image,
 							'crop_id'   : index_in,

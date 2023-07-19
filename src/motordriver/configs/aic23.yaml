@@ -70,10 +70,6 @@ identifier:
     nc: 80
     # Number of classes.
   weights:
-  - "models_zoo/yolov8/yolov8x6_320_7cls_crop_both_v2/weights/best.pt"
-  - "models_zoo/yolov8/yolov8x6_384_7cls_crop_both_v1/weights/best.pt"
-  - "models_zoo/yolov8/yolov8x6_448_7cls_crop_both_v1/weights/best.pt"
-  - "models_zoo/yolov8/yolov8x6_512_7cls_crop_both_v1/weights/best.pt"
   - "models_zoo/yolov8/yolov8x6_576_7cls_crop_both_v1/weights/best_781.pt"
   # Pretrained weights file.
   shape: [512, 512, 3]
