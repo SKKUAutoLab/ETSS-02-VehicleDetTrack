@@ -27,7 +27,7 @@ data_loader:
   # a stream. It can also be a pathname pattern to images.
   batch_size: &batch_size 10
   # Number of samples in one forward & backward pass.
-  data_path: "001"
+  data_path: "002"
   # Path to the dataset
   # - video: *.mp4
   # - images: dir

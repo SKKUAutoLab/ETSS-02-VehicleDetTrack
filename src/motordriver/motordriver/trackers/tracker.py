@@ -87,7 +87,7 @@ class Tracker(metaclass=abc.ABCMeta):
 			detections (any):
 				The newly detections.
 		"""
-		printe("``update_matched_tracks()`` has not been implemented yet")
+		error_console.log("``update_matched_tracks()`` has not been implemented yet")
 		raise NotImplementedError
 	
 	def create_new_tracks(
@@ -103,13 +103,13 @@ class Tracker(metaclass=abc.ABCMeta):
 			detections (any):
 				The newly detections.
 		"""
-		printe("``create_new_tracks()`` has not been implemented yet")
+		error_console.log("``create_new_tracks()`` has not been implemented yet")
 		raise NotImplementedError
 	
 	def delete_dead_tracks(self):
 		"""Delete dead tracks.
 		"""
-		printe("``delete_dead_tracks()`` has not been implemented yet")
+		error_console.log("``delete_dead_tracks()`` has not been implemented yet")
 		raise NotImplementedError
 	
 	def associate_detections_to_tracks(self, dets: Any, trks: Any, **kwargs):
@@ -126,5 +126,5 @@ class Tracker(metaclass=abc.ABCMeta):
 		Returns:
 			3 lists of matches, unmatched_detections and unmatched_trackers
 		"""
-		printe("``associate_detections_to_trackers()`` has not been implemented yet")
+		error_console.log("``associate_detections_to_trackers()`` has not been implemented yet")
 		raise NotImplementedError

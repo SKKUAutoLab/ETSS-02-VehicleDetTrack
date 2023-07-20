@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import threading
 import uuid
 import glob
@@ -279,15 +280,12 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# NOTE: Process the detection result
 				for index_b, (index_image, batch) in enumerate(zip(indexes, batch_instances)):
 				# for index_b, batch in enumerate(batch_instances):
-					# DEBUG:
-					# image_draw = images[index_b].copy()
-
 					# store result each frame
 					batch_detections = []
 
 					for index_in, instance in enumerate(batch):
-						# name_index_image = f"{index_image:08d}_{index_in:08d}"
 						bbox_xyxy = [int(i) for i in instance.bbox]
+						crop_id   = [int(index_image), int(index_in)]
 
 						# if size of bounding box is very small
 						# because the heuristic need the bigger bounding box
@@ -299,35 +297,22 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 						bbox_xyxy  = scaleup_bbox(bbox_xyxy, height_img, width_img, ratio=1.5, padding=60)
 						crop_image = images[index_b][bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
 
-						# DEBUG:
-						# if instance.confidence < 0.1:
-						# 	continue
-						# print(bbox_xyxy)
-						# cv2.rectangle(image_draw, (bbox_xyxy[0], bbox_xyxy[1]), (bbox_xyxy[2], bbox_xyxy[3]), (125, 125, 125), 4, cv2.LINE_AA)  # filled
-
 						detection_result = {
-							'video_name': self.data_loader_cfg['data_path'],
-							'frame_id'  : index_image,
-							'crop_id'   : index_in,
-							'crop_img'  : crop_image,
-							'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
-							'class_id'  : instance.class_label["train_id"],
-							'id'        : instance.class_label["id"],
-							'conf'      : instance.confidence,
-							'width_img' : width_img,
-							'height_img': height_img
+							'video_name'  : self.data_loader_cfg['data_path'],
+							'frame_index' : index_image,
+							'image'       : crop_image,
+							'bbox'        : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
+							'class_id'    : instance.class_label["train_id"],
+							'id_'         : crop_id,
+							'confidence'  : instance.confidence,
+							'image_size'  : [width_img,height_img]
 						}
-						batch_detections.append(detection_result)
+
+						detection_instance = Instance(**detection_result)
+						batch_detections.append(detection_instance)
 
 					# NOTE: Push detections to queue
 					self.detections_queue.put([index_image, images[index_b], batch_detections])
-
-					# DEBUG:
-					# cv2.imwrite(
-					# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
-					# 	f"{name_index_image}.jpg",
-					# 	image_draw
-					# )
 
 				# self.pbar.update(len(indexes))
 
@@ -352,9 +337,9 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# Load crop images
 				crop_images = []
 				indexes = []
-				for detection_result in batch_detections:
-					crop_images.append(detection_result['crop_img'])
-					indexes.append(detection_result['crop_id'])
+				for detection_instance in batch_detections:
+					crop_images.append(detection_instance.image)
+					indexes.append(detection_instance.id_[1])
 
 				# NOTE: Identify batch of instances
 				batch_instances = self.identifier.detect(
@@ -365,19 +350,17 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				batch_identifications = []
 
 				# NOTE: Process the full identify result
-				for index_b, (detection_result, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
+				for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
 					for index_in, instance in enumerate(batch_instance):
 						bbox_xyxy     = [int(i) for i in instance.bbox]
-						instance_id   = f"{int(detection_result['frame_id']):06d}" \
-										f"{int(detection_result['crop_id']):03d}" \
-										f"{index_in:02d}"
+						instance_id   = detection_instance.id_.append(int(index_in))
 
 						# NOTE: add the coordinate from crop image to original image
 						# DEBUG: comment doan nay neu extract anh nho
-						bbox_xyxy[0] += int(detection_result["bbox"][0])
-						bbox_xyxy[1] += int(detection_result["bbox"][1])
-						bbox_xyxy[2] += int(detection_result["bbox"][0])
-						bbox_xyxy[3] += int(detection_result["bbox"][1])
+						bbox_xyxy[0] += int(detection_instance.bbox[0])
+						bbox_xyxy[1] += int(detection_instance.bbox[1])
+						bbox_xyxy[2] += int(detection_instance.bbox[0])
+						bbox_xyxy[3] += int(detection_instance.bbox[1])
 
 						# if size of bounding box is very small
 						if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
@@ -417,9 +400,14 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# DEBUG:
 				# image_draw = frame.copy()
 
-				# NOTE: Write the full identify result
-				for index_in, identification_result in enumerate(batch_identifications):
-					pass
+				# NOTE: Track (in batch)
+				self.tracker.update(detections=batch_identifications)
+				gmos = self.tracker.tracks
+
+				# NOTE: Update moving state
+				for gmo in gmos:
+					# gmo.update_moving_state(rois=self.rois)
+					# gmo.timestamps.append(timer())
 
 					# DEBUG:
 					# plot_one_box(
