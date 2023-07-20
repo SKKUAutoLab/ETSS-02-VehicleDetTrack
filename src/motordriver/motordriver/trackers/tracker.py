@@ -31,8 +31,8 @@ from typing import Union
 
 import numpy as np
 
-from tfe.road_objects import GMO
-
+from core.objects import GMO
+from core.utils.rich import console, error_console
 
 # MARK: - Tracker
 
@@ -71,7 +71,7 @@ class Tracker(metaclass=abc.ABCMeta):
 		Requires:
 			This method must be called once for each frame even with empty detections, just call update with empty container.
 		"""
-		printe("``update()`` has not been implemented yet")
+		error_console.log("``update()`` has not been implemented yet")
 		raise NotImplementedError
 	
 	def update_matched_tracks(

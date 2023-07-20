@@ -23,14 +23,25 @@ from typing import Union
 import numpy as np
 from filterpy.kalman import KalmanFilter
 
-from tfe.detector import Detection
-from tfe.road_objects import GMO
-from tfe.tracker import Tracker
-from tfe.ops import bbox_xyxy_to_z
-from tfe.ops import iou_batch
-from tfe.ops import x_to_bbox_xyxy
+from core.factory.builder import TRACKERS
+from core.objects import (
+	GMO,
+	MovingModel,
+	MotionModel,
+	Instance
+)
+from trackers.tracker import Tracker
+from core.utils.bbox import (
+	bbox_xyxy_to_z,
+	batch_bbox_iou,
+	x_to_bbox_xyxy
+)
 
 np.random.seed(0)
+
+__all__ = [
+	"Sort"
+]
 
 
 # MARK: - Track
@@ -60,11 +71,11 @@ class KalmanBBoxTrack(GMO):
 		self.kf.x[:4] = bbox_xyxy_to_z(self.current_bbox)
 	
 	@classmethod
-	def track_from_detection(cls, detection: Detection, **kwargs):
-		"""Create ``GMO`` object from ``Detection`` object.
+	def track_from_detection(cls, detection: Instance, **kwargs):
+		"""Create ``GMO`` object from ``Instance`` object.
 		
 		Args:
-			detection (Detection):
+			detection (Instance):
 		
 		Returns:
 			gmo (GMO):
@@ -122,6 +133,7 @@ class KalmanBBoxTrack(GMO):
 
 # MARK: - Tracker
 
+@TRACKERS.register(name="sort")
 class Sort(Tracker):
 	"""Sort (Simple Online Realtime Tracker)
 	
@@ -136,12 +148,12 @@ class Sort(Tracker):
 		
 	# MARK: Update
 	
-	def update(self, detections: List[Detection]):
+	def update(self, detections: List[Instance]):
 		"""Update ``self.tracks`` with new detections.
 		
 		Args:
 			detections (list):
-				The list of newly ``Detection`` objects.
+				The list of newly ``Instance`` objects.
 		
 		Requires:
 			This method must be called once for each frame even with empty detections, just call update with empty list [].
@@ -185,7 +197,7 @@ class Sort(Tracker):
 	def update_matched_tracks(
 		self,
 		matched   : Union[List, np.ndarray],
-		detections: List[Detection]
+		detections: List[Instance]
 	):
 		"""Update the track that has been matched with new detection
 		
@@ -208,7 +220,7 @@ class Sort(Tracker):
 	def create_new_tracks(
 		self,
 		unmatched_dets: Union[List, np.ndarray],
-		detections    : List[Detection]
+		detections    : List[Instance]
 	):
 		"""Create new tracks.
 		
@@ -245,7 +257,7 @@ class Sort(Tracker):
 		
 		Args:
 			dets (np.ndarray):
-				The list of newly ``Detection`` objects.
+				The list of newly ``Instance`` objects.
 			trks (np.ndarray):
 
 		Returns:
@@ -254,7 +266,7 @@ class Sort(Tracker):
 		if len(trks) == 0:
 			return np.empty((0, 2), dtype=int), np.arange(len(dets)), np.empty((0, 5), dtype=int)
 		
-		iou_matrix = iou_batch(dets, trks)
+		iou_matrix = batch_bbox_iou(dets, trks)
 		
 		if min(iou_matrix.shape) > 0:
 			a = (iou_matrix > self.iou_threshold).astype(np.int32)

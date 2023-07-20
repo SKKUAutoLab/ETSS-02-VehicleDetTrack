@@ -26,17 +26,19 @@ from core.data.class_label import ClassLabels
 from core.io.filedir import is_basename
 from core.io.filedir import is_json_file
 from core.io.filedir import is_stem
-from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
-from core.utils.rich import console
-from core.utils.constants import AppleRGB
 from core.io.frame import FrameLoader
 from core.io.frame import FrameWriter
 from core.io.video import is_video_file
 from core.io.video import VideoLoader
 from core.io.picklewrap import PickleLoader
-from core.factory.builder import CAMERAS
+from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
+from core.utils.rich import console
+from core.utils.constants import AppleRGB
+from core.objects.instance import Instance
+from core.factory.builder import CAMERAS, TRACKERS
 from core.factory.builder import DETECTORS
 from detectors.detector import BaseDetector
+from trackers.tracker import Tracker
 from configuration import (
 	data_dir,
 	config_dir
@@ -47,6 +49,8 @@ __all__ = [
 	"TrafficSafetyCameraMultiThread"
 ]
 
+
+# NOTE: only for ACI23_Track_5
 classes_aic23 = ['motorbike', 'DHelmet', 'DNoHelmet', 'P1Helmet',
 			   'P1NoHelmet', 'P2Helmet', 'P2NoHelmet']
 
@@ -124,6 +128,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.init_class_labels(class_labels=self.detector_cfg['class_labels'])
 		self.init_detector(detector=detector)
 		self.init_identifier(identifier=identifier)
+		self.init_tracker(tracker=tracker)
 
 		# NOTE: Queue
 		self.frames_queue          = Queue(maxsize = self.data_loader_cfg['queue_size'])
@@ -197,6 +202,21 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			self.identifier = DETECTORS.build(**identifier)
 		else:
 			raise ValueError(f"Cannot initialize detector with {identifier}.")
+
+	def init_tracker(self, tracker: Union[Tracker, dict]):
+		"""Initialize tracker.
+
+		Args:
+			tracker (Tracker, dict):
+				Tracker object or a tracker's config dictionary.
+		"""
+		console.log(f"Initiate Tracker.")
+		if isinstance(tracker, Tracker):
+			self.tracker = tracker
+		elif isinstance(tracker, dict):
+			self.tracker = TRACKERS.build(**tracker)
+		else:
+			raise ValueError(f"Cannot initialize detector with {tracker}.")
 
 	def init_data_loader(self, data_loader_cfg: dict):
 		"""Initialize data loader.
@@ -368,17 +388,17 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 							continue
 
 						identification_result = {
-							'video_name'  : detection_result['video_name'],
-							'frame_id'    : detection_result['frame_id'],
-							'instance_id' : instance_id,
-							'bbox'        : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
-							'class_id'    : instance.class_label["train_id"],
-							'id'          : instance.class_label["id"],
-							'conf'        : (float(detection_result["conf"]) * instance.confidence),
-							'width_img'   : detection_result['width_img'],
-							'height_img'  : detection_result['height_img']
+							'video_name'    : detection_instance.video_name,
+							'frame_index'   : detection_instance.frame_index,
+							'bbox'          : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'class_id'      : instance.class_label["train_id"],
+							'id'            : instance_id,
+							'confidence'    : (float(detection_instance.confidence) * instance.confidence),
+							'image_size'    : detection_instance.image_size
 						}
-						batch_identifications.append(identification_result)
+
+						identification_instance = Instance(**identification_result)
+						batch_identifications.append(identification_instance)
 
 				# NOTE: Push identifications to queue
 				self.identifications_queue.put([index_frame, frame, batch_identifications])
@@ -398,7 +418,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					break
 
 				# DEBUG:
-				# image_draw = frame.copy()
+				image_draw = frame.copy()
 
 				# NOTE: Track (in batch)
 				self.tracker.update(detections=batch_identifications)
@@ -410,18 +430,21 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 					# gmo.timestamps.append(timer())
 
 					# DEBUG:
-					# plot_one_box(
-					# 	bbox = identification_result['bbox'],
-					# 	img  = image_draw,
-					# 	label= classes_aic23[identification_result['class_id']]
-					# )
+					# print(dir(gmo))
+					# print(gmo.current_label)
+					plot_one_box(
+						bbox = gmo.bboxes[-1],
+						img  = image_draw,
+						color= AppleRGB.values()[gmo.current_label],
+						label= f"{classes_aic23[gmo.current_label]}::{gmo.id % 1000}"
+					)
 
 				# DEBUG:
-				# cv2.imwrite(
-				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
-				# 	f"{identification_result['frame_id']:04d}.jpg",
-				# 	image_draw
-				# )
+				cv2.imwrite(
+					f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}/" \
+					f"{batch_identifications[0].frame_index:04d}.jpg",
+					image_draw
+				)
 
 				self.pbar.update(1)
 

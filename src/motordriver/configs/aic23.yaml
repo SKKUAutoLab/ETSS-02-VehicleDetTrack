@@ -96,7 +96,7 @@ identifier:
   # Number of slot in the queue to store the identifier result
 
 tracker:
-  name: "yolov8_trafficsafety"
+  name: "sort"
   # Name of the detector model.
   weights:
   - "models_zoo/yolov8/yolov8x6_576_7cls_crop_both_v1/weights/best_781.pt"

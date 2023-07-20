@@ -72,6 +72,9 @@ class Instance:
 		*args, **kwargs
 	):
 		super().__init__()
+		self.roi_uuid = None
+		self.label    = class_id
+
 		self.id_         = id_
 		self.roi_id      = roi_id
 		self.bbox        = bbox
