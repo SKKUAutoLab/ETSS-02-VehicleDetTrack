@@ -56,7 +56,7 @@ class Instance:
 	# SUGAR: co add them may attribute
 	def __init__(
 		self,
-		id_        : Union[int, str, list]      = uuid.uuid4().int,
+		id         : Union[int, str, list]      = uuid.uuid4().int,
 		roi_id     : Union[int, str, None]      = None,
 		bbox       : Optional[np.ndarray]       = None,
 		polygon    : Optional[np.ndarray]       = None,
@@ -75,7 +75,7 @@ class Instance:
 		self.roi_uuid = None
 		self.label    = class_id
 
-		self.id_         = id_
+		self.id          = id
 		self.roi_id      = roi_id
 		self.bbox        = bbox
 		self.polygon     = polygon

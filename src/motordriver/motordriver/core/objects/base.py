@@ -46,7 +46,7 @@ class BaseObject:
 
 	def __init__(
 		self,
-		id_      : Union[int, str]                 = uuid.uuid4().int,
+		id      : Union[int, str]                 = uuid.uuid4().int,
 		instance : Optional[Union[list, Instance]] = None,
 		timestamp: float 					   	   = timer(),
 		*args, **kwargs
@@ -54,7 +54,7 @@ class BaseObject:
 		"""
 
 		Args:
-			id_ (int, str):
+			id (int, str):
 				Object unique ID.
 			instance (list, Instance, optional):
 				List of all instances of this object. Default: `None`.
@@ -62,7 +62,7 @@ class BaseObject:
 				Time when the object is created.
 		"""
 		super().__init__()
-		self.id_       = id_
+		self.id        = id
 		self.timestamp = timestamp
 		self.instances : list[Instance] = []
 
