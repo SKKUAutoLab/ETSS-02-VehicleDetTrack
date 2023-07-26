@@ -33,7 +33,7 @@ from core.io.video import VideoLoader
 from core.io.picklewrap import PickleLoader
 from core.factory.builder import CAMERAS
 from core.factory.builder import DETECTORS
-from detectors.base import BaseDetector
+from detectors.detector import BaseDetector
 from configuration import (
 	data_dir,
 	config_dir
@@ -96,18 +96,19 @@ class TrafficSafetyCamera(BaseCamera):
 				Size of queue store the information
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
+		# NOTE: Init attributes
+		self.start_time = None
+		self.pbar       = None
+
 		# NOTE: Define attributes
 		self.process      = process
 		self.verbose      = verbose
 
 		self.data_cfg        = data
-		self.detector_cfg    = detector
-		self.identifier_cfg  = identifier
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
-
-		self.start_time = None
-		self.pbar       = None
+		self.detector_cfg    = detector
+		self.identifier_cfg  = identifier
 
 		self.init_dirs()
 		self.init_data_loader(data_loader_cfg=self.data_loader_cfg)
@@ -116,9 +117,9 @@ class TrafficSafetyCamera(BaseCamera):
 		self.init_detector(detector=detector)
 
 		# NOTE: Queue
-		self.frames_queue     = Queue(maxsize = queue_size)
-		self.detections_queue = Queue(maxsize = queue_size)
-		self.counting_queue   = Queue(maxsize = queue_size)
+		self.frames_queue          = Queue(maxsize = self.data_loader_cfg['queue_size'])
+		self.detections_queue      = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.identifications_queue = Queue(maxsize = self.identifier_cfg['queue_size'])
 
 	# MARK: Configure
 
@@ -245,7 +246,7 @@ class TrafficSafetyCamera(BaseCamera):
 					# image_draw = images[index_b].copy()
 
 					# store result each frame
-					out_dict = []
+					batch_detections = []
 
 					for index_in, instance in enumerate(batch):
 						name_index_image = f"{index_image:08d}_{index_in:08d}"
@@ -267,7 +268,7 @@ class TrafficSafetyCamera(BaseCamera):
 						# print(bbox_xyxy)
 						# cv2.rectangle(image_draw, (bbox_xyxy[0], bbox_xyxy[1]), (bbox_xyxy[2], bbox_xyxy[3]), (125, 125, 125), 4, cv2.LINE_AA)  # filled
 
-						result_dict = {
+						detection_result = {
 							'video_name': self.data_loader_cfg['data_path'],
 							'frame_id'  : index_image,
 							'crop_id'   : index_in,
@@ -279,14 +280,78 @@ class TrafficSafetyCamera(BaseCamera):
 							'width_img' : width_img,
 							'height_img': height_img
 						}
-						out_dict.append(result_dict)
+						batch_detections.append(detection_result)
 
-				# DEBUG:
-				# cv2.imwrite(
-				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
-				# 	f"{name_index_image}.jpg",
-				# 	image_draw
-				# )
+					# NOTE: Push detections to queue
+					self.detections_queue.put([indexes, batch_detections])
+
+					# DEBUG:
+					# cv2.imwrite(
+					# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
+					# 	f"{name_index_image}.jpg",
+					# 	image_draw
+					# )
+
+				# self.pbar.update(len(indexes))
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.detections_queue.put([None, None])
+
+	def run_identifier(self):
+		"""Run detection model
+
+		Returns:
+
+		"""
+		# NOTE: Run identification
+		with torch.no_grad():  # phai them cai nay khong la bi memory leak
+			while True:
+				# NOTE: Get batch detections from queue
+				(indexes, batch_detections) = self.detections_queue.get()
+
+				if batch_detections is None:
+					break
+
+				for idx, detection_result in enumerate(batch_detections):
+					crop_images = []
+					# # Load crop images
+					# for pkl in pickles:
+					# 	crop_images.append(pkl['crop_img'])
+					#
+					# # NOTE: Identify batch of instances
+					# batch_instances = self.identifier.detect(
+					# 	indexes=indexes, images=crop_images
+					# )
+					#
+					# # NOTE: Write the full detection result
+					# for index_b, (crop_dict, batch) in enumerate(zip(pickles, batch_instances)):
+					# 	for index_in, instance in enumerate(batch):
+					# 		bbox_xyxy     = [int(i) for i in instance.bbox]
+					#
+					# 		# NOTE: add the coordinate from crop image to original image
+					# 		# DEBUG: comment doan nay neu extract anh nho
+					# 		bbox_xyxy[0] += int(crop_dict["bbox"][0])
+					# 		bbox_xyxy[1] += int(crop_dict["bbox"][1])
+					# 		bbox_xyxy[2] += int(crop_dict["bbox"][0])
+					# 		bbox_xyxy[3] += int(crop_dict["bbox"][1])
+					#
+					# 		# if size of bounding box is very small
+					# 		if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
+					# 				or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
+					# 			continue
+					#
+					# 		result_dict = {
+					# 			'video_name': crop_dict['video_name'],
+					# 			'frame_id'  : crop_dict['frame_id'],
+					# 			'crop_id'   : index_b,
+					# 			'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
+					# 			'class_id'  : instance.class_label["train_id"],
+					# 			'id'        : instance.class_label["id"],
+					# 			'conf'      : (float(crop_dict["conf"]) * instance.confidence),
+					# 			'width_img' : crop_dict['width_img'],
+					# 			'height_img': crop_dict['height_img']
+					# 		}
+					# 		out_dict.append(result_dict)
 
 				self.pbar.update(len(indexes))
 
@@ -294,10 +359,13 @@ class TrafficSafetyCamera(BaseCamera):
 		"""Main run loop."""
 		self.run_routine_start()
 
-		# NOTE: run
+		# NOTE: run detector
 		self.run_detector()
 		self.detector.clear_model_memory()
 		self.detector = None
+
+		# NOTE: run identification
+		self.run_identifier()
 
 		self.run_routine_end()
 

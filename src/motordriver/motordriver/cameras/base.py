@@ -24,7 +24,7 @@ class BaseCamera(metaclass=abc.ABCMeta):
     """Base Camera class.
 
     Attributes:
-        id_ (int, str):
+        id  (int, str):
             Camera's unique ID.
         dataset (str):
             Dataset name. It is also the name of the directory inside
@@ -46,7 +46,7 @@ class BaseCamera(metaclass=abc.ABCMeta):
         super().__init__()
         assert dataset is not None
         assert name    is not None
-        self.id_     = id_
+        self.id      = id
         self.dataset = dataset
         self.name    = name
 

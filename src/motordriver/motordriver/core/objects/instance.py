@@ -56,27 +56,38 @@ class Instance:
 	# SUGAR: co add them may attribute
 	def __init__(
 		self,
-		id_        : Union[int, str]	   = uuid.uuid4().int,
-		roi_id     : Union[int, str, None] = None,
-		bbox       : Optional[np.ndarray]  = None,
-		polygon    : Optional[np.ndarray]  = None,
-		confidence : Optional[float]       = None,
-		class_label: Optional[dict]        = None,
-		frame_index: Optional[int]         = None,
-		timestamp  : float                 = timer(),
-		feature                            = None,
+		id         : Union[int, str, list]      = uuid.uuid4().int,
+		roi_id     : Union[int, str, None]      = None,
+		bbox       : Optional[np.ndarray]       = None,
+		polygon    : Optional[np.ndarray]       = None,
+		confidence : Optional[float]            = None,
+		class_label: Optional[dict]             = None,
+		frame_index: Optional[int]              = None,
+		class_id   : Optional[int]              = None,
+		image_size : Optional[list, np.ndarray] = None,
+		video_name : Optional[str]              = None,
+		timestamp  : float                      = timer(),
+		feature                                 = None,
+		image                                   = None,
 		*args, **kwargs
 	):
 		super().__init__()
-		self.id_         = id_
+		self.roi_uuid = None
+		self.label    = class_id
+
+		self.id          = id
 		self.roi_id      = roi_id
 		self.bbox        = bbox
 		self.polygon     = polygon
 		self.confidence  = confidence
 		self.class_label = class_label
 		self.frame_index = frame_index
+		self.class_id    = class_id
+		self.image_size  = image_size
+		self.video_name  = video_name
 		self.timestamp   = timestamp
 		self.feature     = feature
+		self.image       = image
 	
 	# MARK: Properties
 	

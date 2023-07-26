@@ -72,7 +72,6 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			detector     : dict,
 			identifier   : dict,
 			tracker      : dict,
-			matching     : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
@@ -109,23 +108,20 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
 		# NOTE: Init attributes
-		self.start_time      = None
-		self.pbar            = None
+		self.start_time = None
+		self.pbar       = None
 
 		# NOTE: Define attributes
-		self.process         = process
-		self.verbose         = verbose
+		self.process      = process
+		self.verbose      = verbose
 
-		# NOTE: Define configurations
 		self.data_cfg        = data
 		self.detector_cfg    = detector
 		self.identifier_cfg  = identifier
 		self.tracker_cfg     = tracker
-		self.matching        = matching
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
 
-		# NOTE: Init modules
 		self.init_dirs()
 		self.init_data_loader(data_loader_cfg=self.data_loader_cfg)
 		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
@@ -135,10 +131,9 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.init_tracker(tracker=tracker)
 
 		# NOTE: Queue
-		self.frames_queue                 = Queue(maxsize = self.data_loader_cfg['queue_size'])
-		self.detections_queue_identifier  = Queue(maxsize = self.detector_cfg['queue_size'])
-		self.detections_queue_tracker     = Queue(maxsize = self.detector_cfg['queue_size'])
-		self.identifications_queue        = Queue(maxsize = self.identifier_cfg['queue_size'])
+		self.frames_queue          = Queue(maxsize = self.data_loader_cfg['queue_size'])
+		self.detections_queue      = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.identifications_queue = Queue(maxsize = self.identifier_cfg['queue_size'])
 
 	# MARK: Configure
 
@@ -306,12 +301,11 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				for index_b, (index_image, batch) in enumerate(zip(indexes, batch_instances)):
 				# for index_b, batch in enumerate(batch_instances):
 					# store result each frame
-					batch_detections_identifier = []
-					batch_detections_tracker    = []
+					batch_detections = []
 
 					for index_in, instance in enumerate(batch):
 						bbox_xyxy = [int(i) for i in instance.bbox]
-						crop_id        = [int(index_image), int(index_in)]
+						crop_id   = [int(index_image), int(index_in)]
 
 						# if size of bounding box is very small
 						# because the heuristic need the bigger bounding box
@@ -319,57 +313,38 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
 							continue
 
-						# NOTE: crop the bounding box for identifier, add 60 or 1.5 scale
+						# NOTE: crop the bounding box, add 60 or 1.5 scale
 						bbox_xyxy  = scaleup_bbox(
 							bbox_xyxy,
 							height_img,
 							width_img,
-							ratio   = 1.5,
-							padding = 60
+							ratio=1.5,
+							padding=60
 						)
+						crop_image = images[index_b][bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
+
+						# transfer the result
 						detection_result = {
 							'video_name'  : self.data_loader_cfg['data_path'],
 							'frame_index' : index_image,
-							'image'       : images[index_b][bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]],
-							'bbox'        : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'image'       : crop_image,
+							'bbox'        : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
 							'class_id'    : instance.class_label["train_id"],
-							'id'          : crop_id,
+							'id_'         : crop_id,
 							'confidence'  : instance.confidence,
 							'image_size'  : [width_img, height_img]
 						}
-						# detection_instance = Instance(**detection_result)
-						batch_detections_identifier.append(Instance(**detection_result))
 
-						# NOTE: crop the bounding box for tracker, add 40 or 1.2 scale
-						bbox_xyxy = [int(i) for i in instance.bbox]
-						bbox_xyxy = scaleup_bbox(
-							bbox_xyxy,
-							height_img,
-							width_img,
-							ratio   = 1.0,
-							padding = 0
-						)
-						detection_result = {
-							'video_name' : self.data_loader_cfg['data_path'],
-							'frame_index': index_image,
-							'image'      : images[index_b][bbox_xyxy[1]: bbox_xyxy[3], bbox_xyxy[0]: bbox_xyxy[2]],
-							'bbox'       : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
-							'class_id'   : instance.class_label["train_id"],
-							'id'         : crop_id,
-							'confidence' : instance.confidence,
-							'image_size' : [width_img, height_img]
-						}
-						batch_detections_tracker.append(Instance(**detection_result))
+						detection_instance = Instance(**detection_result)
+						batch_detections.append(detection_instance)
 
 					# NOTE: Push detections to queue
-					self.detections_queue_identifier.put([index_image, images[index_b], batch_detections_identifier])
-					self.detections_queue_tracker.put([index_image, images[index_b], batch_detections_tracker])
+					self.detections_queue.put([index_image, images[index_b], batch_detections])
 
 				# self.pbar.update(len(indexes))
 
 		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.detections_queue_identifier.put([None, None, None])
-		self.detections_queue_tracker.put([None, None, None])
+		self.detections_queue.put([None, None, None])
 
 	def run_identifier(self):
 		"""Run identification model
@@ -381,7 +356,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			while True:
 				# NOTE: Get batch detections from queue
-				(index_frame, frame, batch_detections) = self.detections_queue_identifier.get()
+				(index_frame, frame, batch_detections) = self.detections_queue.get()
 
 				if batch_detections is None:
 					break
@@ -391,7 +366,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				indexes = []
 				for detection_instance in batch_detections:
 					crop_images.append(detection_instance.image)
-					indexes.append(detection_instance.id[1])
+					indexes.append(detection_instance.id_[1])
 
 				# NOTE: Identify batch of instances
 				batch_instances = self.identifier.detect(
@@ -405,7 +380,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
 					for index_in, instance in enumerate(batch_instance):
 						bbox_xyxy     = [int(i) for i in instance.bbox]
-						instance_id   = detection_instance.id.append(int(index_in))
+						instance_id   = detection_instance.id_.append(int(index_in))
 
 						# NOTE: add the coordinate from crop image to original image
 						# DEBUG: comment doan nay neu extract anh nho
@@ -424,8 +399,8 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 							bbox_xyxy,
 							detection_instance.image_size[1],
 							detection_instance.image_size[0],
-							ratio   = 2.0,
-							padding = 60
+							ratio=2.0,
+							padding=60
 						)
 						# instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
 
@@ -462,16 +437,16 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			while True:
 				# NOTE: Get batch identification from queue
-				(index_frame, frame, batch_detections) = self.detections_queue_tracker.get()
+				(index_frame, frame, batch_identifications) = self.identifications_queue.get()
 
-				if batch_detections is None:
+				if batch_identifications is None:
 					break
 
 				# DEBUG:
 				# image_draw = frame.copy()
 
 				# NOTE: Track (in batch)
-				self.tracker.update(detections=batch_detections)
+				self.tracker.update(detections=batch_identifications)
 				gmos = self.tracker.tracks
 
 				# NOTE: Update moving state
@@ -491,8 +466,8 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 
 				# DEBUG:
 				# cv2.imwrite(
-				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
-				# 	f"{batch_detections[0].frame_index:04d}.jpg",
+				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}/" \
+				# 	f"{batch_identifications[0].frame_index:04d}.jpg",
 				# 	image_draw
 				# )
 
@@ -501,15 +476,6 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 	def run_matching(self):
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			pass
-
-	def run_analysis(self):
-		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get batch identification from queue
-				(index_frame, frame, batch_identifications) = self.identifications_queue.get()
-
-				if batch_identifications is None:
-					break
 
 	def run(self):
 		"""Main run loop."""
@@ -532,12 +498,8 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		thread_tracker.start()
 
 		# NOTE: Threading for matching
-		thread_matching = threading.Thread(target=self.run_matching)
+		thread_matching = threading.Thread(target=self.run_tracker)
 		thread_matching.start()
-
-		# NOTE: Threading for analysis
-		thread_analysis = threading.Thread(target=self.run_analysis)
-		thread_analysis.start()
 
 		# NOTE: Joins threads when all terminate
 		thread_data_reader.join()
@@ -545,7 +507,6 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		thread_identifier.join()
 		thread_tracker.join()
 		thread_matching.join()
-		thread_analysis.join()
 
 		self.run_routine_end()
 

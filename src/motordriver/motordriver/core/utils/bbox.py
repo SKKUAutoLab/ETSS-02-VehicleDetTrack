@@ -67,6 +67,8 @@ __all__ = [
 	"scale_bbox_xyxy",
 	"shift_bbox",
 	"validate_bbox",
+	"bbox_xyxy_to_z",
+	"x_to_bbox_xyxy"
 ]
 
 
@@ -2122,7 +2124,7 @@ def nms(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
 	return torch.tensor(keep)
 
 
-# MARK: - Transformation
+# region MARK: - Transformation
 
 def clip_bbox_xyxy(xyxy: Tensor, image_size: Dim2) -> Tensor:
 	"""Clip bounding boxes to image size [H, W].
@@ -2485,8 +2487,9 @@ def shift_bbox(xyxy: np.ndarray, ver, hor) -> np.ndarray:
 	xyxy_shift[:, 3] = xyxy[:, 3] + ver
 	return xyxy_shift
 
+# endregion
 
-# MARK: - Validate
+# region MARK: - Validate
 
 def is_bbox_candidates(
 	xyxy1   : np.ndarray,
@@ -2551,3 +2554,31 @@ def validate_bbox(boxes: Tensor) -> bool:
 			   str(boxes[:, 3, 1] - boxes[:, 1, 1] + 1))
 		)
 	return True
+
+# endregion
+
+# region MARK: - Kalman Filter
+
+def bbox_xyxy_to_z(bbox_xyxy: np.ndarray) -> np.ndarray:
+	"""Converting bounding box for Kalman Filter.
+	"""
+	w = bbox_xyxy[2] - bbox_xyxy[0]
+	h = bbox_xyxy[3] - bbox_xyxy[1]
+	x = bbox_xyxy[0] + w / 2.
+	y = bbox_xyxy[1] + h / 2.
+	s = w * h
+	r = w / float(h)
+	return np.array([x, y, s, r]).reshape((4, 1))
+
+
+def x_to_bbox_xyxy(x: np.ndarray, score: float = None) -> np.ndarray:
+	"""Return bounding box from Kalman Filter.
+	"""
+	w = np.sqrt(x[2] * x[3])
+	h = x[2] / w
+	if score is None:
+		return np.array([x[0] - w / 2., x[1] - h / 2., x[0] + w / 2., x[1] + h / 2.]).reshape((1, 4))
+	else:
+		return np.array([x[0] - w / 2., x[1] - h / 2., x[0] + w / 2., x[1] + h / 2., score]).reshape((1, 5))
+
+# endregion

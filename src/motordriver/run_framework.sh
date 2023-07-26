@@ -13,7 +13,6 @@ export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/T
 # Add python path
 export PYTHONPATH=$PYTHONPATH:$PWD                              # .
 export PYTHONPATH=$PYTHONPATH:$DIR_SOURCE                       # src/motordriver/motordriver
-export PYTHONPATH=$PYTHONPATH:$DIR_SOURCE/detectors/ultralytics # src/motordriver/motordriver
 
 export CUDA_LAUNCH_BLOCKING=1
 
@@ -24,13 +23,17 @@ START_TIME="$(date -u +%s.%N)"
 cp -f $DIR_TSS"/configs/class_labels_1cls.json" $DIR_DATA"/class_labels_1cls.json"
 cp -f $DIR_TSS"/configs/class_labels_7cls.json" $DIR_DATA"/class_labels_7cls.json"
 
-# NOTE: DETECTION
-echo "*********"
+# NOTE: RUNNING
+echo "*******"
 echo "RUNNING"
-echo "*********"
+echo "*******"
 python $DIR_TSS/main.py  \
   --config aic23.yaml  \
   --run_image
+
+echo "******"
+echo "ENDING"
+echo "******"
 
 ###########################################################################################################
 END_TIME="$(date -u +%s.%N)"

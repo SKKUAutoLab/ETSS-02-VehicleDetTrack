@@ -12,21 +12,22 @@ from pathlib import Path
 from collections import OrderedDict
 
 import numpy as np
+import platform
 from torch import Tensor
 
-from core.io.filedir import is_torch_saved_file
-from core.utils.bbox import scale_bbox_xyxy
-from core.utils.geometric_transformation import padded_resize
-from core.utils.image import to_tensor
 from core.utils.image import is_channel_first
 from core.factory.builder import DETECTORS
 from core.objects.instance import Instance
-from detectors.base import BaseDetector
+from detectors.detector import BaseDetector
 
-# NOTE: add model YOLOv5 source to here
-# sys.path.append('src/detectors/ultralytics')
+# NOTE: add PATH of YOLOv8 source to here
+FILE = Path(__file__).resolve()
+ROOT = os.path.join(FILE.parents[0])  # YOLOv8 root directory
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))  # add ROOT to PATH
+if platform.system() != 'Windows':
+    ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from detectors.ultralytics.ultralytics import YOLO
 
 from ultralytics import yolo  # noqa
 from ultralytics.nn.tasks import (
@@ -51,14 +52,14 @@ __all__ = [
 
 # MARK: - YOLOv8
 
-@DETECTORS.register(name="yolov8_trafficsafety")
+@DETECTORS.register(name="yolov8")
 class YOLOv8(BaseDetector):
 	"""YOLOv8 object detector."""
 
 	# MARK: Magic Functions
 
 	def __init__(self,
-				 name: str = "yolov8_trafficsafety",
+				 name: str = "yolov8",
 				 *args, **kwargs):
 		super().__init__(name=name, *args, **kwargs)
 
