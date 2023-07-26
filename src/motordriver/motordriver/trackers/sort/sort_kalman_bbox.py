@@ -26,8 +26,6 @@ from filterpy.kalman import KalmanFilter
 from core.factory.builder import TRACKERS
 from core.objects import (
 	GMO,
-	MovingModel,
-	MotionModel,
 	Instance
 )
 from trackers.tracker import Tracker
@@ -281,6 +279,7 @@ class Sort(Tracker):
 		for d, det in enumerate(dets):
 			if d not in matched_indices[:, 0]:
 				unmatched_detections.append(d)
+
 		unmatched_trackers = []
 		for t, trk in enumerate(trks):
 			if t not in matched_indices[:, 1]:
@@ -309,9 +308,10 @@ def linear_assignment(cost_matrix):
 	"""
 
 	Args:
-		cost_matrix:
+		cost_matrix (np.array):
 
 	Returns:
+		object (np.array):
 
 	"""
 	try:

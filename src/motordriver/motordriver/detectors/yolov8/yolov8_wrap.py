@@ -22,7 +22,7 @@ from detectors.detector import BaseDetector
 
 # NOTE: add PATH of YOLOv8 source to here
 FILE = Path(__file__).resolve()
-ROOT = os.path.join(FILE.parents[0], "yolov8")  # YOLOv8 root directory
+ROOT = os.path.join(FILE.parents[0])  # YOLOv8 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 if platform.system() != 'Windows':
@@ -52,14 +52,14 @@ __all__ = [
 
 # MARK: - YOLOv8
 
-@DETECTORS.register(name="yolov8_trafficsafety")
+@DETECTORS.register(name="yolov8")
 class YOLOv8(BaseDetector):
 	"""YOLOv8 object detector."""
 
 	# MARK: Magic Functions
 
 	def __init__(self,
-				 name: str = "yolov8_trafficsafety",
+				 name: str = "yolov8",
 				 *args, **kwargs):
 		super().__init__(name=name, *args, **kwargs)
 

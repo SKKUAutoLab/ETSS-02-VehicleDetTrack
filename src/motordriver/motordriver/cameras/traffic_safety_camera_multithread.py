@@ -72,6 +72,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			detector     : dict,
 			identifier   : dict,
 			tracker      : dict,
+			matching     : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
@@ -108,20 +109,23 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
 		# NOTE: Init attributes
-		self.start_time = None
-		self.pbar       = None
+		self.start_time      = None
+		self.pbar            = None
 
 		# NOTE: Define attributes
-		self.process      = process
-		self.verbose      = verbose
+		self.process         = process
+		self.verbose         = verbose
 
+		# NOTE: Define configurations
 		self.data_cfg        = data
 		self.detector_cfg    = detector
 		self.identifier_cfg  = identifier
 		self.tracker_cfg     = tracker
+		self.matching        = matching
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
 
+		# NOTE: Init modules
 		self.init_dirs()
 		self.init_data_loader(data_loader_cfg=self.data_loader_cfg)
 		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
