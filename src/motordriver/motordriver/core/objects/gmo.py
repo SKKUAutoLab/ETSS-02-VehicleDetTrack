@@ -19,15 +19,15 @@
 
 from typing import List
 
-# from tfe.camera.roi import ROI
-from core.objects import Instance
+from core.objects.instance import Instance
 from core.utils.constants import AppleRGB
-from core.objects import (
-	GeneralObject,
-	MotionModel,
+from core.objects.general_object import GeneralObject
+from core.objects.moving_model import(
 	MovingModel,
 	MovingState
 )
+from core.objects.motion_model import MotionModel
+from matcher.roi import ROI
 
 
 # MARK: - GMO (General Moving Object)
@@ -71,34 +71,43 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		# NOTE: Second, update motion model
 		self.update_motion_state()
 		
-	# def update_moving_state(self, rois: List[ROI], **kwargs):
-	# 	roi = next((roi for roi in rois if roi.uuid == self.roi_uuid), None)
-	# 	if roi is None:
-	# 		return
-	#
-	# 	if self.is_candidate:
-	# 		if self.hit_streak >= GMO.min_hit_streak and \
-	# 			roi.is_bbox_in_or_touch_roi(bbox_xyxy=self.current_bbox, compute_distance=True) >= GMO.min_entering_distance and \
-	# 			self.travelled_distance >= GMO.min_traveled_distance:
-	# 			self.moving_state = MovingState.Confirmed
-	#
-	# 	elif self.is_confirmed:
-	# 		if roi.is_bbox_in_or_touch_roi(bbox_xyxy=self.current_bbox) <= 0:
-	# 			self.moving_state = MovingState.Counting
-	#
-	# 	elif self.is_counting:
-	# 		if roi.is_center_in_or_touch_roi(bbox_xyxy=self.current_bbox) < 0 or \
-	# 			self.time_since_update >= GMO.max_age:
-	# 			self.moving_state = MovingState.ToBeCounted
-	#
-	# 	elif self.is_counted:
-	# 		if roi.is_center_in_or_touch_roi(bbox_xyxy=self.current_bbox, compute_distance=True) <= 0 or \
-	# 			self.time_since_update >= GMO.max_age:
-	# 			self.moving_state = MovingState.Exiting
+	def update_moving_state(self, rois: List[ROI], **kwargs):
+		roi = next((roi for roi in rois if roi.uuid == self.roi_uuid), None)
+		if roi is None:
+			return
+
+		if self.is_candidate:
+			if self.hit_streak >= GMO.min_hit_streak and \
+				roi.is_bbox_in_or_touch_roi(bbox_xyxy=self.current_bbox, compute_distance=True) >= GMO.min_entering_distance and \
+				self.travelled_distance >= GMO.min_traveled_distance:
+				self.moving_state = MovingState.Confirmed
+
+		elif self.is_confirmed:
+			if roi.is_bbox_in_or_touch_roi(bbox_xyxy=self.current_bbox) <= 0:
+				self.moving_state = MovingState.Counting
+
+		elif self.is_counting:
+			if roi.is_center_in_or_touch_roi(bbox_xyxy=self.current_bbox) < 0 or \
+				self.time_since_update >= GMO.max_age:
+				self.moving_state = MovingState.ToBeCounted
+
+		elif self.is_counted:
+			if roi.is_center_in_or_touch_roi(bbox_xyxy=self.current_bbox, compute_distance=True) <= 0 or \
+				self.time_since_update >= GMO.max_age:
+				self.moving_state = MovingState.Exiting
 
 	# MARK: Visualize
 
 	def draw(self, drawing, **kwargs):
+		# DEBUG: tracklet
+		print("*********************")
+		print(f"{self.is_confirmed=}")
+		print(f"{self.is_counting=}")
+		print(f"{self.is_counted=}")
+		print(f"{self.is_exiting=}")
+		GeneralObject.draw(self, drawing=drawing, label=False, **kwargs)
+		print("*********************")
+
 		if self.is_confirmed:
 			GeneralObject.draw(self, drawing=drawing, label=False, **kwargs)
 		elif self.is_counting:

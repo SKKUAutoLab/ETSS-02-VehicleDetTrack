@@ -25,20 +25,23 @@ from tqdm import tqdm
 from core.data.class_label import ClassLabels
 from core.io.filedir import is_basename
 from core.io.filedir import is_json_file
-from core.io.filedir import is_stem
 from core.io.frame import FrameLoader
 from core.io.frame import FrameWriter
 from core.io.video import is_video_file
 from core.io.video import VideoLoader
-from core.io.picklewrap import PickleLoader
+from core.objects.moving_model import MovingState
 from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
 from core.utils.rich import console
 from core.utils.constants import AppleRGB
 from core.objects.instance import Instance
-from core.factory.builder import CAMERAS, TRACKERS
+from core.factory.builder import CAMERAS, TRACKERS, MATCHERS
 from core.factory.builder import DETECTORS
 from detectors.detector import BaseDetector
 from trackers.tracker import Tracker
+from matcher.matcher import BaseMatcher
+from matcher.moi import MOI
+from matcher.roi import ROI
+
 from configuration import (
 	data_dir,
 	config_dir
@@ -72,7 +75,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			detector     : dict,
 			identifier   : dict,
 			tracker      : dict,
-			matching     : dict,
+			matcher      : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
@@ -121,9 +124,17 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.detector_cfg    = detector
 		self.identifier_cfg  = identifier
 		self.tracker_cfg     = tracker
-		self.matching        = matching
+		self.matcher_cfg     = matcher
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
+
+		# NOTE: Queue
+		self.frames_queue                 = Queue(maxsize = self.data_loader_cfg['queue_size'])
+		self.detections_queue_identifier  = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.detections_queue_tracker     = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.identifications_queue        = Queue(maxsize = self.identifier_cfg['queue_size'])
+		self.trackings_queue              = Queue(maxsize = self.tracker_cfg['queue_size'])
+		self.matching_queue               = Queue(maxsize = self.matcher_cfg['queue_size'])
 
 		# NOTE: Init modules
 		self.init_dirs()
@@ -133,12 +144,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.init_detector(detector=detector)
 		self.init_identifier(identifier=identifier)
 		self.init_tracker(tracker=tracker)
-
-		# NOTE: Queue
-		self.frames_queue                 = Queue(maxsize = self.data_loader_cfg['queue_size'])
-		self.detections_queue_identifier  = Queue(maxsize = self.detector_cfg['queue_size'])
-		self.detections_queue_tracker     = Queue(maxsize = self.detector_cfg['queue_size'])
-		self.identifications_queue        = Queue(maxsize = self.identifier_cfg['queue_size'])
+		self.init_matcher(matcher=matcher)
 
 	# MARK: Configure
 
@@ -238,6 +244,23 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		# NOTE: to keep track process
 		self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
 
+	def init_matcher(self, matcher: dict):
+		"""Initialize matcher.
+
+		Args:
+			matcher (dict):
+				Matcher object or a matcher's config dictionary.
+		"""
+		# self.rois = ROI.load_rois_from_file(dataset=dataset, file=file, **hparams)
+		# self.mois = MOI.load_mois_from_file(dataset=dataset, file=file, **hparams)
+		console.log(f"Initiate Matcher.")
+		if isinstance(matcher, BaseMatcher):
+			self.matcher = matcher
+		elif isinstance(matcher, dict):
+			self.matcher = MATCHERS.build(**matcher)
+		else:
+			raise ValueError(f"Cannot initialize detector with {matcher}.")
+
 	def check_and_create_folder(self, attr, data_writer_cfg: dict):
 		"""CHeck and create the folder to store the result
 
@@ -268,6 +291,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 	# MARK: Run
 
 	def run_data_reader(self):
+		"""Read the images then Put on the Queue"""
 		for images, indexes, _, _ in self.data_loader:
 			if len(indexes) == 0:
 				break
@@ -278,8 +302,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.frames_queue.put([None, None])
 
 	def run_detector(self):
-		"""Run detection model with videos
-		"""
+		"""Run detection model with videos"""
 		# init value
 		height_img, width_img = None, None
 
@@ -372,11 +395,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.detections_queue_tracker.put([None, None, None])
 
 	def run_identifier(self):
-		"""Run identification model
-
-		Returns:
-
-		"""
+		"""Run identification model"""
 		# NOTE: Run identification
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			while True:
@@ -459,57 +478,105 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.identifications_queue.put([None, None, None])
 
 	def run_tracker(self):
-		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get batch identification from queue
-				(index_frame, frame, batch_detections) = self.detections_queue_tracker.get()
+		while True:
+			# NOTE: Get batch identification from queue
+			(index_frame, frame, batch_detections) = self.detections_queue_tracker.get()
 
-				if batch_detections is None:
-					break
+			if batch_detections is None:
+				break
 
-				# DEBUG:
-				# image_draw = frame.copy()
+			# DEBUG:
+			# image_draw = frame.copy()
 
-				# NOTE: Track (in batch)
-				self.tracker.update(detections=batch_detections)
-				gmos = self.tracker.tracks
+			# NOTE: Track (in batch)
+			self.tracker.update(detections=batch_detections)
+			gmos = self.tracker.tracks
 
-				# NOTE: Update moving state
-				for gmo in gmos:
-					# gmo.update_moving_state(rois=self.rois)
-					gmo.timestamps.append(timer())
+			# DEBUG:
+			# for gmo in gmos:
+			# 	gmo.timestamps.append(timer())
+			#
+			# 	# print(dir(gmo))
+			# 	# print(gmo.current_label)
+			# 	plot_one_box(
+			# 		bbox = gmo.bboxes[-1],
+			# 		img  = image_draw,
+			# 		color= AppleRGB.values()[gmo.current_label],
+			# 		label= f"{classes_aic23[gmo.current_label]}::{gmo.id % 1000}"
+			# 	)
 
-					# DEBUG:
-					# print(dir(gmo))
-					# # print(gmo.current_label)
-					# plot_one_box(
-					# 	bbox = gmo.bboxes[-1],
-					# 	img  = image_draw,
-					# 	color= AppleRGB.values()[gmo.current_label],
-					# 	label= f"{classes_aic23[gmo.current_label]}::{gmo.id % 1000}"
-					# )
+			# NOTE: Push tracking to queue
+			self.trackings_queue.put([index_frame, None, gmos])
 
-				# DEBUG:
-				# cv2.imwrite(
-				# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
-				# 	f"{batch_detections[0].frame_index:04d}.jpg",
-				# 	image_draw
-				# )
+			# DEBUG:
+			# cv2.imwrite(
+			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
+			# 	f"{batch_detections[0].frame_index:04d}.jpg",
+			# 	image_draw
+			# )
 
-				self.pbar.update(1)
+			# self.pbar.update(1)
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.trackings_queue.put([None, None, None])
 
 	def run_matching(self):
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			pass
+			while True:
+				# NOTE: Get batch tracking from queue
+				(index_frame, _, gmos) = self.trackings_queue.get()
+
+				if gmos is None:
+					break
+
+				# NOTE: Update moving state
+				for gmo in gmos:
+					gmo.update_moving_state(rois=self.matcher.rois)
+					gmo.timestamps.append(timer())
+
+				# NOTE: Associate gmos with MOIs
+				in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+				MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
+				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+				MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
+				                                     shape_type="linestrip")
+
+				# NOTE: Count
+				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+				for gmo in countable_gmos:
+					gmo.moving_state = MovingState.Counted
+
+				# NOTE: Push tracking to queue
+				self.matching_queue.put([index_frame, None, gmos, countable_gmos])
+
+				# self.pbar.update(1)
+
+			# NOTE: Push None to queue to act as a stopping condition for next thread
+			self.matching_queue.put([None, None, None, None])
 
 	def run_analysis(self):
-		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get batch identification from queue
-				(index_frame, frame, batch_identifications) = self.identifications_queue.get()
+		while True:
+			# NOTE: Get batch identification from queue
+			(index_frame_iden, frame, batch_identifications) = self.identifications_queue.get()
+			(index_frame_match, _, gmos, countable_gmos) = self.matching_queue.get()
 
-				if batch_identifications is None:
-					break
+			if batch_identifications is None or gmos is None:
+				break
+
+			# DEBUG:
+			image_draw = self.draw(
+				drawing  = frame,
+				gmos     = gmos,
+				rois     = self.matcher.rois,
+				mois     = self.matcher.mois,
+			)
+			cv2.imwrite(
+				f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_analysis/" \
+				f"{index_frame_iden:04d}.jpg",
+				image_draw
+			)
+
+			self.pbar.update(1)
 
 	def run(self):
 		"""Main run loop."""
@@ -583,7 +650,14 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 
 	# MARK: Visualize
 
-	def draw(self, drawing: np.ndarray, elapsed_time: float) -> np.ndarray:
+	def draw(
+			self,
+			drawing     : np.ndarray,
+			gmos        : list       = None,
+			rois        : list       = None,
+			mois        : list       = None,
+			elapsed_time: float      = None,
+	) -> np.ndarray:
 		"""Visualize the results on the drawing.
 
 		Args:
@@ -596,10 +670,29 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			drawing (np.ndarray):
 				Drawn canvas.
 		"""
+		# NOTE: Draw ROI
+		if rois is not None:
+			[roi.draw(drawing=drawing) for roi in self.matcher.rois]
+		# NOTE: Draw MOIs
+		if mois is not None:
+			[moi.draw(drawing=drawing) for moi in self.matcher.mois]
+		# NOTE: Draw Vehicles
+		if gmos is not None:
+			[gmo.draw(drawing=drawing) for gmo in gmos]
+		# NOTE: Draw frame index
+		# NOTE: Write frame rate
+		# fps = self.video_reader.frame_idx / elapsed_time
+		# text = f"Frame: {self.video_reader.frame_idx}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
+		# font = cv2.FONT_HERSHEY_SIMPLEX
+		# org = (20, 30)
+		# NOTE: show the framerate on top left
+		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
+		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing
 
 
 # MARK - Ultilies
+
 
 def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	"""Scale up 1.2% or +-40

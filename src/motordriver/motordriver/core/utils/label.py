@@ -49,6 +49,10 @@ def get_majority_label(object_labels: List[Dict]) -> Dict:
 	# NOTE: Count number of appearance of each label.
 	unique_labels = Munch()
 	label_voting  = Munch()
+
+	# DEBUG: tracklet
+	print(object_labels)
+
 	for label in object_labels:
 		key   = label.id
 		value = label_voting.get(key)

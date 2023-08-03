@@ -24,10 +24,8 @@ import numpy as np
 from filterpy.kalman import KalmanFilter
 
 from core.factory.builder import TRACKERS
-from core.objects import (
-	GMO,
-	Instance
-)
+from core.objects.gmo import GMO
+from core.objects.instance import Instance
 from trackers.tracker import Tracker
 from core.utils.bbox import (
 	bbox_xyxy_to_z,

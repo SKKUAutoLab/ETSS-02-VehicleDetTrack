@@ -30,9 +30,9 @@ from typing import Optional
 from typing import Union
 
 import numpy as np
-
-from core.objects import GMO
+from core.objects.gmo import GMO
 from core.utils.rich import console, error_console
+
 
 # MARK: - Tracker
 

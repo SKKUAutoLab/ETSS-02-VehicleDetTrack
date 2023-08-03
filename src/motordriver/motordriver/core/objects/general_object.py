@@ -28,7 +28,7 @@ from uuid import UUID
 import cv2
 import numpy as np
 
-from core.objects import Instance
+from core.objects.instance import Instance
 from core.utils.point import distance_between_points
 from core.utils.bbox import bbox_xyxy_center
 from core.utils.label import get_majority_label
@@ -176,13 +176,12 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	):
 
 		color = color if color is not None else self.label_by_majority.color
-
 		if bbox:
 			curr_bbox = self.current_bbox
 			if False:
 				# NOTE: only ellipse for the object
-				width = abs(curr_bbox[2] - curr_bbox[0])
-				height = abs(curr_bbox[3] - curr_bbox[1])
+				width   = abs(curr_bbox[2] - curr_bbox[0])
+				height  = abs(curr_bbox[3] - curr_bbox[1])
 				drawing = cv2.ellipse(drawing, center=tuple(self.current_bbox_center), axes=(width // 8, height // 8),
 									  angle=0, startAngle=0, endAngle=360, color=color, thickness=-1)
 			else:
