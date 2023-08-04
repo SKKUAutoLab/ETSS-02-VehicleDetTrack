@@ -485,14 +485,12 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			if batch_detections is None:
 				break
 
-			# DEBUG:
-			# image_draw = frame.copy()
-
 			# NOTE: Track (in batch)
 			self.tracker.update(detections=batch_detections)
 			gmos = self.tracker.tracks
 
 			# DEBUG:
+			# image_draw = frame.copy()
 			# for gmo in gmos:
 			# 	gmo.timestamps.append(timer())
 			#
@@ -506,7 +504,27 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			# 	)
 
 			# NOTE: Push tracking to queue
-			self.trackings_queue.put([index_frame, None, gmos])
+			self.trackings_queue.put([index_frame, frame, gmos.copy()])
+
+			# DEBUG:
+			if index_frame in [3, 4, 5, 6, 7]:
+				print("************")
+				print("run_tracker")
+				print(index_frame, ":: qsize", self.trackings_queue.qsize())
+				print(index_frame, "::", [gmo.current_bbox for gmo in gmos])
+				print("************")
+			# image_draw = frame.copy()
+			# image_draw = self.draw(
+			# 	drawing  = image_draw,
+			# 	gmos     = gmos,
+			# 	rois     = self.matcher.rois,
+			# 	mois     = self.matcher.mois,
+			# )
+			# cv2.imwrite(
+			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
+			# 	f"{batch_detections[0].frame_index:04d}.jpg",
+			# 	image_draw
+			# )
 
 			# DEBUG:
 			# cv2.imwrite(
@@ -557,24 +575,31 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 	def run_analysis(self):
 		while True:
 			# NOTE: Get batch identification from queue
-			(index_frame_iden, frame, batch_identifications) = self.identifications_queue.get()
-			(index_frame_match, _, gmos, countable_gmos) = self.matching_queue.get()
+			(index_frame_iden, _, batch_identifications) = self.identifications_queue.get()
+			# (index_frame_match, frame, gmos, countable_gmos) = self.matching_queue.get()
 
 			if batch_identifications is None or gmos is None:
 				break
 
 			# DEBUG:
-			image_draw = self.draw(
-				drawing  = frame,
-				gmos     = gmos,
-				rois     = self.matcher.rois,
-				mois     = self.matcher.mois,
-			)
-			cv2.imwrite(
-				f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_analysis/" \
-				f"{index_frame_iden:04d}.jpg",
-				image_draw
-			)
+			# if index_frame_iden == 6:
+			# 	print("************")
+			# 	print("run_analysis")
+			# 	print(index_frame_iden)
+			# 	for gmo in gmos:
+			# 		print(gmo.current_bbox)
+			# 	print("************")
+			# image_draw = self.draw(
+			# 	drawing  = frame,
+			# 	gmos     = gmos,
+			# 	rois     = self.matcher.rois,
+			# 	mois     = self.matcher.mois,
+			# )
+			# cv2.imwrite(
+			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_analysis/" \
+			# 	f"{index_frame_iden:04d}.jpg",
+			# 	image_draw
+			# )
 
 			self.pbar.update(1)
 
