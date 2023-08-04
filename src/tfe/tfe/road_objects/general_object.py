@@ -187,7 +187,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 							  color=color, thickness=2)
 				cv2.circle(img=drawing, center=tuple(self.current_bbox_center), radius=3, thickness=-1, color=color)
 
-			
 		if polygon:
 			curr_polygon = self.current_polygon
 			pts          = curr_polygon.reshape((-1, 1, 2))

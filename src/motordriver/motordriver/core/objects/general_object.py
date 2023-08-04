@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
-# from __future__ import annotations
+from __future__ import annotations
 
 import abc
 import uuid
@@ -174,21 +174,20 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		trajectory: bool = False,
 		color     : Optional[Tuple[int, int, int]] = None
 	):
-
 		color = color if color is not None else self.label_by_majority.color
 		if bbox:
-			curr_bbox = self.current_bbox
+			curr_bbox = self.current_bbox.copy()
 			if False:
 				# NOTE: only ellipse for the object
 				width   = abs(curr_bbox[2] - curr_bbox[0])
 				height  = abs(curr_bbox[3] - curr_bbox[1])
-				drawing = cv2.ellipse(drawing, center=tuple(self.current_bbox_center), axes=(width // 8, height // 8),
+				drawing = cv2.ellipse(drawing, center=(int(self.current_bbox_center[0]), int(self.current_bbox_center[1])), axes=(width // 8, height // 8),
 									  angle=0, startAngle=0, endAngle=360, color=color, thickness=-1)
 			else:
 				# NOTE: bounding box cover the object
 				cv2.rectangle(img=drawing, pt1=(curr_bbox[0], curr_bbox[1]), pt2=(curr_bbox[2], curr_bbox[3]),
 							  color=color, thickness=2)
-				cv2.circle(img=drawing, center=tuple(self.current_bbox_center), radius=3, thickness=-1, color=color)
+				cv2.circle(img=drawing, center=(int(self.current_bbox_center[0]), int(self.current_bbox_center[1])), radius=3, thickness=-1, color=color)
 
 			
 		if polygon:

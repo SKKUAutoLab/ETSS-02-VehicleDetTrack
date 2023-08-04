@@ -402,7 +402,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				# NOTE: Get batch detections from queue
 				(index_frame, frame, batch_detections) = self.detections_queue_identifier.get()
 
-				if batch_detections is None:
+				if index_frame is None:
 					break
 
 				# Load crop images
@@ -526,51 +526,66 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			# 	image_draw
 			# )
 
-			# DEBUG:
-			# cv2.imwrite(
-			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
-			# 	f"{batch_detections[0].frame_index:04d}.jpg",
-			# 	image_draw
-			# )
-
 			# self.pbar.update(1)
 
 		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.trackings_queue.put([None, None, None])
+		self.trackings_queue.put((None, None, None))
 
 	def run_matching(self):
-		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get batch tracking from queue
-				(index_frame, _, gmos) = self.trackings_queue.get()
+		# DEBUG:
+		while True:
+			# NOTE: Get batch tracking from queue
+			(index_frame, frame, gmos) = self.trackings_queue.get()
 
-				if gmos is None:
-					break
+			if index_frame is None:
+				break
 
-				# NOTE: Update moving state
-				for gmo in gmos:
-					gmo.update_moving_state(rois=self.matcher.rois)
-					gmo.timestamps.append(timer())
+			# DEBUG:
+			if index_frame in [3, 4, 5, 6, 7]:
+				print("************")
+				print("run_matching")
+				print(index_frame, ":: qsize", self.trackings_queue.qsize())
+				print(index_frame, "::", [gmo.current_bbox for gmo in gmos])
+				print("************")
+			gmos_temp = gmos.copy()
+			image_draw = frame.copy()
+			index_frame_temp = index_frame
+			image_draw = self.draw(
+				drawing  = image_draw,
+				gmos     = gmos_temp,
+				rois     = self.matcher.rois,
+				mois     = self.matcher.mois,
+			)
+			cv2.imwrite(
+				f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/004_tracks/" \
+				f"{index_frame_temp:04d}.jpg",
+				image_draw
+			)
 
-				# NOTE: Associate gmos with MOIs
-				in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-				MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
-				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
-				MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
-				                                     shape_type="linestrip")
-
-				# NOTE: Count
-				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-				for gmo in countable_gmos:
-					gmo.moving_state = MovingState.Counted
-
-				# NOTE: Push tracking to queue
-				self.matching_queue.put([index_frame, None, gmos, countable_gmos])
-
-				# self.pbar.update(1)
-
-			# NOTE: Push None to queue to act as a stopping condition for next thread
-			self.matching_queue.put([None, None, None, None])
+		# 	# NOTE: Update moving state
+		# 	for gmo in gmos:
+		# 		gmo.update_moving_state(rois=self.matcher.rois)
+		# 		gmo.timestamps.append(timer())
+		#
+		# 	# NOTE: Associate gmos with MOIs
+		# 	in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+		# 	MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
+		# 	to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+		# 	MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
+		# 	                                     shape_type="linestrip")
+		#
+		# 	# NOTE: Count
+		# 	countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+		# 	for gmo in countable_gmos:
+		# 		gmo.moving_state = MovingState.Counted
+		#
+		# 	# NOTE: Push tracking to queue
+		# 	self.matching_queue.put([index_frame, frame, gmos, countable_gmos])
+		#
+		# 	# self.pbar.update(1)
+		#
+		# # NOTE: Push None to queue to act as a stopping condition for next thread
+		# self.matching_queue.put([None, None, None, None])
 
 	def run_analysis(self):
 		while True:
@@ -578,7 +593,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 			(index_frame_iden, _, batch_identifications) = self.identifications_queue.get()
 			# (index_frame_match, frame, gmos, countable_gmos) = self.matching_queue.get()
 
-			if batch_identifications is None or gmos is None:
+			if index_frame_iden is None:
 				break
 
 			# DEBUG:
@@ -603,6 +618,9 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 
 			self.pbar.update(1)
 
+	def run_write_draw(self):
+		pass
+
 	def run(self):
 		"""Main run loop."""
 		self.run_routine_start()
@@ -626,6 +644,10 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		# NOTE: Threading for matching
 		thread_matching = threading.Thread(target=self.run_matching)
 		thread_matching.start()
+
+		# NOTE: Threading for analysis
+		thread_analysis = threading.Thread(target=self.run_analysis)
+		thread_analysis.start()
 
 		# NOTE: Threading for analysis
 		thread_analysis = threading.Thread(target=self.run_analysis)
