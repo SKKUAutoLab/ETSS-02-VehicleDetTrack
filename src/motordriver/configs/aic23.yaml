@@ -154,6 +154,8 @@ data_writer:
   # Frame rate of the video.
   fourcc: "mp4v"
   # Video codec. One of: ["mp4v", "xvid", "mjpg", "wmv1"].
+  queue_size: 30
+  # Number of slot in the queue to store data for writer
   dets_crop_pkl: &dets_crop_pkl "dets_crop_pkl"
   # Store the crop detection of each result of each images
   dets_crop_pkl_debug: "dets_crop_pkl_debug"

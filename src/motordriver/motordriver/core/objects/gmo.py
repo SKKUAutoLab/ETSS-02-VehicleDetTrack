@@ -105,7 +105,7 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		# print(f"{self.is_counting=}")
 		# print(f"{self.is_counted=}")
 		# print(f"{self.is_exiting=}")
-		GeneralObject.draw(self, drawing=drawing, label=False, color=AppleRGB.values()[1], **kwargs)
+		# GeneralObject.draw(self, drawing=drawing, label=False, color=AppleRGB.values()[1], **kwargs)
 		# print("*********************")
 
 		if self.is_confirmed:

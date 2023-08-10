@@ -49,6 +49,7 @@ parser.add_argument(
 	"--verbose", action='store_true', help="Should visualize the images."
 )
 
+
 # MARK: - Main Function
 
 def main():
