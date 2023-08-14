@@ -33,6 +33,7 @@ from core.objects.general_object import GeneralObject
 from core.objects.gmo import GMO
 from core.objects.moving_model import MovingState
 from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
+from core.utils.label import get_label
 from core.utils.rich import console
 from core.utils.constants import AppleRGB
 from core.objects.instance import Instance

@@ -174,6 +174,11 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		trajectory: bool = False,
 		color     : Optional[Tuple[int, int, int]] = None
 	):
+		# DEBUG:
+		print("*********************")
+		print(self.labels)
+		print("*********************")
+
 		color = color if color is not None else self.label_by_majority.color
 		if bbox:
 			curr_bbox = self.current_bbox.copy()

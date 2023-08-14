@@ -99,15 +99,6 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Visualize
 
 	def draw(self, drawing, **kwargs):
-		# DEBUG: 20230803
-		# print("*********************")
-		# print(f"{self.is_confirmed=}")
-		# print(f"{self.is_counting=}")
-		# print(f"{self.is_counted=}")
-		# print(f"{self.is_exiting=}")
-		# GeneralObject.draw(self, drawing=drawing, label=False, color=AppleRGB.values()[1], **kwargs)
-		# print("*********************")
-
 		if self.is_confirmed:
 			GeneralObject.draw(self, drawing=drawing, label=False, color=AppleRGB.values()[0], **kwargs)
 		elif self.is_counting:
