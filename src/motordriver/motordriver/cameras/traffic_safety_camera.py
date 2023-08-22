@@ -7,8 +7,11 @@
 from __future__ import annotations
 
 import os
+import sys
+import threading
 import uuid
 import glob
+import random
 from queue import Queue
 from operator import itemgetter
 from timeit import default_timer as timer
@@ -22,18 +25,26 @@ from tqdm import tqdm
 from core.data.class_label import ClassLabels
 from core.io.filedir import is_basename
 from core.io.filedir import is_json_file
-from core.io.filedir import is_stem
-from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
-from core.utils.rich import console
-from core.utils.constants import AppleRGB
 from core.io.frame import FrameLoader
 from core.io.frame import FrameWriter
 from core.io.video import is_video_file
 from core.io.video import VideoLoader
-from core.io.picklewrap import PickleLoader
-from core.factory.builder import CAMERAS
+from core.objects.general_object import GeneralObject
+from core.objects.gmo import GMO
+from core.objects.moving_model import MovingState
+from core.utils.bbox import bbox_xyxy_to_cxcywh_norm
+from core.utils.label import get_label
+from core.utils.rich import console
+from core.utils.constants import AppleRGB
+from core.objects.instance import Instance
+from core.factory.builder import CAMERAS, TRACKERS, MATCHERS
 from core.factory.builder import DETECTORS
 from detectors.detector import BaseDetector
+from trackers.tracker import Tracker
+from matcher.matcher import BaseMatcher
+from matcher.moi import MOI
+from matcher.roi import ROI
+
 from configuration import (
 	data_dir,
 	config_dir
@@ -43,6 +54,11 @@ from cameras.base import BaseCamera
 __all__ = [
 	"TrafficSafetyCamera"
 ]
+
+
+# NOTE: only for ACI23_Track_5
+classes_aic23 = ['motorbike', 'DHelmet', 'DNoHelmet', 'P1Helmet',
+			   'P1NoHelmet', 'P2Helmet', 'P2NoHelmet']
 
 # MARK: - TrafficSafetyCamera
 
@@ -61,12 +77,14 @@ class TrafficSafetyCamera(BaseCamera):
 			name         : str,
 			detector     : dict,
 			identifier   : dict,
+			tracker      : dict,
+			matcher      : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
 			id_          : Union[int, str] = uuid.uuid4().int,
 			verbose      : bool            = False,
-			queue_size   : int = 10,
+			queue_size   : int             = 10,
 			*args, **kwargs
 	):
 		"""
@@ -97,29 +115,41 @@ class TrafficSafetyCamera(BaseCamera):
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
 		# NOTE: Init attributes
-		self.start_time = None
-		self.pbar       = None
+		self.start_time      = None
+		self.pbar            = None
 
 		# NOTE: Define attributes
-		self.process      = process
-		self.verbose      = verbose
+		self.process         = process
+		self.verbose         = verbose
 
+		# NOTE: Define configurations
 		self.data_cfg        = data
-		self.data_loader_cfg = data_loader
-		self.data_writer_cfg = data_writer
 		self.detector_cfg    = detector
 		self.identifier_cfg  = identifier
-
-		self.init_dirs()
-		self.init_data_loader(data_loader_cfg=self.data_loader_cfg)
-		self.init_data_writer(data_writer_cfg=self.data_writer_cfg)
-		self.init_class_labels(class_labels=self.detector_cfg['class_labels'])
-		self.init_detector(detector=detector)
+		self.tracker_cfg     = tracker
+		self.matcher_cfg     = matcher
+		self.data_loader_cfg = data_loader
+		self.data_writer_cfg = data_writer
 
 		# NOTE: Queue
-		self.frames_queue          = Queue(maxsize = self.data_loader_cfg['queue_size'])
-		self.detections_queue      = Queue(maxsize = self.detector_cfg['queue_size'])
-		self.identifications_queue = Queue(maxsize = self.identifier_cfg['queue_size'])
+		self.frames_queue                 = Queue(maxsize = self.data_loader_cfg['queue_size'])
+		self.detections_queue_identifier  = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.detections_queue_tracker     = Queue(maxsize = self.detector_cfg['queue_size'])
+		self.identifications_queue        = Queue(maxsize = self.identifier_cfg['queue_size'])
+		self.trackings_queue              = Queue(maxsize = self.tracker_cfg['queue_size'])
+		self.matching_queue               = Queue(maxsize = self.matcher_cfg['queue_size'])
+		self.writer_queue                 = Queue(maxsize = self.data_writer_cfg['queue_size'])
+
+		# NOTE: Init modules
+		self.init_dirs()
+		self.init_data_loader(data_loader_cfg = self.data_loader_cfg)
+		self.init_data_writer(data_writer_cfg = self.data_writer_cfg)
+		self.init_class_labels(class_labels   = self.detector_cfg['class_labels'])
+		self.init_detector(detector           = detector)
+		self.init_identifier(identifier       = identifier)
+		self.init_tracker(tracker             = tracker)
+		self.init_matcher(matcher             = matcher)
+		self.init_gmo(matcher                 = matcher)
 
 	# MARK: Configure
 
@@ -173,6 +203,37 @@ class TrafficSafetyCamera(BaseCamera):
 		else:
 			raise ValueError(f"Cannot initialize detector with {detector}.")
 
+	def init_identifier(self, identifier: Union[BaseDetector, dict]):
+		"""Initialize identifier.
+
+		Args:
+			identifier (BaseDetector, dict):
+				Identifier object or a identifier's config dictionary.
+		"""
+		console.log(f"Initiate Identifier.")
+		if isinstance(identifier, BaseDetector):
+			self.identifier = identifier
+		elif isinstance(identifier, dict):
+			identifier["class_labels"] = self.class_labels
+			self.identifier = DETECTORS.build(**identifier)
+		else:
+			raise ValueError(f"Cannot initialize detector with {identifier}.")
+
+	def init_tracker(self, tracker: Union[Tracker, dict]):
+		"""Initialize tracker.
+
+		Args:
+			tracker (Tracker, dict):
+				Tracker object or a tracker's config dictionary.
+		"""
+		console.log(f"Initiate Tracker.")
+		if isinstance(tracker, Tracker):
+			self.tracker = tracker
+		elif isinstance(tracker, dict):
+			self.tracker = TRACKERS.build(**tracker)
+		else:
+			raise ValueError(f"Cannot initialize detector with {tracker}.")
+
 	def init_data_loader(self, data_loader_cfg: dict):
 		"""Initialize data loader.
 
@@ -185,7 +246,32 @@ class TrafficSafetyCamera(BaseCamera):
 		else:
 			self.data_loader = VideoLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
 
+		# NOTE: to keep track process
 		self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
+
+	def init_matcher(self, matcher: dict):
+		"""Initialize matcher.
+
+		Args:
+			matcher (dict):
+				Matcher object or a matcher's config dictionary.
+		"""
+		# self.rois = ROI.load_rois_from_file(dataset=dataset, file=file, **hparams)
+		# self.mois = MOI.load_mois_from_file(dataset=dataset, file=file, **hparams)
+		console.log(f"Initiate Matcher.")
+		if isinstance(matcher, BaseMatcher):
+			self.matcher = matcher
+		elif isinstance(matcher, dict):
+			self.matcher = MATCHERS.build(**matcher)
+		else:
+			raise ValueError(f"Cannot initialize detector with {matcher}.")
+
+	def init_gmo(self, matcher: dict):
+		GeneralObject.min_travelled_distance = matcher["gmo"]["min_traveled_distance"]
+		GMO.min_traveled_distance            = matcher["gmo"]["min_traveled_distance"]
+		GMO.min_entering_distance            = matcher["gmo"]["min_entering_distance"]
+		GMO.min_hit_streak                   = matcher["gmo"]["min_hit_streak"]
+		GMO.max_age                          = matcher["gmo"]["max_age"]
 
 	def check_and_create_folder(self, attr, data_writer_cfg: dict):
 		"""CHeck and create the folder to store the result
@@ -216,18 +302,30 @@ class TrafficSafetyCamera(BaseCamera):
 
 	# MARK: Run
 
+	def run_data_reader(self):
+		"""Read the images then Put on the Queue"""
+		for images, indexes, _, _ in self.data_loader:
+			if len(indexes) == 0:
+				break
+			# NOTE: Push frame index and images to queue
+			self.frames_queue.put([indexes, images])
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.frames_queue.put([None, None])
+
 	def run_detector(self):
-		"""Run detection model with videos
-		"""
+		"""Run detection model with videos"""
 		# init value
 		height_img, width_img = None, None
 
 		# NOTE: run detection
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			for images, indexes, _, _ in self.data_loader:
-				# NOTE: pre process
+			while True:
+				# NOTE: Get frame indexes and images from queue
+				(indexes, images) = self.frames_queue.get()
+
 				# if finish loading
-				if len(indexes) == 0:
+				if indexes is None:
 					break
 
 				# get size of image
@@ -239,18 +337,22 @@ class TrafficSafetyCamera(BaseCamera):
 					indexes=indexes, images=images
 				)
 
-				# NOTE: Write the detection result
+				for index_b, (index_image, batch) in enumerate(zip(indexes, batch_instances)):
+					# NOTE: Associate detections with ROI (in batch)
+					ROI.associate_detections_to_rois(detections=batch, rois=self.matcher.rois)
+					batch_instances[index_b] = [d for d in batch if d.roi_uuid is not None]
+
+				# NOTE: Process the detection result
 				for index_b, (index_image, batch) in enumerate(zip(indexes, batch_instances)):
 				# for index_b, batch in enumerate(batch_instances):
-					# DEBUG:
-					# image_draw = images[index_b].copy()
-
 					# store result each frame
-					batch_detections = []
+					batch_detections_identifier = []
+					batch_detections_tracker    = []
 
+					# NOTE: Process each detection
 					for index_in, instance in enumerate(batch):
-						name_index_image = f"{index_image:08d}_{index_in:08d}"
 						bbox_xyxy = [int(i) for i in instance.bbox]
+						crop_id   = [int(index_image), int(index_in)]
 
 						# if size of bounding box is very small
 						# because the heuristic need the bigger bounding box
@@ -258,114 +360,270 @@ class TrafficSafetyCamera(BaseCamera):
 								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
 							continue
 
-						# NOTE: crop the bounding box, add 60 or 1.5 scale
-						bbox_xyxy  = scaleup_bbox(bbox_xyxy, height_img, width_img, ratio=1.5, padding=60)
-						crop_image = images[index_b][bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
-
-						# DEBUG:
-						# if instance.confidence < 0.1:
-						# 	continue
-						# print(bbox_xyxy)
-						# cv2.rectangle(image_draw, (bbox_xyxy[0], bbox_xyxy[1]), (bbox_xyxy[2], bbox_xyxy[3]), (125, 125, 125), 4, cv2.LINE_AA)  # filled
-
+						# NOTE: crop the bounding box for identifier, add 60 or 1.5 scale
+						bbox_xyxy  = scaleup_bbox(
+							bbox_xyxy,
+							height_img,
+							width_img,
+							ratio   = 1.5,
+							padding = 60
+						)
 						detection_result = {
-							'video_name': self.data_loader_cfg['data_path'],
-							'frame_id'  : index_image,
-							'crop_id'   : index_in,
-							'crop_img'  : crop_image,
-							'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
-							'class_id'  : instance.class_label["train_id"],
-							'id'        : instance.class_label["id"],
-							'conf'      : instance.confidence,
-							'width_img' : width_img,
-							'height_img': height_img
+							'roi_uuid'    : instance.roi_uuid,
+							'video_name'  : self.data_loader_cfg['data_path'],
+							'frame_index' : index_image,
+							'image'       : images[index_b][bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]],
+							'bbox'        : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'class_id'    : instance.class_label["train_id"],
+							'class_label' : instance.class_label,
+							'label'       : instance.label,
+							'id'          : crop_id,
+							'confidence'  : instance.confidence,
+							'image_size'  : [width_img, height_img]
 						}
-						batch_detections.append(detection_result)
+						# detection_instance = Instance(**detection_result)
+						batch_detections_identifier.append(Instance(**detection_result))
+
+						# NOTE: crop the bounding box for tracker, add 40 or 1.2 scale
+						bbox_xyxy = [int(i) for i in instance.bbox]
+						bbox_xyxy = scaleup_bbox(
+							bbox_xyxy,
+							height_img,
+							width_img,
+							ratio   = 1.0,
+							padding = 0
+						)
+						detection_result = {
+							'roi_uuid'   : instance.roi_uuid,
+							'video_name' : self.data_loader_cfg['data_path'],
+							'frame_index': index_image,
+							'image'      : images[index_b][bbox_xyxy[1]: bbox_xyxy[3], bbox_xyxy[0]: bbox_xyxy[2]],
+							'bbox'       : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'class_id'   : instance.class_label["train_id"],
+							'class_label' : instance.class_label,
+							'label'       : instance.label,
+							'id'         : crop_id,
+							'confidence' : instance.confidence,
+							'image_size' : [width_img, height_img]
+						}
+						batch_detections_tracker.append(Instance(**detection_result))
 
 					# NOTE: Push detections to queue
-					self.detections_queue.put([indexes, batch_detections])
+					# self.detections_queue_identifier.put([index_image, images[index_b], batch_detections_identifier])
+					# self.detections_queue_tracker.put([index_image, images[index_b], batch_detections_tracker])
 
-					# DEBUG:
-					# cv2.imwrite(
-					# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/001/" \
-					# 	f"{name_index_image}.jpg",
-					# 	image_draw
-					# )
-
-				# self.pbar.update(len(indexes))
+				# update pbar
+				self.pbar.update(len(indexes))
 
 		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.detections_queue.put([None, None])
+		# self.detections_queue_identifier.put([None, None, None])
+		# self.detections_queue_tracker.put([None, None, None])
 
 	def run_identifier(self):
-		"""Run detection model
-
-		Returns:
-
-		"""
+		"""Run identification model"""
 		# NOTE: Run identification
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
 			while True:
 				# NOTE: Get batch detections from queue
-				(indexes, batch_detections) = self.detections_queue.get()
+				(index_frame, frame, batch_detections) = self.detections_queue_identifier.get()
 
 				if batch_detections is None:
 					break
 
-				for idx, detection_result in enumerate(batch_detections):
-					crop_images = []
-					# # Load crop images
-					# for pkl in pickles:
-					# 	crop_images.append(pkl['crop_img'])
-					#
-					# # NOTE: Identify batch of instances
-					# batch_instances = self.identifier.detect(
-					# 	indexes=indexes, images=crop_images
-					# )
-					#
-					# # NOTE: Write the full detection result
-					# for index_b, (crop_dict, batch) in enumerate(zip(pickles, batch_instances)):
-					# 	for index_in, instance in enumerate(batch):
-					# 		bbox_xyxy     = [int(i) for i in instance.bbox]
-					#
-					# 		# NOTE: add the coordinate from crop image to original image
-					# 		# DEBUG: comment doan nay neu extract anh nho
-					# 		bbox_xyxy[0] += int(crop_dict["bbox"][0])
-					# 		bbox_xyxy[1] += int(crop_dict["bbox"][1])
-					# 		bbox_xyxy[2] += int(crop_dict["bbox"][0])
-					# 		bbox_xyxy[3] += int(crop_dict["bbox"][1])
-					#
-					# 		# if size of bounding box is very small
-					# 		if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
-					# 				or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
-					# 			continue
-					#
-					# 		result_dict = {
-					# 			'video_name': crop_dict['video_name'],
-					# 			'frame_id'  : crop_dict['frame_id'],
-					# 			'crop_id'   : index_b,
-					# 			'bbox'      : (bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3]),
-					# 			'class_id'  : instance.class_label["train_id"],
-					# 			'id'        : instance.class_label["id"],
-					# 			'conf'      : (float(crop_dict["conf"]) * instance.confidence),
-					# 			'width_img' : crop_dict['width_img'],
-					# 			'height_img': crop_dict['height_img']
-					# 		}
-					# 		out_dict.append(result_dict)
+				# Load crop images
+				crop_images = []
+				indexes = []
+				for detection_instance in batch_detections:
+					crop_images.append(detection_instance.image)
+					indexes.append(detection_instance.id[1])
 
-				self.pbar.update(len(indexes))
+				# NOTE: Identify batch of instances
+				batch_instances = self.identifier.detect(
+					indexes=indexes, images=crop_images
+				)
+
+				# store result each crop image
+				batch_identifications = []
+
+				# NOTE: Process the full identify result
+				for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
+					for index_in, instance in enumerate(batch_instance):
+						bbox_xyxy     = [int(i) for i in instance.bbox]
+						instance_id   = detection_instance.id.append(int(index_in))
+
+						# NOTE: add the coordinate from crop image to original image
+						# DEBUG: comment doan nay neu extract anh nho
+						bbox_xyxy[0] += int(detection_instance.bbox[0])
+						bbox_xyxy[1] += int(detection_instance.bbox[1])
+						bbox_xyxy[2] += int(detection_instance.bbox[0])
+						bbox_xyxy[3] += int(detection_instance.bbox[1])
+
+						# if size of bounding box0 is very small
+						if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
+								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
+							continue
+
+						# NOTE: crop the bounding box, add 60 or 1.5 scale
+						bbox_xyxy = scaleup_bbox(
+							bbox_xyxy,
+							detection_instance.image_size[1],
+							detection_instance.image_size[0],
+							ratio   = 2.0,
+							padding = 60
+						)
+						# instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
+
+						identification_result = {
+							'video_name'    : detection_instance.video_name,
+							'frame_index'   : detection_instance.frame_index,
+							'bbox'          : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'class_id'      : instance.class_label["train_id"],
+							'id'            : instance_id,
+							'confidence'    : (float(detection_instance.confidence) * instance.confidence),
+							'image_size'    : detection_instance.image_size
+						}
+
+						identification_instance = Instance(**identification_result)
+						batch_identifications.append(identification_instance)
+
+						# DEBUG: write the instance object (not for motorbike, only for driver and passenger)
+						# if instance.class_label["train_id"] > 0:
+						# 	cv2.imwrite(
+						# 		f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_instances/" \
+						# 		f"{batch_identifications[0].frame_index:04d}_{index_in:04d}_{instance.class_label['train_id']}.jpg",
+						# 		instance_image
+						# 	)
+
+				# NOTE: Push identifications to queue
+				self.identifications_queue.put([index_frame, frame, batch_identifications])
+
+				# self.pbar.update(1)
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.identifications_queue.put([None, None, None])
+
+	def run_tracker(self):
+		while True:
+			# NOTE: Get batch identification from queue
+			(index_frame, frame, batch_detections) = self.detections_queue_tracker.get()
+
+			if batch_detections is None:
+				break
+
+			# NOTE: Track (in batch)
+			self.tracker.update(detections=batch_detections)
+			gmos = self.tracker.tracks
+
+			# DEBUG:
+			# image_draw = frame.copy()
+			# for gmo in gmos:
+			# 	gmo.timestamps.append(timer())
+			#
+			# 	# print(dir(gmo))
+			# 	# print(gmo.current_label)
+			# 	plot_one_box(
+			# 		bbox = gmo.bboxes[-1],
+			# 		img  = image_draw,
+			# 		color= AppleRGB.values()[gmo.current_label],
+			# 		label= f"{classes_aic23[gmo.current_label]}::{gmo.id % 1000}"
+			# 	)
+
+			# NOTE: Push tracking to queue
+			self.trackings_queue.put([index_frame, None, gmos])
+
+			# DEBUG:
+			# if index_frame in [3, 4, 5, 6, 7, 8, 9, 10]:
+			# 	print("************")
+			# 	print("run_tracker")
+			# 	print(index_frame, ":: qsize", self.trackings_queue.qsize())
+			# 	print(index_frame, "::", [gmo.current_bbox for gmo in gmos])
+			# 	print("************")
+			# image_draw = frame.copy()
+			# image_draw = self.draw(
+			# 	drawing  = image_draw,
+			# 	gmos     = gmos,
+			# 	rois     = self.matcher.rois,
+			# 	mois     = self.matcher.mois,
+			# )
+			# cv2.imwrite(
+			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
+			# 	f"{batch_detections[0].frame_index:04d}.jpg",
+			# 	image_draw
+			# )
+
+			# self.pbar.update(1)
+
+			# DEBUG:
+			# with open(
+			# 		"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/004_tracker.txt",
+			# 		"a") as f_write:
+			# 	f_write.write(f"{index_frame} :: {[gmo.current_bbox for gmo in gmos]}")
+			# 	f_write.write("\n")
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.trackings_queue.put((None, None, None))
+
+	def run_matching(self):
+		while True:
+			# NOTE: Get batch tracking from queue
+			(index_frame, _, gmos) = self.trackings_queue.get()
+
+			if gmos is None:
+				break
+
+			# DEBUG:
+			# with open("/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/004_matching.txt", "a") as f_write:
+			# 	f_write.write(f"{index_frame} :: {[gmo.current_bbox for gmo in gmos]}")
+			# 	f_write.write("\n")
+
+			# NOTE: Update moving state
+			for gmo in gmos:
+				gmo.update_moving_state(rois=self.matcher.rois)
+				gmo.timestamps.append(timer())
+
+			# NOTE: Associate gmos with MOIs
+			in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+			MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
+			to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+			MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
+			                                     shape_type="linestrip")
+
+			# NOTE: Count
+			countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+			for gmo in countable_gmos:
+				gmo.moving_state = MovingState.Counted
+
+			# DEBUG:
+			# 'is_candidate', 'is_confirmed', 'is_countable', 'is_counted', 'is_counting', 'is_exiting', 'is_to_be_counted'
+			# print(index_frame, "::", [gmo.current_bbox for gmo in countable_gmos])
+
+			# NOTE: Push tracking to queue
+			self.matching_queue.put([index_frame, None, gmos, countable_gmos])
+
+		# NOTE: Push None to queue to act as a stopping condition for next thread
+		self.matching_queue.put([None, None, None, None])
+
+	def run_analysis(self):
+		while True:
+			# NOTE: Get batch identification from queue
+			(index_frame_match, _, gmos, countable_gmos) = self.matching_queue.get()
+			(index_frame_iden, frame, batch_identifications) = self.identifications_queue.get()
+
+			if index_frame_iden is None or index_frame_match is None:
+				break
+
+			self.pbar.update(1)
+
+	def run_write_draw(self):
+		while True:
+			(index_frame, frame, data) = self.writer_queue.get()
+
+			if data is None:
+				break
 
 	def run(self):
 		"""Main run loop."""
 		self.run_routine_start()
-
-		# NOTE: run detector
-		self.run_detector()
-		self.detector.clear_model_memory()
-		self.detector = None
-
-		# NOTE: run identification
-		self.run_identifier()
 
 		self.run_routine_end()
 
@@ -377,8 +635,18 @@ class TrafficSafetyCamera(BaseCamera):
 
 	def run_routine_end(self):
 		"""Perform operations when run routine ends."""
+		# NOTE: clear detector
+		self.detector.clear_model_memory()
+		self.detector = None
+
+		# NOTE: clear identifier
+		self.identifier.clear_model_memory()
+		self.identifier = None
+
 		cv2.destroyAllWindows()
 		self.stop_time = timer()
+		if self.pbar is not None:
+			self.pbar.close()
 
 	def postprocess(self, image: np.ndarray, *args, **kwargs):
 		"""Perform some postprocessing operations when a run step end.
@@ -397,7 +665,14 @@ class TrafficSafetyCamera(BaseCamera):
 
 	# MARK: Visualize
 
-	def draw(self, drawing: np.ndarray, elapsed_time: float) -> np.ndarray:
+	def draw(
+			self,
+			drawing     : np.ndarray,
+			gmos        : list       = None,
+			rois        : list       = None,
+			mois        : list       = None,
+			elapsed_time: float      = None,
+	) -> np.ndarray:
 		"""Visualize the results on the drawing.
 
 		Args:
@@ -410,10 +685,29 @@ class TrafficSafetyCamera(BaseCamera):
 			drawing (np.ndarray):
 				Drawn canvas.
 		"""
+		# NOTE: Draw ROI
+		if rois is not None:
+			[roi.draw(drawing=drawing) for roi in self.matcher.rois]
+		# NOTE: Draw MOIs
+		if mois is not None:
+			[moi.draw(drawing=drawing) for moi in self.matcher.mois]
+		# NOTE: Draw Vehicles
+		if gmos is not None:
+			[gmo.draw(drawing=drawing) for gmo in gmos]
+		# NOTE: Draw frame index
+		# NOTE: Write frame rate
+		# fps = self.video_reader.frame_idx / elapsed_time
+		# text = f"Frame: {self.video_reader.frame_idx}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
+		# font = cv2.FONT_HERSHEY_SIMPLEX
+		# org = (20, 30)
+		# NOTE: show the framerate on top left
+		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
+		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing
 
 
 # MARK - Ultilies
+
 
 def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	"""Scale up 1.2% or +-40
@@ -437,3 +731,21 @@ def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	bbox_xyxy[2] = int(min(width_img - 1, cx + 0.5 * w))
 	bbox_xyxy[3] = int(min(height_img - 1, cy + 0.5 * h))
 	return bbox_xyxy
+
+
+def plot_one_box(bbox, img, color=None, label=None, line_thickness=1):
+	"""Plots one bounding box on image img
+
+	Returns:
+
+	"""
+	tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
+	color = color or [random.randint(0, 255) for _ in range(3)]
+	c1, c2 = (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3]))
+	cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
+	if label:
+		tf = max(tl - 1, 1)  # font thickness
+		t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+		c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+		cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
+		cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)

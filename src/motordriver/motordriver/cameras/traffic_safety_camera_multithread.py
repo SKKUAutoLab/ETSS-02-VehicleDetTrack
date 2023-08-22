@@ -165,6 +165,9 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 		self.video_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
 		self.image_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
 
+		# DEBUG:
+		print(self.outputs_dir)
+
 	def init_class_labels(self, class_labels: Union[ClassLabels, dict]):
 		"""Initialize class_labels.
 
@@ -630,9 +633,11 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 				rois     = self.matcher.rois,
 				mois     = self.matcher.mois,
 			)
+
 			cv2.imwrite(
-				f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_analysis/" \
-				f"{index_frame_iden:04d}.jpg",
+				os.path.join(self.outputs_dir,
+							 f"/dets_crop_debug/{batch_identifications[0].video_name}_analysis",
+							 f"{index_frame_iden:04d}.jpg"),
 				image_draw
 			)
 
