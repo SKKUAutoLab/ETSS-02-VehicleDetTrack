@@ -73,7 +73,7 @@ class Instance:
 	):
 		super().__init__()
 		self.roi_uuid    = roi_uuid
-		self.label       = class_id
+		self.label       = class_label
 
 		self.id          = id
 		self.bbox        = bbox

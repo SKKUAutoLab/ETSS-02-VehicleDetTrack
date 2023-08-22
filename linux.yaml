@@ -1,6 +1,6 @@
 #
-# - Install   : conda env create -f environment.yml
-# - Update    : conda env update --name one --file environment.yml
+# - Install   : conda env create -f linux.yaml
+# - Update    : conda env update --name one --file linux.yaml
 # - Update pip: pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 #
 

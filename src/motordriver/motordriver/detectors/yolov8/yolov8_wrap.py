@@ -218,9 +218,6 @@ class YOLOv8(BaseDetector):
 			confs = result.boxes.conf.cpu().numpy()
 			clses = result.boxes.cls.cpu().numpy()
 
-			# DEBUG:
-			# print(len(confs))
-
 			for bbox_xyxy, conf, cls in zip(xyxys, confs, clses):
 				confident   = float(conf)
 				class_id    = int(cls)
@@ -232,9 +229,11 @@ class YOLOv8(BaseDetector):
 						frame_index = indexes[0] + idx,
 						bbox        = bbox_xyxy,
 						confidence  = confident,
-						class_label = class_label
+						class_label = class_label,
+						label       = class_label
 					)
 				)
+
 			instances.append(inst)
 		return instances
 

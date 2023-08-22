@@ -174,11 +174,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		trajectory: bool = False,
 		color     : Optional[Tuple[int, int, int]] = None
 	):
-		# DEBUG:
-		print("*********************")
-		print(self.labels)
-		print("*********************")
-
 		color = color if color is not None else self.label_by_majority.color
 		if bbox:
 			curr_bbox = self.current_bbox.copy()
@@ -208,7 +203,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
 		
 		if trajectory:
-			pts = self.trajectory.reshape((-1, 1, 2))
+			pts = np.array(self.trajectory.reshape((-1, 1, 2)), dtype=int)
 			cv2.polylines(img=drawing, pts=[pts], isClosed=False, color=color, thickness=2)
 			for point in self.trajectory:
-				cv2.circle(img=drawing, center=tuple(point), radius=3, thickness=2, color=color)
+				cv2.circle(img=drawing, center=(int(point[0]), int(point[1])), radius=3, thickness=2, color=color)
