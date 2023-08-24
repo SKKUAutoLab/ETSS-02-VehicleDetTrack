@@ -9,6 +9,7 @@ export DIR_SOURCE=$DIR_TSS"/motordriver"            # src/motordriver/motordrive
 
 # Add data dir
 export DIR_DATA="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/images"
+export DIR_RESULT="/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/"
 
 # Add python path
 export PYTHONPATH=$PYTHONPATH:$PWD                              # .

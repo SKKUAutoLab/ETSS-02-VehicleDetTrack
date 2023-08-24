@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import os
+import pickle
 import sys
 import threading
 import uuid
@@ -27,6 +28,7 @@ from core.io.filedir import is_basename
 from core.io.filedir import is_json_file
 from core.io.frame import FrameLoader
 from core.io.frame import FrameWriter
+from core.io.picklewrap import PickleLoader
 from core.io.video import is_video_file
 from core.io.video import VideoLoader
 from core.objects.general_object import GeneralObject
@@ -47,7 +49,8 @@ from matcher.roi import ROI
 
 from configuration import (
 	data_dir,
-	config_dir
+	config_dir,
+	result_dir
 )
 from cameras.base import BaseCamera
 
@@ -161,7 +164,7 @@ class TrafficSafetyCamera(BaseCamera):
 		"""
 		self.root_dir    = os.path.join(data_dir)
 		self.configs_dir = os.path.join(config_dir)
-		self.outputs_dir = os.path.join(self.root_dir, self.data_writer_cfg["dst"])
+		self.outputs_dir = os.path.join(result_dir, self.data_writer_cfg["dst"])
 		self.video_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
 		self.image_dir   = os.path.join(self.root_dir, self.data_loader_cfg["data"])
 
@@ -245,9 +248,8 @@ class TrafficSafetyCamera(BaseCamera):
 			self.data_loader = FrameLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
 		else:
 			self.data_loader = VideoLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
-
 		# NOTE: to keep track process
-		self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
+		# self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
 
 	def init_matcher(self, matcher: dict):
 		"""Initialize matcher.
@@ -302,27 +304,24 @@ class TrafficSafetyCamera(BaseCamera):
 
 	# MARK: Run
 
-	def run_data_reader(self):
-		"""Read the images then Put on the Queue"""
-		for images, indexes, _, _ in self.data_loader:
-			if len(indexes) == 0:
-				break
-			# NOTE: Push frame index and images to queue
-			self.frames_queue.put([indexes, images])
-
-		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.frames_queue.put([None, None])
-
 	def run_detector(self):
 		"""Run detection model with videos"""
 		# init value
 		height_img, width_img = None, None
 
+		# NOTE: init data loader for load images/video
+		self.init_data_loader(self.data_loader_cfg)
+		detections_queue_identifier = []
+		detections_queue_tracker    = []
+
+		pbar = tqdm(total=self.data_loader.num_frames, desc=f"Detection: ")
+
 		# NOTE: run detection
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get frame indexes and images from queue
-				(indexes, images) = self.frames_queue.get()
+			for images, indexes, _, _ in self.data_loader:
+
+				if len(indexes) == 0:
+					break
 
 				# if finish loading
 				if indexes is None:
@@ -348,6 +347,9 @@ class TrafficSafetyCamera(BaseCamera):
 					# store result each frame
 					batch_detections_identifier = []
 					batch_detections_tracker    = []
+
+					# DEBUG: draw
+					# image_draw = images[index_b].copy()
 
 					# NOTE: Process each detection
 					for index_in, instance in enumerate(batch):
@@ -384,6 +386,13 @@ class TrafficSafetyCamera(BaseCamera):
 						# detection_instance = Instance(**detection_result)
 						batch_detections_identifier.append(Instance(**detection_result))
 
+						# DEBUG: draw
+						# image_draw = plot_one_box(
+						# 	bbox = bbox_xyxy,
+						# 	img  = image_draw,
+						# 	label= instance.label.name
+						# )
+
 						# NOTE: crop the bounding box for tracker, add 40 or 1.2 scale
 						bbox_xyxy = [int(i) for i in instance.bbox]
 						bbox_xyxy = scaleup_bbox(
@@ -408,208 +417,246 @@ class TrafficSafetyCamera(BaseCamera):
 						}
 						batch_detections_tracker.append(Instance(**detection_result))
 
-					# NOTE: Push detections to queue
-					# self.detections_queue_identifier.put([index_image, images[index_b], batch_detections_identifier])
-					# self.detections_queue_tracker.put([index_image, images[index_b], batch_detections_tracker])
+					# DEBUG: draw
+					# cv2.imwrite(
+					# 	f"{self.outputs_dir}"
+					# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_detection/"
+					# 	f"{index_image:04d}.jpg",
+					# 	image_draw
+					# )
+
+					# NOTE: Push detections to array
+					detections_queue_identifier.append([index_image, images[index_b], batch_detections_identifier])
+					detections_queue_tracker.append([index_image, images[index_b], batch_detections_tracker])
 
 				# update pbar
-				self.pbar.update(len(indexes))
+				pbar.update(len(indexes))
 
-		# NOTE: Push None to queue to act as a stopping condition for next thread
-		# self.detections_queue_identifier.put([None, None, None])
-		# self.detections_queue_tracker.put([None, None, None])
+		# NOTE: save pickle
+		pickle.dump(
+			detections_queue_identifier,
+			open(f"{self.outputs_dir}/dets_crop_debug/detections_queue_identifier.pkl", 'wb')
+		)
+		pickle.dump(
+			detections_queue_tracker,
+			open(f"{self.outputs_dir}/dets_crop_debug/detections_queue_tracker.pkl", 'wb')
+		)
 
 	def run_identifier(self):
 		"""Run identification model"""
+		# NOTE: init
+		pickle_loader = PickleLoader(
+			data=f"{self.outputs_dir}/dets_crop_debug/detections_queue_identifier.pkl",
+			batch_size=self.identifier_cfg["batch_size"]
+		)
+		identifications_queue = []
+
+		pbar = tqdm(total=len(pickle_loader), desc=f"Identification: ")
+
 		# NOTE: Run identification
 		with torch.no_grad():  # phai them cai nay khong la bi memory leak
-			while True:
-				# NOTE: Get batch detections from queue
-				(index_frame, frame, batch_detections) = self.detections_queue_identifier.get()
+			for pickles, indexes_img in pickle_loader:
 
-				if batch_detections is None:
-					break
+				for index_frame, frame, batch_detections in pickles:
+					# DEBUG: draw
+					# image_draw = frame.copy()
 
-				# Load crop images
-				crop_images = []
-				indexes = []
-				for detection_instance in batch_detections:
-					crop_images.append(detection_instance.image)
-					indexes.append(detection_instance.id[1])
+					# Load crop images
+					crop_images = []
+					indexes     = []
+					for detection_instance in batch_detections:
+						crop_images.append(detection_instance.image)
+						indexes.append(detection_instance.id[1])
 
-				# NOTE: Identify batch of instances
-				batch_instances = self.identifier.detect(
-					indexes=indexes, images=crop_images
-				)
+					# NOTE: Identify batch of instances
+					batch_instances = self.identifier.detect(
+						indexes=indexes, images=crop_images
+					)
 
-				# store result each crop image
-				batch_identifications = []
+					# store result each crop image
+					batch_identifications = []
 
-				# NOTE: Process the full identify result
-				for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
-					for index_in, instance in enumerate(batch_instance):
-						bbox_xyxy     = [int(i) for i in instance.bbox]
-						instance_id   = detection_instance.id.append(int(index_in))
+					# NOTE: Process the full identify result
+					for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
+						for index_in, instance in enumerate(batch_instance):
+							bbox_xyxy     = [int(i) for i in instance.bbox]
+							instance_id   = detection_instance.id.append(int(index_in))
 
-						# NOTE: add the coordinate from crop image to original image
-						# DEBUG: comment doan nay neu extract anh nho
-						bbox_xyxy[0] += int(detection_instance.bbox[0])
-						bbox_xyxy[1] += int(detection_instance.bbox[1])
-						bbox_xyxy[2] += int(detection_instance.bbox[0])
-						bbox_xyxy[3] += int(detection_instance.bbox[1])
+							# NOTE: add the coordinate from crop image to original image
+							# DEBUG: comment doan nay neu extract anh nho
+							bbox_xyxy[0] += int(detection_instance.bbox[0])
+							bbox_xyxy[1] += int(detection_instance.bbox[1])
+							bbox_xyxy[2] += int(detection_instance.bbox[0])
+							bbox_xyxy[3] += int(detection_instance.bbox[1])
 
-						# if size of bounding box0 is very small
-						if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
-								or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
-							continue
+							# if size of bounding box0 is very small
+							if abs(bbox_xyxy[2] - bbox_xyxy[0]) < 40 \
+									or abs(bbox_xyxy[3] - bbox_xyxy[1]) < 40:
+								continue
 
-						# NOTE: crop the bounding box, add 60 or 1.5 scale
-						bbox_xyxy = scaleup_bbox(
-							bbox_xyxy,
-							detection_instance.image_size[1],
-							detection_instance.image_size[0],
-							ratio   = 2.0,
-							padding = 60
-						)
-						# instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
+							# NOTE: crop the bounding box, add 60 or 1.5 scale
+							bbox_xyxy = scaleup_bbox(
+								bbox_xyxy,
+								detection_instance.image_size[1],
+								detection_instance.image_size[0],
+								ratio   = 2.0,
+								padding = 60
+							)
+							# DEBUG: draw
+							# image_draw = plot_one_box(
+							# 	bbox = bbox_xyxy,
+							# 	img  = image_draw,
+							# 	label= instance.label.name
+							# )
+							# instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
 
-						identification_result = {
-							'video_name'    : detection_instance.video_name,
-							'frame_index'   : detection_instance.frame_index,
-							'bbox'          : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
-							'class_id'      : instance.class_label["train_id"],
-							'id'            : instance_id,
-							'confidence'    : (float(detection_instance.confidence) * instance.confidence),
-							'image_size'    : detection_instance.image_size
-						}
+							identification_result = {
+								'video_name'    : detection_instance.video_name,
+								'frame_index'   : detection_instance.frame_index,
+								'bbox'          : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+								'class_id'      : instance.class_label["train_id"],
+								'id'            : instance_id,
+								'confidence'    : (float(detection_instance.confidence) * instance.confidence),
+								'image_size'    : detection_instance.image_size
+							}
 
-						identification_instance = Instance(**identification_result)
-						batch_identifications.append(identification_instance)
+							identification_instance = Instance(**identification_result)
+							batch_identifications.append(identification_instance)
 
-						# DEBUG: write the instance object (not for motorbike, only for driver and passenger)
-						# if instance.class_label["train_id"] > 0:
-						# 	cv2.imwrite(
-						# 		f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_identifications[0].video_name}_instances/" \
-						# 		f"{batch_identifications[0].frame_index:04d}_{index_in:04d}_{instance.class_label['train_id']}.jpg",
-						# 		instance_image
-						# 	)
 
-				# NOTE: Push identifications to queue
-				self.identifications_queue.put([index_frame, frame, batch_identifications])
+					# DEBUG: draw
+					# cv2.imwrite(
+					# 	f"{self.outputs_dir}"
+					# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_identification/"
+					# 	f"{index_frame:04d}.jpg",
+					# 	image_draw
+					# )
+					# NOTE: Push identifications to array
+					identifications_queue.append([index_frame, frame, batch_identifications])
 
-				# self.pbar.update(1)
+				pbar.update(len(indexes_img))
 
-		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.identifications_queue.put([None, None, None])
+		# NOTE: save pickle
+		pickle.dump(
+			identifications_queue,
+			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'wb')
+		)
 
 	def run_tracker(self):
-		while True:
-			# NOTE: Get batch identification from queue
-			(index_frame, frame, batch_detections) = self.detections_queue_tracker.get()
+		"""Run tracking"""
+		# NOTE: init
+		pickle_loader = PickleLoader(
+			data=f"{self.outputs_dir}/dets_crop_debug/detections_queue_tracker.pkl",
+			batch_size=self.tracker_cfg["batch_size"]
+		)
+		trackings_queue = []
+		pbar = tqdm(total=len(pickle_loader), desc=f"Tracking: ")
 
-			if batch_detections is None:
-				break
+		for pickles, indexes_img in pickle_loader:
+			for index_frame, frame, batch_detections in pickles:
 
-			# NOTE: Track (in batch)
-			self.tracker.update(detections=batch_detections)
-			gmos = self.tracker.tracks
+				# NOTE: Track (in batch)
+				self.tracker.update(detections=batch_detections)
+				gmos = self.tracker.tracks.copy()
 
-			# DEBUG:
-			# image_draw = frame.copy()
-			# for gmo in gmos:
-			# 	gmo.timestamps.append(timer())
-			#
-			# 	# print(dir(gmo))
-			# 	# print(gmo.current_label)
-			# 	plot_one_box(
-			# 		bbox = gmo.bboxes[-1],
-			# 		img  = image_draw,
-			# 		color= AppleRGB.values()[gmo.current_label],
-			# 		label= f"{classes_aic23[gmo.current_label]}::{gmo.id % 1000}"
-			# 	)
+				# NOTE: Push tracking to array
+				trackings_queue.append([index_frame, frame, gmos])
 
-			# NOTE: Push tracking to queue
-			self.trackings_queue.put([index_frame, None, gmos])
+				# DEBUG:
+				image_draw = frame.copy()
+				# for gmo in gmos:
+				# 	plot_one_box(
+				# 		bbox = gmo.bboxes[-1],
+				# 		img  = image_draw,
+				# 		color= AppleRGB.values()[gmo.current_label.train_id],
+				# 		label= f"{classes_aic23[gmo.current_label.train_id]}::{gmo.id % 1000}"
+				# 	)
+				image_draw = self.draw(
+					drawing=image_draw,
+					gmos=gmos.copy(),
+					rois=self.matcher.rois,
+					mois=self.matcher.mois,
+				)
+				cv2.imwrite(
+					f"{self.outputs_dir}"
+					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks/"
+					f"{index_frame:04d}.jpg",
+					image_draw
+				)
 
-			# DEBUG:
-			# if index_frame in [3, 4, 5, 6, 7, 8, 9, 10]:
-			# 	print("************")
-			# 	print("run_tracker")
-			# 	print(index_frame, ":: qsize", self.trackings_queue.qsize())
-			# 	print(index_frame, "::", [gmo.current_bbox for gmo in gmos])
-			# 	print("************")
-			# image_draw = frame.copy()
-			# image_draw = self.draw(
-			# 	drawing  = image_draw,
-			# 	gmos     = gmos,
-			# 	rois     = self.matcher.rois,
-			# 	mois     = self.matcher.mois,
-			# )
-			# cv2.imwrite(
-			# 	f"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/{batch_detections[0].video_name}_tracks/" \
-			# 	f"{batch_detections[0].frame_index:04d}.jpg",
-			# 	image_draw
-			# )
+			pbar.update(len(indexes_img))
 
-			# self.pbar.update(1)
-
-			# DEBUG:
-			# with open(
-			# 		"/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/004_tracker.txt",
-			# 		"a") as f_write:
-			# 	f_write.write(f"{index_frame} :: {[gmo.current_bbox for gmo in gmos]}")
-			# 	f_write.write("\n")
-
-		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.trackings_queue.put((None, None, None))
+		# NOTE: save pickle
+		pickle.dump(
+			trackings_queue,
+			open(f"{self.outputs_dir}/dets_crop_debug/trackings_queue.pkl", 'wb')
+		)
 
 	def run_matching(self):
-		while True:
-			# NOTE: Get batch tracking from queue
-			(index_frame, _, gmos) = self.trackings_queue.get()
+		"""Run Matching"""
+		# NOTE: init
+		pickle_loader = PickleLoader(
+			data=f"{self.outputs_dir}/dets_crop_debug/trackings_queue.pkl",
+			batch_size=self.matcher_cfg["batch_size"]
+		)
+		matching_queue = []
+		pbar = tqdm(total=len(pickle_loader), desc=f"Matching: ")
 
-			if gmos is None:
-				break
+		for pickles, indexes_img in pickle_loader:
+			for index_frame, frame, gmos in pickles:
 
-			# DEBUG:
-			# with open("/media/sugarubuntu/DataSKKU3/3_Dataset/AI_City_Challenge/2023/Track_5/aicity2023_track5_test_docker/output_aic23/dets_crop_debug/004_matching.txt", "a") as f_write:
-			# 	f_write.write(f"{index_frame} :: {[gmo.current_bbox for gmo in gmos]}")
-			# 	f_write.write("\n")
+				# DEBUG:
+				image_draw = frame.copy()
+				image_draw = self.draw(
+					drawing  = image_draw,
+					gmos     = gmos.copy(),
+					rois     = self.matcher.rois,
+					mois     = self.matcher.mois,
+				)
+				cv2.imwrite(
+					f"{self.outputs_dir}"
+					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_matching/"
+					f"{index_frame:04d}.jpg",
+					image_draw
+				)
 
-			# NOTE: Update moving state
-			for gmo in gmos:
-				gmo.update_moving_state(rois=self.matcher.rois)
-				gmo.timestamps.append(timer())
 
-			# NOTE: Associate gmos with MOIs
-			in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-			MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
-			to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
-			MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
-			                                     shape_type="linestrip")
+				# NOTE: Update moving state
+				for gmo in gmos:
+					gmo.update_moving_state(rois=self.matcher.rois)
+					gmo.timestamps.append(timer())
 
-			# NOTE: Count
-			countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-			for gmo in countable_gmos:
-				gmo.moving_state = MovingState.Counted
+				# NOTE: Associate gmos with MOIs
+				in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+				MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
+				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+				MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.matcher.mois,
+													 shape_type="linestrip")
 
-			# DEBUG:
-			# 'is_candidate', 'is_confirmed', 'is_countable', 'is_counted', 'is_counting', 'is_exiting', 'is_to_be_counted'
-			# print(index_frame, "::", [gmo.current_bbox for gmo in countable_gmos])
+				# NOTE: Count
+				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+				for gmo in countable_gmos:
+					gmo.moving_state = MovingState.Counted
 
-			# NOTE: Push tracking to queue
-			self.matching_queue.put([index_frame, None, gmos, countable_gmos])
+				# NOTE: Push tracking to array
+				matching_queue.append([index_frame, frame, gmos, countable_gmos])
 
-		# NOTE: Push None to queue to act as a stopping condition for next thread
-		self.matching_queue.put([None, None, None, None])
+			pbar.update(len(indexes_img))
+
+		# NOTE: save pickle
+		pickle.dump(
+			matching_queue,
+			open(f"{self.outputs_dir}/dets_crop_debug/matching_queue.pkl", 'wb')
+		)
+
 
 	def run_analysis(self):
 		while True:
 			# NOTE: Get batch identification from queue
-			(index_frame_match, _, gmos, countable_gmos) = self.matching_queue.get()
-			(index_frame_iden, frame, batch_identifications) = self.identifications_queue.get()
+			(index_frame_match, frame, gmos, countable_gmos) = self.matching_queue.get()
+			(index_frame_ident, frame, batch_identifications) = self.identifications_queue.get()
 
-			if index_frame_iden is None or index_frame_match is None:
+			if index_frame_ident is None or index_frame_match is None:
 				break
 
 			self.pbar.update(1)
@@ -624,6 +671,18 @@ class TrafficSafetyCamera(BaseCamera):
 	def run(self):
 		"""Main run loop."""
 		self.run_routine_start()
+
+		# NOTE: detection
+		# self.run_detector()
+
+		# NOTE: identification
+		# self.run_identifier()
+
+		# NOTE: tracking
+		self.run_tracker()
+
+		# NOTE: matching
+		self.run_matching()
 
 		self.run_routine_end()
 
@@ -713,11 +772,14 @@ def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	"""Scale up 1.2% or +-40
 
 	Args:
-		bbox_xyxy:
-		height_img:
-		width_img:
+		bbox_xyxy (np.ndarray):
+		height_img (int):
+		width_img (int):
+		ratio (float):
+		padding (int):
 
 	Returns:
+		bbox_xyxy (np.ndarray):
 
 	"""
 	cx = 0.5 * bbox_xyxy[0] + 0.5 * bbox_xyxy[2]
@@ -749,3 +811,5 @@ def plot_one_box(bbox, img, color=None, label=None, line_thickness=1):
 		c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
 		cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
 		cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+
+	return img

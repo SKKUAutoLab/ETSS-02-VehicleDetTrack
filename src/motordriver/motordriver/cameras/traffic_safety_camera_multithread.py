@@ -794,11 +794,14 @@ def scaleup_bbox(bbox_xyxy, height_img, width_img, ratio, padding):
 	"""Scale up 1.2% or +-40
 
 	Args:
-		bbox_xyxy:
-		height_img:
-		width_img:
+		bbox_xyxy (np.ndarray):
+		height_img (int):
+		width_img (int):
+		ratio (float):
+		padding (int):
 
 	Returns:
+		bbox_xyxy (np.ndarray):
 
 	"""
 	cx = 0.5 * bbox_xyxy[0] + 0.5 * bbox_xyxy[2]
