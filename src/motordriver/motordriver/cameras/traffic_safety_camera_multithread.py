@@ -12,6 +12,7 @@ import threading
 import uuid
 import glob
 import random
+import copy
 from queue import Queue
 from operator import itemgetter
 from timeit import default_timer as timer
@@ -514,7 +515,7 @@ class TrafficSafetyCameraMultiThread(BaseCamera):
 
 			# NOTE: Track (in batch)
 			self.tracker.update(detections=batch_detections)
-			gmos = self.tracker.tracks
+			gmos = copy.deepcopy(self.tracker.tracks)
 
 			# DEBUG:
 			# image_draw = frame.copy()
