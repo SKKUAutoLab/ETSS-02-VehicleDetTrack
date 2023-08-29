@@ -38,7 +38,7 @@ __all__ = [
 ]
 
 
-# MARK: - YOLOv8
+# MARK: - Matcher_RNT
 
 @MATCHERS.register(name="matcher_rnt")
 class MatcherRnT(BaseMatcher):

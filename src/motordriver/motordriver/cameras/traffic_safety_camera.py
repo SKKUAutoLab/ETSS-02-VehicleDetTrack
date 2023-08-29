@@ -560,7 +560,7 @@ class TrafficSafetyCamera(BaseCamera):
 				self.tracker.update(detections=batch_detections)
 				gmos = self.tracker.tracks
 
-				# NOTE: Update gmos by tracker
+				# NOTE: Update gmos by matcher
 				self.matcher.update(gmos)
 
 				# NOTE: Push tracking to array
@@ -598,19 +598,19 @@ class TrafficSafetyCamera(BaseCamera):
 
 	def run_analysis(self):
 		"""Run tracking"""
-		# NOTE: init
+		# NOTE: load picker
 		matching_queue = pickle.load(
 			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'rb'))
 
 		identifications_queue = pickle.load(
 			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'rb'))
 
+		# NOTE: sync data
 		for index_frame_match, frame, gmos in matching_queue:
-			for index_frame_ident, frame, batch_identifications in identifications_queue:
+			for index_frame_ident, _, batch_identifications in identifications_queue:
 				if index_frame_match == index_frame_ident:
 
-
-					# Get out of second loop
+					# Get out of identifications_queue loop because
 					break
 
 	def run_write_draw(self):
@@ -631,10 +631,10 @@ class TrafficSafetyCamera(BaseCamera):
 		# self.run_identifier()
 
 		# NOTE: tracking and matching
-		self.run_tracker_matching()
+		# self.run_tracker_matching()
 
 		# NOTE: analysis
-		# self.run_analysis()
+		self.run_analysis()
 
 		self.run_routine_end()
 
