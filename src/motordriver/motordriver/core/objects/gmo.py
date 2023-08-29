@@ -72,6 +72,7 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		self.update_motion_state()
 		
 	def update_moving_state(self, rois: List[ROI], **kwargs):
+
 		roi = next((roi for roi in rois if roi.uuid == self.roi_uuid), None)
 		if roi is None:
 			return
@@ -99,11 +100,8 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Visualize
 
 	def draw(self, drawing, **kwargs):
-		# DEBUG:
-		print(f"{self.is_confirmed}::{self.is_counting}::{self.is_counted}::{self.is_exiting}")
-
 		if self.is_confirmed:
-			GeneralObject.draw(self, drawing=drawing, label=False, color=AppleRGB.values()[0], **kwargs)
+			GeneralObject.draw(self, drawing=drawing, label=True, color=AppleRGB.values()[0], **kwargs)
 		elif self.is_counting:
 			GeneralObject.draw(self, drawing=drawing, label=True, color=AppleRGB.values()[0], **kwargs)
 		elif self.is_counted:

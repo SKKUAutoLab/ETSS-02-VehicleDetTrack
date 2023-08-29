@@ -543,7 +543,7 @@ class TrafficSafetyCamera(BaseCamera):
 			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'wb')
 		)
 
-	def run_tracker_matching(self):
+	def run_tracker(self):
 		"""Run tracking"""
 		# NOTE: init
 		pickle_loader = PickleLoader(
@@ -582,7 +582,7 @@ class TrafficSafetyCamera(BaseCamera):
 				trackings_queue.append([index_frame, frame, copy.deepcopy(gmos)])
 
 				# DEBUG:
-				image_draw = frame.copy()
+				# image_draw = frame.copy()
 				# for gmo in gmos:
 				# 	plot_one_box(
 				# 		bbox = gmo.bboxes[-1],
@@ -590,6 +590,37 @@ class TrafficSafetyCamera(BaseCamera):
 				# 		color= AppleRGB.values()[gmo.current_label.train_id],
 				# 		label= f"{classes_aic23[gmo.current_label.train_id]}::{gmo.id % 1000}"
 				# 	)
+				# cv2.imwrite(
+				# 	f"{self.outputs_dir}"
+				# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks/"
+				# 	f"{index_frame:04d}.jpg",
+				# 	image_draw
+				# )
+
+			pbar.update(len(indexes_img))
+
+		# NOTE: save pickle
+		pickle.dump(
+			trackings_queue,
+			open(f"{self.outputs_dir}/dets_crop_debug/trackings_queue.pkl", 'wb')
+		)
+
+	def run_matching(self):
+		"""Run Matching"""
+		# NOTE: init
+		pickle_loader = PickleLoader(
+			data       = f"{self.outputs_dir}/dets_crop_debug/trackings_queue.pkl",
+			batch_size = self.matcher_cfg["batch_size"]
+		)
+
+		matching_queue = []
+		pbar = tqdm(total=len(pickle_loader), desc=f"Matching: ")
+
+		for pickles, indexes_img in pickle_loader:
+			for index_frame, frame, gmos in pickles:
+
+				# DEBUG:
+				image_draw = frame.copy()
 				image_draw = self.draw(
 					drawing = image_draw,
 					gmos    = gmos,
@@ -598,41 +629,32 @@ class TrafficSafetyCamera(BaseCamera):
 				)
 				cv2.imwrite(
 					f"{self.outputs_dir}"
-					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
+					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_matching/"
 					f"{index_frame:04d}.jpg",
 					image_draw
 				)
+
+				# NOTE: Push tracking to array
+				matching_queue.append([index_frame, frame, gmos])
 
 			pbar.update(len(indexes_img))
 
 		# NOTE: save pickle
 		pickle.dump(
-			trackings_queue,
-			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'wb')
+			matching_queue,
+			open(f"{self.outputs_dir}/dets_crop_debug/matching_queue.pkl", 'wb')
 		)
 
 	def run_analysis(self):
-		"""Run tracking"""
-		# NOTE: init
-		matching_queue = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl",
-			batch_size=self.tracker_cfg["batch_size"]
-		)
+		while True:
+			# NOTE: Get batch identification from queue
+			(index_frame_match, frame, gmos) = self.matching_queue.get()
+			(index_frame_ident, frame, batch_identifications) = self.identifications_queue.get()
 
-		identifications_queue = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl",
-			batch_size=self.tracker_cfg["batch_size"]
-		)
+			if index_frame_ident is None or index_frame_match is None:
+				break
 
-		# while True:
-		# 	# NOTE: Get batch identification from queue
-		# 	(index_frame_match, frame, gmos) = self.matching_queue.get()
-		# 	(index_frame_ident, frame, batch_identifications) = self.identifications_queue.get()
-		#
-		# 	if index_frame_ident is None or index_frame_match is None:
-		# 		break
-		#
-		# 	self.pbar.update(1)
+			self.pbar.update(1)
 
 	def run_write_draw(self):
 		while True:
@@ -646,16 +668,16 @@ class TrafficSafetyCamera(BaseCamera):
 		self.run_routine_start()
 
 		# NOTE: detection
-		self.run_detector()
+		# self.run_detector()
 
 		# NOTE: identification
-		self.run_identifier()
+		# self.run_identifier()
 
-		# NOTE: tracking and matching
-		self.run_tracker_matching()
+		# NOTE: tracking
+		self.run_tracker()
 
-		# NOTE: analysis
-		self.run_analysis()
+		# NOTE: matching
+		self.run_matching()
 
 		self.run_routine_end()
 

@@ -189,7 +189,6 @@ class GeneralObject(metaclass=abc.ABCMeta):
 							  color=color, thickness=2)
 				cv2.circle(img=drawing, center=(int(self.current_bbox_center[0]), int(self.current_bbox_center[1])), radius=3, thickness=-1, color=color)
 
-			
 		if polygon:
 			curr_polygon = self.current_polygon
 			pts          = curr_polygon.reshape((-1, 1, 2))
@@ -198,9 +197,10 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		if label:
 			bbox_tl    = self.current_bbox[0:2]
 			curr_label = self.label_by_majority
+			id_text    = (self.id % 100)
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
-			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
+			cv2.putText(img=drawing, text=f"{curr_label.name}-{id_text}", fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
 		
 		if trajectory:
 			pts = np.array(self.trajectory.reshape((-1, 1, 2)), dtype=int)
