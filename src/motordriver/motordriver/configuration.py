@@ -25,9 +25,11 @@ src_dir        = os.path.join(root_dir, "motor")                	# "src/motor/mo
 config_dir     = os.path.join(root_dir, "configs")              	# "src/motor/configs"
 models_zoo_dir = os.path.join(root_dir, "models")        			# "src/motor/models_zoo"
 if "DIR_DATA" in os.environ:
-    data_dir   = os.environ["DIR_DATA"]
+    data_dir     = os.environ["DIR_DATA"]
+    result_dir   = os.environ["DIR_RESULT"]
 else:
-    data_dir   = os.path.join(root_dir, "data")              		# "src/motor/data"
+    data_dir     = os.path.join(root_dir, "data")              		# "src/motor/data"
+    result_dir   = os.path.join(root_dir, "data")              		# "src/motor/data"
 
 # MARK: - Process Config
 

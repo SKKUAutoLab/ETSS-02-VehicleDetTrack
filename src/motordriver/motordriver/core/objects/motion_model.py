@@ -21,7 +21,9 @@ __all__ = [
 	"MotionModel"
 ]
 
+
 # MARK: - MotionModel
+
 
 class MotionModel(metaclass=abc.ABCMeta):
 

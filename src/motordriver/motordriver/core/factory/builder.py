@@ -12,6 +12,7 @@ __all__ = [
 	"CAMERAS",
 	"DETECTORS",
 	"IDENTIFICATIONS",
+	"MATCHERS",
 
 	"FILE_HANDLERS",
 
@@ -25,6 +26,7 @@ CAMERAS         = Factory(name="cameras")
 DETECTORS       = Factory(name="object_detectors")
 IDENTIFICATIONS = Factory(name="identifications")
 TRACKERS        = Factory(name="trackers")
+MATCHERS        = Factory(name="matchers")
 
 # MARK: - File
 

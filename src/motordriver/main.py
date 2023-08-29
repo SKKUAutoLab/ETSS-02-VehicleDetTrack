@@ -16,6 +16,7 @@ import yaml
 
 from core.utils.rich import console
 from motordriver.cameras import (
+	TrafficSafetyCamera,
 	TrafficSafetyCameraMultiThread
 )
 
@@ -49,11 +50,13 @@ parser.add_argument(
 	"--verbose", action='store_true', help="Should visualize the images."
 )
 
+
 # MARK: - Main Function
 
 def main():
 	# NOTE: init camera
-	Camera = TrafficSafetyCameraMultiThread
+	# Camera = TrafficSafetyCameraMultiThread
+	Camera = TrafficSafetyCamera
 
 	# NOTE: Start timer
 	process_start_time = perf_counter()

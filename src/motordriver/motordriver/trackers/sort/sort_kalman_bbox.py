@@ -24,10 +24,8 @@ import numpy as np
 from filterpy.kalman import KalmanFilter
 
 from core.factory.builder import TRACKERS
-from core.objects import (
-	GMO,
-	Instance
-)
+from core.objects.gmo import GMO
+from core.objects.instance import Instance
 from trackers.tracker import Tracker
 from core.utils.bbox import (
 	bbox_xyxy_to_z,
@@ -69,24 +67,24 @@ class KalmanBBoxTrack(GMO):
 		self.kf.x[:4] = bbox_xyxy_to_z(self.current_bbox)
 	
 	@classmethod
-	def track_from_detection(cls, detection: Instance, **kwargs):
+	def track_from_detection(cls, instance: Instance, **kwargs):
 		"""Create ``GMO`` object from ``Instance`` object.
 		
 		Args:
-			detection (Instance):
+			instance (Instance):
 		
 		Returns:
 			gmo (GMO):
 				The GMO object.
 		"""
 		return cls(
-			frame_index = detection.frame_index,
-			timestamp   = detection.timestamp,
-			bbox        = detection.bbox,
-			polygon     = detection.polygon,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			roi_uuid    = detection.roi_uuid,
+			frame_index = instance.frame_index,
+			timestamp   = instance.timestamp,
+			bbox        = instance.bbox,
+			polygon     = instance.polygon,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			roi_uuid    = instance.roi_uuid,
 			**kwargs
 		)
 	

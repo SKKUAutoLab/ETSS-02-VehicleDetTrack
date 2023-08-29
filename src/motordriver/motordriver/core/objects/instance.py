@@ -57,7 +57,7 @@ class Instance:
 	def __init__(
 		self,
 		id         : Union[int, str, list]      = uuid.uuid4().int,
-		roi_id     : Union[int, str, None]      = None,
+		roi_uuid   : Union[int, str, None]      = None,
 		bbox       : Optional[np.ndarray]       = None,
 		polygon    : Optional[np.ndarray]       = None,
 		confidence : Optional[float]            = None,
@@ -72,11 +72,10 @@ class Instance:
 		*args, **kwargs
 	):
 		super().__init__()
-		self.roi_uuid = None
-		self.label    = class_id
+		self.roi_uuid    = roi_uuid
+		self.label       = class_label
 
 		self.id          = id
-		self.roi_id      = roi_id
 		self.bbox        = bbox
 		self.polygon     = polygon
 		self.confidence  = confidence

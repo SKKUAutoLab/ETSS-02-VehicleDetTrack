@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
-# from __future__ import annotations
+from __future__ import annotations
 
 import abc
 import uuid
@@ -28,7 +28,7 @@ from uuid import UUID
 import cv2
 import numpy as np
 
-from core.objects import Instance
+from core.objects.instance import Instance
 from core.utils.point import distance_between_points
 from core.utils.bbox import bbox_xyxy_center
 from core.utils.label import get_majority_label
@@ -174,24 +174,21 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		trajectory: bool = False,
 		color     : Optional[Tuple[int, int, int]] = None
 	):
-
 		color = color if color is not None else self.label_by_majority.color
-
 		if bbox:
-			curr_bbox = self.current_bbox
+			curr_bbox = self.current_bbox.copy()
 			if False:
 				# NOTE: only ellipse for the object
-				width = abs(curr_bbox[2] - curr_bbox[0])
-				height = abs(curr_bbox[3] - curr_bbox[1])
-				drawing = cv2.ellipse(drawing, center=tuple(self.current_bbox_center), axes=(width // 8, height // 8),
+				width   = abs(curr_bbox[2] - curr_bbox[0])
+				height  = abs(curr_bbox[3] - curr_bbox[1])
+				drawing = cv2.ellipse(drawing, center=(int(self.current_bbox_center[0]), int(self.current_bbox_center[1])), axes=(width // 8, height // 8),
 									  angle=0, startAngle=0, endAngle=360, color=color, thickness=-1)
 			else:
 				# NOTE: bounding box cover the object
 				cv2.rectangle(img=drawing, pt1=(curr_bbox[0], curr_bbox[1]), pt2=(curr_bbox[2], curr_bbox[3]),
 							  color=color, thickness=2)
-				cv2.circle(img=drawing, center=tuple(self.current_bbox_center), radius=3, thickness=-1, color=color)
+				cv2.circle(img=drawing, center=(int(self.current_bbox_center[0]), int(self.current_bbox_center[1])), radius=3, thickness=-1, color=color)
 
-			
 		if polygon:
 			curr_polygon = self.current_polygon
 			pts          = curr_polygon.reshape((-1, 1, 2))
@@ -200,12 +197,13 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		if label:
 			bbox_tl    = self.current_bbox[0:2]
 			curr_label = self.label_by_majority
+			id_text    = (self.id % 100)
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
-			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
+			cv2.putText(img=drawing, text=f"{curr_label.name}-{id_text}", fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
 		
 		if trajectory:
-			pts = self.trajectory.reshape((-1, 1, 2))
+			pts = np.array(self.trajectory.reshape((-1, 1, 2)), dtype=int)
 			cv2.polylines(img=drawing, pts=[pts], isClosed=False, color=color, thickness=2)
 			for point in self.trajectory:
-				cv2.circle(img=drawing, center=tuple(point), radius=3, thickness=2, color=color)
+				cv2.circle(img=drawing, center=(int(point[0]), int(point[1])), radius=3, thickness=2, color=color)
