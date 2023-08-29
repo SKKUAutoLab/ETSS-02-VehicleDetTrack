@@ -21,11 +21,13 @@ import os
 from typing import List
 from typing import Optional
 from typing import Union
+from timeit import default_timer as timer
 
 import cv2
 import numpy as np
 from munch import Munch
 from core.factory.builder import MATCHERS
+from core.objects.moving_model import MovingState
 
 from matcher import BaseMatcher
 from matcher.moi import MOI
@@ -53,10 +55,13 @@ class MatcherRnT(BaseMatcher):
 			**kwargs
 	):
 		super().__init__(name=name, **kwargs)
-		self.moi_cfg  = moi
-		self.roi_cfg  = roi
-		self.rois     = None
-		self.mois     = None
+		self.moi_cfg            = moi
+		self.roi_cfg            = roi
+		self.rois               = None
+		self.mois               = None
+		self.in_roi_gmos        = None
+		self.countable_gmos     = None
+		self.to_be_counted_gmos = None
 
 		# NOTE: Load components
 		self.load_mois(self.moi_cfg["file"])
@@ -98,4 +103,26 @@ class MatcherRnT(BaseMatcher):
 
 	# MARK: Processing
 
+	def update(self, gmos):
+		self.update_moving_state(gmos)
+		self.associate_gmos_with_mois(gmos)
+		self.counting(gmos)
 
+	def update_moving_state(self, gmos):
+		for gmo in gmos:
+			gmo.update_moving_state(rois=self.rois)
+			gmo.timestamps.append(timer())
+
+	def associate_gmos_with_mois(self, gmos):
+		# NOTE: Associate gmos with MOIs
+		self.in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+		MOI.associate_moving_objects_to_mois(
+			gmos=self.in_roi_gmos, mois=self.mois, shape_type="polygon")
+		self.to_be_counted_gmos = [o for o in self.in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+		MOI.associate_moving_objects_to_mois(
+			gmos=self.to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+
+	def counting(self, gmos):
+		self.countable_gmos = [o for o in self.in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+		for gmo in self.countable_gmos:
+			gmo.moving_state = MovingState.Counted

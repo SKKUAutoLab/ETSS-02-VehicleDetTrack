@@ -560,29 +560,14 @@ class TrafficSafetyCamera(BaseCamera):
 				self.tracker.update(detections=batch_detections)
 				gmos = self.tracker.tracks
 
-				# NOTE: Update moving state
-				for gmo in gmos:
-					gmo.update_moving_state(rois=self.matcher.rois)
-					gmo.timestamps.append(timer())
-
-				# NOTE: Associate gmos with MOIs
-				in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-				MOI.associate_moving_objects_to_mois(
-					gmos=in_roi_gmos, mois=self.matcher.mois, shape_type="polygon")
-				to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
-				MOI.associate_moving_objects_to_mois(
-					gmos=to_be_counted_gmos, mois=self.matcher.mois, shape_type="linestrip")
-
-				# NOTE: Count
-				countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-				for gmo in countable_gmos:
-					gmo.moving_state = MovingState.Counted
+				# NOTE: Update gmos by tracker
+				self.matcher.update(gmos)
 
 				# NOTE: Push tracking to array
 				trackings_queue.append([index_frame, frame, copy.deepcopy(gmos)])
 
 				# DEBUG:
-				image_draw = frame.copy()
+				# image_draw = frame.copy()
 				# for gmo in gmos:
 				# 	plot_one_box(
 				# 		bbox = gmo.bboxes[-1],
@@ -590,18 +575,18 @@ class TrafficSafetyCamera(BaseCamera):
 				# 		color= AppleRGB.values()[gmo.current_label.train_id],
 				# 		label= f"{classes_aic23[gmo.current_label.train_id]}::{gmo.id % 1000}"
 				# 	)
-				image_draw = self.draw(
-					drawing = image_draw,
-					gmos    = gmos,
-					rois    = self.matcher.rois,
-					mois    = self.matcher.mois,
-				)
-				cv2.imwrite(
-					f"{self.outputs_dir}"
-					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
-					f"{index_frame:04d}.jpg",
-					image_draw
-				)
+				# image_draw = self.draw(
+				# 	drawing = image_draw,
+				# 	gmos    = gmos,
+				# 	rois    = self.matcher.rois,
+				# 	mois    = self.matcher.mois,
+				# )
+				# cv2.imwrite(
+				# 	f"{self.outputs_dir}"
+				# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
+				# 	f"{index_frame:04d}.jpg",
+				# 	image_draw
+				# )
 
 			pbar.update(len(indexes_img))
 
@@ -614,25 +599,19 @@ class TrafficSafetyCamera(BaseCamera):
 	def run_analysis(self):
 		"""Run tracking"""
 		# NOTE: init
-		matching_queue = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl",
-			batch_size=self.tracker_cfg["batch_size"]
-		)
+		matching_queue = pickle.load(
+			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'rb'))
 
-		identifications_queue = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl",
-			batch_size=self.tracker_cfg["batch_size"]
-		)
+		identifications_queue = pickle.load(
+			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'rb'))
 
-		# while True:
-		# 	# NOTE: Get batch identification from queue
-		# 	(index_frame_match, frame, gmos) = self.matching_queue.get()
-		# 	(index_frame_ident, frame, batch_identifications) = self.identifications_queue.get()
-		#
-		# 	if index_frame_ident is None or index_frame_match is None:
-		# 		break
-		#
-		# 	self.pbar.update(1)
+		for index_frame_match, frame, gmos in matching_queue:
+			for index_frame_ident, frame, batch_identifications in identifications_queue:
+				if index_frame_match == index_frame_ident:
+
+
+					# Get out of second loop
+					break
 
 	def run_write_draw(self):
 		while True:
@@ -646,16 +625,16 @@ class TrafficSafetyCamera(BaseCamera):
 		self.run_routine_start()
 
 		# NOTE: detection
-		self.run_detector()
+		# self.run_detector()
 
 		# NOTE: identification
-		self.run_identifier()
+		# self.run_identifier()
 
 		# NOTE: tracking and matching
 		self.run_tracker_matching()
 
 		# NOTE: analysis
-		self.run_analysis()
+		# self.run_analysis()
 
 		self.run_routine_end()
 
