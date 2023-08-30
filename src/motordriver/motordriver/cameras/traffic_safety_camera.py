@@ -404,17 +404,17 @@ class TrafficSafetyCamera(BaseCamera):
 							padding = 0
 						)
 						detection_result = {
-							'roi_uuid'   : instance.roi_uuid,
-							'video_name' : self.data_loader_cfg['data_path'],
-							'frame_index': index_image,
-							'image'      : images[index_b][bbox_xyxy[1]: bbox_xyxy[3], bbox_xyxy[0]: bbox_xyxy[2]],
-							'bbox'       : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
-							'class_id'   : instance.class_label["train_id"],
+							'roi_uuid'    : instance.roi_uuid,
+							'video_name'  : self.data_loader_cfg['data_path'],
+							'frame_index' : index_image,
+							'image'       : images[index_b][bbox_xyxy[1]: bbox_xyxy[3], bbox_xyxy[0]: bbox_xyxy[2]],
+							'bbox'        : np.array((bbox_xyxy[0], bbox_xyxy[1], bbox_xyxy[2], bbox_xyxy[3])),
+							'class_id'    : instance.class_label["train_id"],
 							'class_label' : instance.class_label,
 							'label'       : instance.label,
-							'id'         : crop_id,
-							'confidence' : instance.confidence,
-							'image_size' : [width_img, height_img]
+							'id'          : crop_id,
+							'confidence'  : instance.confidence,
+							'image_size'  : [width_img, height_img]
 						}
 						batch_detections_tracker.append(Instance(**detection_result))
 
@@ -481,7 +481,7 @@ class TrafficSafetyCamera(BaseCamera):
 					for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
 						for index_in, instance in enumerate(batch_instance):
 							bbox_xyxy     = [int(i) for i in instance.bbox]
-							instance_id   = detection_instance.id.append(int(index_in))
+							instance_id   = detection_instance.id + [int(index_in)]
 
 							# NOTE: add the coordinate from crop image to original image
 							# DEBUG: comment doan nay neu extract anh nho
@@ -567,7 +567,7 @@ class TrafficSafetyCamera(BaseCamera):
 				trackings_queue.append([index_frame, frame, copy.deepcopy(gmos)])
 
 				# DEBUG:
-				# image_draw = frame.copy()
+				image_draw = frame.copy()
 				# for gmo in gmos:
 				# 	plot_one_box(
 				# 		bbox = gmo.bboxes[-1],
@@ -575,18 +575,18 @@ class TrafficSafetyCamera(BaseCamera):
 				# 		color= AppleRGB.values()[gmo.current_label.train_id],
 				# 		label= f"{classes_aic23[gmo.current_label.train_id]}::{gmo.id % 1000}"
 				# 	)
-				# image_draw = self.draw(
-				# 	drawing = image_draw,
-				# 	gmos    = gmos,
-				# 	rois    = self.matcher.rois,
-				# 	mois    = self.matcher.mois,
-				# )
-				# cv2.imwrite(
-				# 	f"{self.outputs_dir}"
-				# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
-				# 	f"{index_frame:04d}.jpg",
-				# 	image_draw
-				# )
+				image_draw = self.draw(
+					drawing = image_draw,
+					gmos    = gmos,
+					rois    = self.matcher.rois,
+					mois    = self.matcher.mois,
+				)
+				cv2.imwrite(
+					f"{self.outputs_dir}"
+					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
+					f"{index_frame:04d}.jpg",
+					image_draw
+				)
 
 			pbar.update(len(indexes_img))
 
@@ -599,16 +599,32 @@ class TrafficSafetyCamera(BaseCamera):
 	def run_analysis(self):
 		"""Run tracking"""
 		# NOTE: load picker
-		matching_queue = pickle.load(
+		matching_pickle = pickle.load(
 			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'rb'))
 
-		identifications_queue = pickle.load(
+		identifications_pickle = pickle.load(
 			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'rb'))
 
+		matching_list = []
+		for index_frame_match, frame, gmos in matching_pickle:
+			matching_list.append([index_frame_match, frame, gmos])
+
+		identifications_list = []
+		for index_frame_ident, _, batch_identifications in identifications_pickle:
+			identifications_list.append([index_frame_ident, _, batch_identifications])
+
 		# NOTE: sync data
-		for index_frame_match, frame, gmos in matching_queue:
-			for index_frame_ident, _, batch_identifications in identifications_queue:
+		for index_frame_match, frame, gmos in matching_list:
+			for index_frame_ident, _, batch_identifications in identifications_list:
 				if index_frame_match == index_frame_ident:
+
+					# for gmo in gmos:
+					# 	print(f"{index_frame_match}--{gmo.id}--{gmo.bboxes_id[-1]}")
+
+					for gmo in gmos:
+						for identification_instance in batch_identifications:
+							if gmo.bboxes_id[-1][0] == identification_instance.id[0] and gmo.bboxes_id[-1][1] == identification_instance.id[1]:
+								print(identification_instance.id)
 
 					# Get out of identifications_queue loop because
 					break
