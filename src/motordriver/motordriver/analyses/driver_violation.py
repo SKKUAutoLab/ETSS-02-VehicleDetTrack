@@ -50,3 +50,9 @@ class DriverViolation(BaseAnalyzer):
 	):
 		super().__init__(name=name, **kwargs)
 		pass
+
+	# MARK: processing
+
+	def update(self):
+		pass
+

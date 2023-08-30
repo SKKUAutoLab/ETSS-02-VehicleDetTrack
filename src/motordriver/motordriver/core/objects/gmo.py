@@ -66,7 +66,7 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	
 	def update_gmo(self, detection: Instance):
 		# NOTE: First update ``GeneralObject``
-		self.update_go_from_detection(detection=detection)
+		self.update_go_from_detection(instance=detection)
 		
 		# NOTE: Second, update motion model
 		self.update_motion_state()

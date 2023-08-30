@@ -85,6 +85,7 @@ class KalmanBBoxTrack(GMO):
 			confidence  = instance.confidence,
 			label       = instance.label,
 			roi_uuid    = instance.roi_uuid,
+			bbox_id     = instance.id,
 			**kwargs
 		)
 	
