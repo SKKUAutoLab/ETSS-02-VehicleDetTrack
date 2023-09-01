@@ -24,6 +24,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
+from analyses.analyzer import BaseAnalyzer
 from core.data.class_label import ClassLabels
 from core.io.filedir import is_basename
 from core.io.filedir import is_json_file
@@ -40,7 +41,7 @@ from core.utils.label import get_label
 from core.utils.rich import console
 from core.utils.constants import AppleRGB
 from core.objects.instance import Instance
-from core.factory.builder import CAMERAS, TRACKERS, MATCHERS
+from core.factory.builder import CAMERAS, TRACKERS, MATCHERS, ANALYZERS
 from core.factory.builder import DETECTORS
 from detectors.detector import BaseDetector
 from trackers.tracker import Tracker
@@ -83,6 +84,7 @@ class TrafficSafetyCamera(BaseCamera):
 			identifier   : dict,
 			tracker      : dict,
 			matcher      : dict,
+			analyzer     : dict,
 			data_loader  : dict,
 			data_writer  : Union[FrameWriter,  dict],
 			process      : dict,
@@ -132,6 +134,7 @@ class TrafficSafetyCamera(BaseCamera):
 		self.identifier_cfg  = identifier
 		self.tracker_cfg     = tracker
 		self.matcher_cfg     = matcher
+		self.analyzer_cfg    = analyzer
 		self.data_loader_cfg = data_loader
 		self.data_writer_cfg = data_writer
 
@@ -153,6 +156,7 @@ class TrafficSafetyCamera(BaseCamera):
 		self.init_identifier(identifier       = identifier)
 		self.init_tracker(tracker             = tracker)
 		self.init_matcher(matcher             = matcher)
+		self.init_analyzer(analyzer           = analyzer)
 		self.init_gmo(matcher                 = matcher)
 
 	# MARK: Configure
@@ -238,20 +242,6 @@ class TrafficSafetyCamera(BaseCamera):
 		else:
 			raise ValueError(f"Cannot initialize detector with {tracker}.")
 
-	def init_data_loader(self, data_loader_cfg: dict):
-		"""Initialize data loader.
-
-		Args:
-			data_loader_cfg (dict):
-				Data loader object or a data loader's config dictionary.
-		"""
-		if self.process["run_image"]:
-			self.data_loader = FrameLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
-		else:
-			self.data_loader = VideoLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
-		# NOTE: to keep track process
-		# self.pbar = tqdm(total=self.data_loader.num_frames, desc=f"{data_loader_cfg['data_path']}")
-
 	def init_matcher(self, matcher: dict):
 		"""Initialize matcher.
 
@@ -268,6 +258,33 @@ class TrafficSafetyCamera(BaseCamera):
 			self.matcher = MATCHERS.build(**matcher)
 		else:
 			raise ValueError(f"Cannot initialize detector with {matcher}.")
+
+	def init_analyzer(self, analyzer: dict):
+		"""Initialize tracker.
+
+		Args:
+			analyzer (dict):
+				Analyzer object or a analyzer's config dictionary.
+		"""
+		console.log(f"Initiate Analyzer.")
+		if isinstance(analyzer, BaseAnalyzer):
+			self.analyzer = analyzer
+		elif isinstance(analyzer, dict):
+			self.analyzer = ANALYZERS.build(**analyzer)
+		else:
+			raise ValueError(f"Cannot initialize detector with {analyzer}.")
+
+	def init_data_loader(self, data_loader_cfg: dict):
+		"""Initialize data loader.
+
+		Args:
+			data_loader_cfg (dict):
+				Data loader object or a data loader's config dictionary.
+		"""
+		if self.process["run_image"]:
+			self.data_loader = FrameLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
+		else:
+			self.data_loader = VideoLoader(data=os.path.join(data_dir, data_loader_cfg["data_path"]), batch_size=data_loader_cfg["batch_size"])
 
 	def init_gmo(self, matcher: dict):
 		GeneralObject.min_travelled_distance = matcher["gmo"]["min_traveled_distance"]
@@ -618,13 +635,10 @@ class TrafficSafetyCamera(BaseCamera):
 			for index_frame_ident, _, batch_identifications in identifications_list:
 				if index_frame_match == index_frame_ident:
 
-					# for gmo in gmos:
-					# 	print(f"{index_frame_match}--{gmo.id}--{gmo.bboxes_id[-1]}")
+					# NOTE: analyse the driver on the motorbike
+					self.analyzer.update(gmos, batch_identifications)
 
-					for gmo in gmos:
-						for identification_instance in batch_identifications:
-							if gmo.bboxes_id[-1][0] == identification_instance.id[0] and gmo.bboxes_id[-1][1] == identification_instance.id[1]:
-								print(identification_instance.id)
+					# NOTE: analyse the route on the motorbike
 
 					# Get out of identifications_queue loop because
 					break
@@ -647,7 +661,7 @@ class TrafficSafetyCamera(BaseCamera):
 		# self.run_identifier()
 
 		# NOTE: tracking and matching
-		# self.run_tracker_matching()
+		self.run_tracker_matching()
 
 		# NOTE: analysis
 		self.run_analysis()

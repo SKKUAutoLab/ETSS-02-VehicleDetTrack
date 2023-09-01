@@ -200,14 +200,14 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			cv2.polylines(img=drawing, pts=pts, isClosed=True, color=color, thickness=2)
 
 		if label:
-			bbox_tl    = self.current_bbox[0:2]
-			curr_label = self.label_by_majority
 			if isinstance(self.id, int):
 				id_text    = (self.id % 100)
 			elif isinstance(self.id, list):
 				id_text    = (self.id[-1] % 100)
 			else:
 				id_text    = 0
+			bbox_tl    = self.current_bbox[0:2]
+			curr_label = self.label_by_majority
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
 			cv2.putText(img=drawing, text=f"{curr_label.name}-{id_text}", fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)

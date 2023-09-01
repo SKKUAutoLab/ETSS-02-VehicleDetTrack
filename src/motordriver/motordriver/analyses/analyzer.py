@@ -28,3 +28,6 @@ class BaseAnalyzer(metaclass=abc.ABCMeta):
 	):
 		super().__init__()
 		self.name = name
+
+	def update(self):
+		pass

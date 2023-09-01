@@ -49,10 +49,22 @@ class DriverViolation(BaseAnalyzer):
 			**kwargs
 	):
 		super().__init__(name=name, **kwargs)
-		pass
+
+	# MARK: Property
 
 	# MARK: processing
 
-	def update(self):
-		pass
+	def update(self, gmos, batch_identifications):
+		"""Update the violation
+
+		Args:
+			gmos (list):
+			batch_identifications (list):
+
+		"""
+		for gmo in gmos:
+			for identification_instance in batch_identifications:
+				if gmo.bboxes_id[-1][0] == identification_instance.id[0] and gmo.bboxes_id[-1][1] == \
+						identification_instance.id[1]:
+					print(identification_instance.id)
 

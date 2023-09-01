@@ -145,6 +145,12 @@ matcher:
     max_age: 1
       # Max frame to wait until a dead track can be counted.
 
+analyzer:
+  name: "driver_violation"
+    # Name of the analyzer
+  num_people: 2
+    # Maximum number of people in one motorbike
+
 data_writer:
   dst: "output_aic23"
   # Output video file or a directory.

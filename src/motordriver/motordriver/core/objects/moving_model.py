@@ -42,7 +42,7 @@ class MovingState(enum.Enum):
 
 # noinspection PyMissingOrEmptyDocstring
 class MovingModel(object):
-	"""Moving Model.
+	"""Moving Model for matching (Counting or Flow Estimation)
 	"""
 	
 	# MARK: Magic Functions

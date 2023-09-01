@@ -15,52 +15,53 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
+
 import abc
+from typing import Optional
+
+from core.utils.rich import console, error_console
+
+import numpy as np
 
 __all__ = [
-	"MotionModel"
+	"DriverModel"
 ]
 
 
-# MARK: - MotionModel
-
-
-class MotionModel(metaclass=abc.ABCMeta):
-	"""Object class for tracking
+class DriverModel(object):
+	"""Moving Model for matching (or Flow Estimation)
 	"""
+
 	# MARK: Magic Functions
-	
+
 	def __init__(
-		self,
-		hits             : int = 0,
-		hit_streak       : int = 0,
-		age              : int = 0,
-		time_since_update: int = 0,
-		**kwargs
+			self,
+			num_people : Optional[int]        = 1,
+			helmets    : Optional[np.ndarray] = None,
+			**kwargs
 	):
-		self.hits              = hits
-		self.hit_streak        = hit_streak
-		self.age               = age
-		self.time_since_update = time_since_update
-		self.history           = []
-	
+		self.num_people = num_people
+		self.helmets    = helmets if (helmets is not None) else np.zeros(self.num_people)
+
 	# MARK: Property
-	
+
 	@property
-	def matching_features(self):
-		print("``matching_features()`` has not been implemented yet")
-		raise NotImplementedError
+	def num_people(self):
+		return self._num_people
+
+	@num_people.setter
+	def num_people(self, num_people: int):
+		self._num_people = num_people
+
+	@property
+	def helmets(self):
+		return self._helmets
+
+	@helmets.setter
+	def helmets(self, helmets: list):
+		self._helmets = helmets
 
 	# MARK: Update
-	
-	def update_motion_state(self, **kwargs):
-		print("``update()`` has not been implemented yet")
-		raise NotImplementedError
-	
-	def predict_motion_state(self):
-		print("``predict()`` has not been implemented yet")
-		raise NotImplementedError
 
-	def current_motion_state(self):
-		print("``current_estimate()`` has not been implemented yet")
-		raise NotImplementedError
+	def update(self):
+		pass

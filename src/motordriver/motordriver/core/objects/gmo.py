@@ -19,6 +19,7 @@
 
 from typing import List
 
+from core.objects.driver_model import DriverModel
 from core.objects.instance import Instance
 from core.utils.constants import AppleRGB
 from core.objects.general_object import GeneralObject
@@ -32,7 +33,7 @@ from matcher.roi import ROI
 
 # MARK: - GMO (General Moving Object)
 
-class GMO(GeneralObject, MotionModel, MovingModel):
+class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
 	# MARK: Class Property
 	
 	min_entering_distance: int = 0
@@ -46,7 +47,8 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		GeneralObject.__init__(self, **kwargs)
 		MotionModel.__init__(self, **kwargs)
 		MovingModel.__init__(self, **kwargs)
-		
+		DriverModel.__init__(self, **kwargs)
+
 	# MARK: Configure
 	
 	@classmethod
@@ -65,7 +67,7 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Update
 	
 	def update_gmo(self, detection: Instance):
-		# NOTE: First update ``GeneralObject``
+		# NOTE: First, update ``GeneralObject``
 		self.update_go_from_detection(instance=detection)
 		
 		# NOTE: Second, update motion model
@@ -100,6 +102,13 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Visualize
 
 	def draw(self, drawing, **kwargs):
+		""" Draw the object base one the moving state of its.
+
+		Args:
+			drawing:
+				image for drawing
+
+		"""
 		if self.is_confirmed:
 			GeneralObject.draw(self, drawing=drawing, label=True, color=AppleRGB.values()[0], **kwargs)
 		elif self.is_counting:
