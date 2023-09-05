@@ -15,52 +15,38 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
-import abc
+# from __future__ import annotations
+
+import os
+from typing import List
+from typing import Optional
+from typing import Union
+from timeit import default_timer as timer
+
+import cv2
+import numpy as np
+
+from analyses.analyzer import BaseAnalyzer
+from core.factory.builder import ANALYZERS
 
 __all__ = [
-	"MotionModel"
+	"RouteViolation"
 ]
 
 
-# MARK: - MotionModel
+# MARK: - RouteViolation
 
-
-class MotionModel(metaclass=abc.ABCMeta):
-	"""Object class for tracking
+@ANALYZERS.register(name="route_violation")
+class RouteViolation(BaseAnalyzer):
+	"""Analyzer for Wrong Route
 	"""
+
 	# MARK: Magic Functions
-	
+
 	def __init__(
-		self,
-		hits             : int = 0,
-		hit_streak       : int = 0,
-		age              : int = 0,
-		time_since_update: int = 0,
-		**kwargs
+			self,
+			name: str = "route_violation",
+			**kwargs
 	):
-		self.hits              = hits
-		self.hit_streak        = hit_streak
-		self.age               = age
-		self.time_since_update = time_since_update
-		self.history           = []
-	
-	# MARK: Property
-	
-	@property
-	def matching_features(self):
-		print("``matching_features()`` has not been implemented yet")
-		raise NotImplementedError
-
-	# MARK: Update
-	
-	def update_motion_state(self, **kwargs):
-		print("``update()`` has not been implemented yet")
-		raise NotImplementedError
-	
-	def predict_motion_state(self):
-		print("``predict()`` has not been implemented yet")
-		raise NotImplementedError
-
-	def current_motion_state(self):
-		print("``current_estimate()`` has not been implemented yet")
-		raise NotImplementedError
+		super().__init__(name=name, **kwargs)
+		pass

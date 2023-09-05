@@ -20,7 +20,7 @@ from __future__ import annotations
 import abc
 import uuid
 from timeit import default_timer as timer
-from typing import Dict
+from typing import Dict, Union
 from typing import Optional
 from typing import Tuple
 from uuid import UUID
@@ -55,6 +55,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		frame_index: Optional[int]        = None,
 		timestamp  : float                = timer(),
 		bbox       : Optional[np.ndarray] = None,
+		bbox_id    : Optional[np.ndarray] = None,
 		clip_bbox  : Optional[np.ndarray] = None,
 		polygon    : Optional[np.ndarray] = None,
 		confidence : float                = 0.0,
@@ -66,6 +67,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self.frame_indexes = [frame_index] if (frame_index is not None) else []
 		self.timestamps    = [timestamp]   if (timestamp is not None)   else []
 		self.bboxes        = [bbox]        if (bbox is not None)        else []
+		self.bboxes_id     = [bbox_id]     if (bbox_id is not None)     else []
 		self.polygons      = [polygon]     if (polygon is not None)     else []
 		self._trajectory   = np.array([self.current_bbox_center]) if (bbox is not None) else np.empty((0, 2))
 		self.confidence    = confidence
@@ -135,6 +137,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self,
 		frame_index: int,
 		bbox       : np.ndarray,
+		id         : Union[int, str, list],
 		confidence : float,
 		label      : Dict,
 		polygon    : Optional[np.ndarray] = None,  # Later used for instance segmentation model
@@ -144,6 +147,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self.frame_indexes.append(frame_index)
 		self.timestamps.append(timestamp)
 		self.bboxes.append(bbox)
+		self.bboxes_id.append(id)
 		self.labels.append(label)
 		self.confidence = confidence
 		if polygon:
@@ -152,14 +156,15 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		if distance_between_points(self.trajectory[-1], self.current_bbox_center) >= GeneralObject.min_travelled_distance:
 			self._trajectory = np.append(self._trajectory, [self.current_bbox_center], axis=0)
 	
-	def update_go_from_detection(self, detection: Instance, **kwargs):
+	def update_go_from_detection(self, instance: Instance, **kwargs):
 		self.update_go(
-			frame_index = detection.frame_index,
-			timestamp   = detection.timestamp,
-			bbox        = detection.bbox,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			polygon     = detection.polygon
+			frame_index = instance.frame_index,
+			timestamp   = instance.timestamp,
+			bbox        = instance.bbox,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			polygon     = instance.polygon,
+			id          = instance.id
 		)
 		
 	# MARK: Visualize
@@ -195,9 +200,14 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			cv2.polylines(img=drawing, pts=pts, isClosed=True, color=color, thickness=2)
 
 		if label:
+			if isinstance(self.id, int):
+				id_text    = (self.id % 100)
+			elif isinstance(self.id, list):
+				id_text    = (self.id[-1] % 100)
+			else:
+				id_text    = 0
 			bbox_tl    = self.current_bbox[0:2]
 			curr_label = self.label_by_majority
-			id_text    = (self.id % 100)
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
 			cv2.putText(img=drawing, text=f"{curr_label.name}-{id_text}", fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
