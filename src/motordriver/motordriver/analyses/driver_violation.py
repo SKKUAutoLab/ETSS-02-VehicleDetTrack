@@ -18,6 +18,7 @@
 # from __future__ import annotations
 
 import os
+import sys
 from typing import List
 from typing import Optional
 from typing import Union
@@ -32,6 +33,8 @@ from core.factory.builder import ANALYZERS
 __all__ = [
 	"DriverViolation"
 ]
+
+from core.objects.moving_model import MovingState
 
 
 # MARK: - DriverViolation
@@ -59,12 +62,43 @@ class DriverViolation(BaseAnalyzer):
 
 		Args:
 			gmos (list):
+				Tracking result
 			batch_identifications (list):
-
+				Identifier result
 		"""
+
+		# NOTE: sync tracking with identification
 		for gmo in gmos:
 			for identification_instance in batch_identifications:
-				if gmo.bboxes_id[-1][0] == identification_instance.id[0] and gmo.bboxes_id[-1][1] == \
-						identification_instance.id[1]:
-					print(identification_instance.id)
+				if (gmo.bboxes_id[-1][0] == identification_instance.id[0] and
+						gmo.bboxes_id[-1][1] == identification_instance.id[1]):
+
+					# add person on the motorbike
+					gmo.num_people += 1
+
+					# DEBUG:
+					# print(identification_instance.id)
+					# if gmo.moving_state == MovingState.ToBeCounted:
+					# 	print(gmo.id)
+					# 	print(gmo.moving_state)
+					# 	for bbox_id in gmo.bboxes_id:
+					# 		print(bbox_id)
+					# 	for identification_instance_temp in batch_identifications:
+					# 		if (gmo.bboxes_id[-1][0] == identification_instance_temp.id[0] and
+					# 				gmo.bboxes_id[-1][1] == identification_instance_temp.id[1]):
+					# 			print(identification_instance_temp.id)
+					#
+					# 	sys.exit()
+
+					if gmo.moving_state == MovingState.ToBeCounted:
+						print(gmo.id)
+						print(gmo.moving_state)
+						for bbox_id in gmo.bboxes_id:
+							print(bbox_id)
+						for identification_instance_temp in batch_identifications:
+							if (gmo.bboxes_id[-1][0] == identification_instance_temp.id[0] and
+									gmo.bboxes_id[-1][1] == identification_instance_temp.id[1]):
+								print(identification_instance_temp.id)
+
+						sys.exit()
 

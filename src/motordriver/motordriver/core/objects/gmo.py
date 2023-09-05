@@ -44,16 +44,18 @@ class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
 	# MARK: Magic Functions
 	
 	def __init__(self, **kwargs):
+		# For matching, flow estimation
 		GeneralObject.__init__(self, **kwargs)
 		MotionModel.__init__(self, **kwargs)
 		MovingModel.__init__(self, **kwargs)
+		# For driver violation detection
 		DriverModel.__init__(self, **kwargs)
 
 	# MARK: Configure
 	
 	@classmethod
 	def gmo_from_detection(cls, detection: Instance, **kwargs):
-
+		"""Create the new class/object"""
 		return cls(
 			frame_index = detection.frame_index,
 			bbox        = detection.bbox,
@@ -67,6 +69,12 @@ class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
 	# MARK: Update
 	
 	def update_gmo(self, detection: Instance):
+		"""Main function for update all the general moving object
+
+		Args:
+			detection (Instance):
+				Detection from the detector
+		"""
 		# NOTE: First, update ``GeneralObject``
 		self.update_go_from_detection(instance=detection)
 		
@@ -74,7 +82,12 @@ class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
 		self.update_motion_state()
 		
 	def update_moving_state(self, rois: List[ROI], **kwargs):
+		""" Update moving state of object base on the position of object with ROI
 
+		Args:
+			rois (list):
+
+		"""
 		roi = next((roi for roi in rois if roi.uuid == self.roi_uuid), None)
 		if roi is None:
 			return

@@ -661,7 +661,7 @@ class TrafficSafetyCamera(BaseCamera):
 		# self.run_identifier()
 
 		# NOTE: tracking and matching
-		self.run_tracker_matching()
+		# self.run_tracker_matching()
 
 		# NOTE: analysis
 		self.run_analysis()

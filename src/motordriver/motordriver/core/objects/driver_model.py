@@ -17,6 +17,7 @@
 # ==================================================================== #
 
 import abc
+import enum
 from typing import Optional
 
 from core.utils.rich import console, error_console
@@ -28,6 +29,13 @@ __all__ = [
 ]
 
 
+class ViolationState(enum.Enum):
+	"""An enum that identify the counting state of an object when moving through the camera."""
+	Candidate   = 1  # Preliminary state.
+	Confirmed   = 2  # Confirmed the Detection is a road_objects eligible for counting.
+	Counting    = 3  # Object is in the counting zone/counting state.
+
+
 class DriverModel(object):
 	"""Moving Model for matching (or Flow Estimation)
 	"""
@@ -36,7 +44,7 @@ class DriverModel(object):
 
 	def __init__(
 			self,
-			num_people : Optional[int]        = 1,
+			num_people : Optional[int]        = 0,
 			helmets    : Optional[np.ndarray] = None,
 			**kwargs
 	):
