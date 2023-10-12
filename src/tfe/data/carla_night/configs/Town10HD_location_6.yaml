@@ -1,11 +1,11 @@
 ---
-camera_name: &camera_name "Town10HD_location_4"
+camera_name: &camera_name "Town10HD_location_6"
   # Camera name is also used as the unique ID (NO FILE EXTENSION).
 
 data:
-  dataset: &dataset "carla"
+  dataset: &dataset "carla_night"
     # The name of the dataset.
-  file: "Town10HD_location_4.mp4"
+  file: "Town10HD_location_6.mp4"
     # The video file or image folder.
     # By default, assume all video are put inside ``aicity2021/video/``.
   stream: null
@@ -19,7 +19,7 @@ data:
     # Number of samples in one forward & backward pass.
 
 output:
-  file: "Town10HD_location_4.mp4"
+  file: "Town10HD_location_6.mp4"
     # In case of video it is the name of the output video file.
     # In case of image folder, it is the prefix for the output images.
   dims: *dims
@@ -37,12 +37,12 @@ output:
 
 roi:
   dataset: *dataset
-  file: "Town10HD_location_4.json"
+  file: "Town10HD_location_6.json"
     # Name of the roi aicity2021 file with extension.
 
 moi:
   dataset: *dataset
-  file: "Town10HD_location_4.json"
+  file: "Town10HD_location_6.json"
     # Name of the roi aicity2021 file with extension.
   distance_function: "hausdorff"
     # The distance function.

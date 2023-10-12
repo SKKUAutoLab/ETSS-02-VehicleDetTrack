@@ -1,11 +1,11 @@
 ---
-camera_name: &camera_name "Town10HD_location_3"
+camera_name: &camera_name "Town10HD_location_2"
   # Camera name is also used as the unique ID (NO FILE EXTENSION).
 
 data:
-  dataset: &dataset "carla"
+  dataset: &dataset "carla_rain"
     # The name of the dataset.
-  file: "Town10HD_location_3.mp4"
+  file: "Town10HD_location_2.mp4"
     # The video file or image folder.
     # By default, assume all video are put inside ``aicity2021/video/``.
   stream: null
@@ -19,7 +19,7 @@ data:
     # Number of samples in one forward & backward pass.
 
 output:
-  file: "Town10HD_location_3.mp4"
+  file: "Town10HD_location_2.mp4"
     # In case of video it is the name of the output video file.
     # In case of image folder, it is the prefix for the output images.
   dims: *dims
@@ -37,12 +37,12 @@ output:
 
 roi:
   dataset: *dataset
-  file: "Town10HD_location_3.json"
+  file: "Town10HD_location_2.json"
     # Name of the roi aicity2021 file with extension.
 
 moi:
   dataset: *dataset
-  file: "Town10HD_location_3.json"
+  file: "Town10HD_location_2.json"
     # Name of the roi aicity2021 file with extension.
   distance_function: "hausdorff"
     # The distance function.
@@ -58,7 +58,7 @@ detector:
     # The name of the detector model.
   variant: "yolov7-e6e"
     # The detector model's variant name.
-  weights: "yolov7e6/yolov7-e6e.pt"
+  weights: "yolov7/yolov7.pt"
     # The pretrained weights file.
   dataset: *dataset
     # The dataset base on aicity2021 above, mean base on contest, app

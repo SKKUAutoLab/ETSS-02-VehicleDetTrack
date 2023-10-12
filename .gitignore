@@ -38,9 +38,10 @@
 # Folder
 /data/aicity2021_final/outputs/
 /data/aicity2021_final/rmois_description/
-/data/carla/outputs/
-/data/carla/rmois_description/
-/data/carla/bbox/
-/data/carla/video/
+/data/carla_night/outputs/
+/data/carla_night/rmois_description/
+/data/carla_night/bbox/
+/data/carla_night/video/
 /src/motordriver/models_zoo/
 /models_zoo/
+/data/carla_rain/rmois_description/
