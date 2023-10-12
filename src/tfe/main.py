@@ -24,7 +24,6 @@ from tfe.utils import data_dir
 from tfe.utils import prints
 from tfe.utils import process_config
 
-
 # MARK: - Args
 
 parser = argparse.ArgumentParser(description="Config parser")
@@ -60,6 +59,11 @@ def main():
 	# NOTE: Get camera config
 	args          = parser.parse_args()
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
+	# DEBUG:
+	print(data_dir)
+	print(args.dataset)
+	print(config_path)
+
 	camera_hprams = process_config(config_path=config_path)
 
 	# NOTE: Define camera

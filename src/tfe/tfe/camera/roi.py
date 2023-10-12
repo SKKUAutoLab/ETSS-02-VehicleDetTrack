@@ -139,10 +139,10 @@ class ROI(object):
 		# print(points)
 		# print((bbox_xyxy[0], bbox_xyxy[1]))
 
-		tl = cv2.pointPolygonTest(self.points, (bbox_xyxy[0], bbox_xyxy[1]), compute_distance)
-		tr = cv2.pointPolygonTest(self.points, (bbox_xyxy[2], bbox_xyxy[1]), compute_distance)
-		br = cv2.pointPolygonTest(self.points, (bbox_xyxy[2], bbox_xyxy[3]), compute_distance)
-		bl = cv2.pointPolygonTest(self.points, (bbox_xyxy[0], bbox_xyxy[3]), compute_distance)
+		tl = cv2.pointPolygonTest(self.points, (int(bbox_xyxy[0]), int(bbox_xyxy[1])), compute_distance)
+		tr = cv2.pointPolygonTest(self.points, (int(bbox_xyxy[2]), int(bbox_xyxy[1])), compute_distance)
+		br = cv2.pointPolygonTest(self.points, (int(bbox_xyxy[2]), int(bbox_xyxy[3])), compute_distance)
+		bl = cv2.pointPolygonTest(self.points, (int(bbox_xyxy[0]), int(bbox_xyxy[3])), compute_distance)
 		
 		if tl > 0 and tr > 0 and br > 0 and bl > 0:
 			return 1

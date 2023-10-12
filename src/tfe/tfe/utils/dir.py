@@ -32,13 +32,13 @@ In path "/home/mains/stackabuse/python/sample.md":
 """
 
 # NOTE: Inside TSS//tss/utils
-utils_dir    = os.path.dirname(os.path.abspath(__file__))  # "workspaces/workspace/TSS/tss/utils"
-tss_dir      = os.path.dirname(utils_dir)                  # "workspaces/workspace/TSS/tss"
+utils_dir    = os.path.dirname(os.path.abspath(__file__))  # "./src/tfe/tfe/utils"
+tss_dir      = os.path.dirname(utils_dir)                  # "./src/tfe/tfe"
 
-root_dir     = os.path.dirname(tss_dir)                    # "workspaces/workspace/TSS"
-bin_dir      = os.path.join(root_dir, "mains")             # "workspaces/workspace/TSS/bin"
-data_dir     = os.path.join(root_dir, "data")              # "workspaces/workspace/TSS/data"
-tests_dir    = os.path.join(root_dir, "tests")             # "workspaces/workspace/TSS/tests"
+root_dir     = os.path.dirname(tss_dir)                    # "./src/tfe"
+bin_dir      = os.path.join(root_dir, "mains")             # "./src/tfe/bin"
+data_dir     = os.path.join(root_dir, "data")              # "./src/tfe/data"
+tests_dir    = os.path.join(root_dir, "tests")             # "./src/tfe/tests"
 
 
 # MARK: Create
