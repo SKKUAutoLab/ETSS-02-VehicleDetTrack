@@ -52,13 +52,16 @@ class MatcherRnT(BaseMatcher):
 			name: str = "matcher_rnt",
 			moi : Optional[dict] = None,
 			roi : Optional[dict] = None,
+			loi : Optional[dict] = None,
 			**kwargs
 	):
 		super().__init__(name=name, **kwargs)
 		self.moi_cfg            = moi
 		self.roi_cfg            = roi
+		self.loi_cfg            = loi
 		self.rois               = None
 		self.mois               = None
+		self.lois               = None
 		self.in_roi_gmos        = None
 		self.countable_gmos     = None
 		self.to_be_counted_gmos = None
