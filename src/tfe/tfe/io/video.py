@@ -199,6 +199,8 @@ class VideoWriter(object):
 		# print(f"{self.dims[1:3]=}")
 		image = image_channel_last(image=image)
 		# print(f"{image.shape=}")
+		# NOTE: get the image for create rmois
+		# cv2.imwrite("/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv_rain/rmois_description/23.png", image)
 		image = resize_image_cv2(image=image, size=self.dims[1:3])
 		# DEBUG:
 		# print(f"{image.shape=}")

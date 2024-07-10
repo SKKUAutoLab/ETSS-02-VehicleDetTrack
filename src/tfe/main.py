@@ -59,7 +59,8 @@ def main():
 	# NOTE: Get camera config
 	args          = parser.parse_args()
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
-	# DEBUG:
+
+	# DEBUG: print args
 	print(data_dir)
 	print(args.dataset)
 	print(config_path)

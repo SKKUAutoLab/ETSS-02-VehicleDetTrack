@@ -16,8 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
 import os
-import sys
-import glob
 from timeit import default_timer as timer
 from typing import Dict
 from typing import List
@@ -28,6 +26,10 @@ from munch import Munch
 from tqdm.auto import tqdm
 
 import torch
+
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
 
 from tfe.detector import get_detector
 from tfe.io import AICResultWriter
@@ -41,18 +43,21 @@ from tfe.tracker import get_tracker
 from tfe.utils import data_dir
 from tfe.utils import parse_config_from_json
 from tfe.utils import printw
-from tfe.detector import Detection
+
 from .moi import MOI
 from .roi import ROI
 
 
-# MARK: - Camera Non Detection
+# MARK: - Camera
 
-class CameraNonDetection(object):
-	"""Camera Non Detection
+class CameraQT6(QThread):
+	"""Camera
 	"""
 
 	# MARK: Magic Functions
+
+	# signal to send to QT6 GUI
+	update_information = pyqtSignal(dict)
 
 	def __init__(
 			self,
@@ -109,12 +114,9 @@ class CameraNonDetection(object):
 				   f"{self.video_reader=}\n"
 				   f"{self.result_writer=}\n")
 
-		if self.visualize:
-			cv2.namedWindow("image", cv2.WINDOW_KEEPRATIO)
-
 	def configure_labels(self):
 		"""Configure the labels."""
-		dataset_dir = os.path.join(data_dir           , self.config.data.dataset)
+		dataset_dir = os.path.join(data_dir , self.config.data.dataset)
 		labels      = parse_config_from_json(json_path = os.path.join(dataset_dir, "labels.json"))
 		labels      = Munch.fromDict(labels)
 		self.labels = labels.labels
@@ -132,6 +134,9 @@ class CameraNonDetection(object):
 		dataset    = hparams.pop("dataset")
 		file       = hparams.pop("file")
 		self.mois  = MOI.load_mois_from_file(dataset=dataset, file=file, **hparams)
+		self.mois_display = {}
+		for moi in self.mois:
+			self.mois_display[moi.uuid] = 0
 
 	def configure_detector(self):
 		"""Configure the detector."""
@@ -172,58 +177,6 @@ class CameraNonDetection(object):
 
 	# MARK: Processing
 
-	def load_all_detection(self, folder_path):
-		video_detections = []
-
-		label_conversion = {
-			'10' : Munch({ "name": "car"   , "id": 1, "train_id": 0, "category": "vehicle", "catId": 1, "color": [0, 0, 142] }),  # pedestrian :: car
-			'4'  : Munch({ "name": "people", "id": 2, "train_id": 1, "category": "vehicle", "catId": 1, "color": [0, 0, 70 ] })   # vehicle    :: truck
-		}
-
-		size_ori = [1280.0, 720.0]
-		size_new = [768.0, 448.0]
-
-		# Load txt
-		list_txts     = glob.glob(os.path.join(folder_path, "*.txt"))
-		def order_name(elem):
-			return int(os.path.splitext(os.path.basename(elem))[0])
-		list_txts.sort(key=order_name)
-
-		frame_indexes = 0
-		for txt_path in tqdm(list_txts):
-			detections = []
-			idx        = 0
-			with open(txt_path, "r") as f_read:
-				lines = f_read.readlines()
-				for line in lines:
-					words = line.replace("\n", "").replace("\r", "").split(" ")
-
-					bbox_xyxy = np.array([
-						int(float(words[1]) * size_new[0] / size_ori[0] ),
-						int(float(words[2]) * size_new[1] / size_ori[1] ),
-						int(float(words[3]) * size_new[0] / size_ori[0] ),
-						int(float(words[4]) * size_new[1] / size_ori[1] )
-					], np.int32)
-
-					# Wrong size bounding box
-					if bbox_xyxy[0] == bbox_xyxy[2] or \
-							bbox_xyxy[1] == bbox_xyxy[3]:
-						continue
-
-					detections.append(
-						Detection(
-							frame_index = frame_indexes + idx,
-							bbox        = bbox_xyxy,
-							confidence  = 1.0,
-							label       = label_conversion[words[0]]
-						)
-					)
-					idx = idx + 1
-			video_detections.append(detections)
-			frame_indexes = frame_indexes + 1
-
-		return video_detections
-
 	def run(self):
 		"""The main processing loop.
 		"""
@@ -231,37 +184,18 @@ class CameraNonDetection(object):
 		start_time = timer()
 		self.result_writer.start_time = start_time
 
-		# load detection from txts
-		video_detections  = self.load_all_detection(os.path.join(data_dir, self.config["data"]["dataset"], f"bbox/{self.config['camera_name']}"))
-		index_batch_frame = 0
-
 		# NOTE: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
-		# NOTE: phai them cai nay khong la bi memory leak, out of memory, GPU memory
+		# NOTE: phai them cai nay khong la bi memory leak
 		with torch.no_grad():
 			for frame_indexes, images in self.video_reader:
-
 				if len(frame_indexes) == 0:
 					break
 
 				# NOTE: Detect (in batch)
 				images = padded_resize_image(images=images, size=self.detector.dims[1:3])
-				# batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
-				batch_detections = []
-				for index_frame, detections in enumerate(video_detections):
-					if index_batch_frame <= index_frame < index_batch_frame + len(frame_indexes):
-						batch_detections.append(detections)
-				index_batch_frame = index_batch_frame + len(frame_indexes)
-
-				# DEBUG:
-				# print(batch_detections)
-				# print(len(batch_detections))
-				# print(batch_detections.shape)
-				# print(images[0].shape)
-				# print(self.detector.dims)
-				# print(self.video_reader.dims)
-				# sys.exit()
+				batch_detections = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
 
 				# NOTE: Associate detections with ROI (in batch)
 				for idx, detections in enumerate(batch_detections):
@@ -286,7 +220,11 @@ class CameraNonDetection(object):
 
 					# NOTE: Count
 					countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+					self.result_stored_counting = self.extract_mois_information(countable_gmos)  # NOTE: store for GUI
+
 					self.result_writer.write_counting_result(vehicles=countable_gmos)
+
+					# NOTE: Update moving state
 					for gmo in countable_gmos:
 						gmo.moving_state = MovingState.Counted
 
@@ -296,11 +234,32 @@ class CameraNonDetection(object):
 
 				pbar.update(len(frame_indexes))  # Update pbar
 
+			# send the stop process
+			self.update_information.emit({
+				"frame_index" : None,
+				"result_count": None,
+				"result_frame": None,
+				"is_run"      : False
+			})
+
 		# NOTE: Finish
 		pbar.close()
-		cv2.destroyAllWindows()
+
+	def stop(self):
+		"""Sets run flag to False and waits for thread to finish"""
+		# self.run_flag = False
+		self.wait()
 
 	# MARK: Visualize and Debug
+
+	def extract_mois_information(self, countable_gmos):
+		for vehicle in countable_gmos:
+			moi_id = vehicle.moi_uuid
+			self.mois_display[moi_id] += 1
+		results = []
+		for key, values in self.mois_display.items():
+			results.append(f"Movement {key} : {values}")
+		return results
 
 	def post_process(self, image: np.ndarray, elapsed_time: float):
 		"""Post processing step.
@@ -310,8 +269,16 @@ class CameraNonDetection(object):
 			return
 		result = self.draw(drawing=image, elapsed_time=elapsed_time)
 		if self.visualize:
-			cv2.imshow("image", result)
-			cv2.waitKey(1)
+			# Display the resulting frame
+			self.result_stored_image_drawed = result  # NOTE: store for GUI
+			self.update_information.emit({
+				"frame_index"  : None,
+				"result_count" : self.result_stored_counting,
+				"result_frame" : self.result_stored_image_drawed,
+				"is_run"       : True
+			}) # NOTE: send to GUI
+			# Frame per second show on display
+			self.msleep(3)
 		if self.write_video:
 			self.video_writer.write_frame(image=result)
 
@@ -325,12 +292,15 @@ class CameraNonDetection(object):
 		# NOTE: Draw Vehicles
 		[gmo.draw(drawing=drawing) for gmo in self.gmos]
 		# NOTE: Draw frame index
+		# NOTE: Write frame rate
 		fps  = self.video_reader.frame_idx / elapsed_time
 		# text = f"Frame: {self.video_reader.frame_idx}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
-		text = f"Frame: {self.video_reader.frame_idx}"
+		text = f"Frame: {self.video_reader.frame_idx + 1}: ({format(fps, '.1f')} fps)"
 		font = cv2.FONT_HERSHEY_SIMPLEX
 		org  = (20, 30)
+		# NOTE: show the framerate on top left
 		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
-		cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(100, 40), color=AppleRGB.BLACK.value, thickness=-1)
-		cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
+		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing
+
+

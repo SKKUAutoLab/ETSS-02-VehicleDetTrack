@@ -86,13 +86,15 @@ def add_dirs_to_config(config: Dict) -> Munch:
     """
     # NOTE: Define output_dir
     data_output_dir   = os.path.join(dir.data_dir, config.data.dataset, "outputs")
+    data_groundtruth_dir   = os.path.join(dir.data_dir, config.data.dataset, "groundtruths")
     camera_output_dir = os.path.join(data_output_dir, config.camera_name)
     
     # NOTE: Add dirs to config
-    config.dirs = Munch()
-    config.dirs.data_output_dir   = data_output_dir
-    config.dirs.camera_output_dir = camera_output_dir
-    
+    config.dirs                      = Munch()
+    config.dirs.data_output_dir      = data_output_dir
+    config.dirs.data_groundtruth_dir = data_groundtruth_dir
+    config.dirs.camera_output_dir    = camera_output_dir
+
     # NOTE: Create dirs
     dir.create_dirs(
         dirs=[

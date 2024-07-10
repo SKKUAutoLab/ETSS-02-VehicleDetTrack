@@ -30,7 +30,7 @@ output:
   write_video: True
     # Should concatenate the results into a video file? By default: false.
     # If ``true``, write result to ``file``
-  frame_rate: 3
+  frame_rate: 6
     # The frame rate of the video.
   fourcc: "mp4v"
     # The file type of video.
@@ -48,7 +48,7 @@ moi:
     # The distance function.
   distance_threshold: 300
     # The maximum distance for counting with track
-  angle_threshold: 45
+  angle_threshold: 30
     # The maximum angle for counting with track
 
 detector:
@@ -76,7 +76,7 @@ tracker:
     # Name of the API that the tracker model is implemented from. Possible values: ["scikit-learn"].
   name: "sort_kalman_bbox"
     # Name of the tracker.
-  max_age: 1
+  max_age: 3
     # Max number of frame keep the object before deleting.
   min_hit: 1
     # The number of frame which has matching bounding box of the detected object
@@ -85,7 +85,7 @@ tracker:
     # The Intersection over Union between two track with their bounding box.
 
 gmo:
-  min_entering_distance: -1
+  min_entering_distance: 0
     # Min distance when an object enters the ROI to be Confirmed.
     # -1 (object touch or enter the ROI), 0 (whole object must be enter the ROI), > 0 (whole object must be in the ROI at some distance).
   min_traveled_distance: 20

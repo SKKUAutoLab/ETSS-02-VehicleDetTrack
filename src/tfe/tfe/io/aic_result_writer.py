@@ -65,7 +65,8 @@ video_map = {
 	"Town10HD_location_4": 35,
 	"Town10HD_location_5": 36,
 	"Town10HD_location_6": 37,
-	"Town10HD_location_7": 38
+	"Town10HD_location_7": 38,
+	"23"				 : 39,
 }
 
 
@@ -90,8 +91,8 @@ class AICResultWriter(object):
 	def __init__(
 			self,
 			camera_name: Optional[str] = None,
-			output_dir: Optional[str] = None,
-			start_time: float = 0.0,
+			output_dir : Optional[str] = None,
+			start_time : float         = 0.0,
 			**kwargs
 	):
 		super().__init__(**kwargs)
@@ -104,8 +105,8 @@ class AICResultWriter(object):
 			printe(f"The given ``camera_name`` has not been defined in AIC camera list. Please check again!")
 			raise ValueError
 
-		result_file = os.path.join(self.output_dir, camera_name + ".txt")
-		self.result_writer = open(result_file, "w")
+		self.result_file_path = os.path.join(self.output_dir, camera_name + ".txt")
+		self.result_writer    = open(self.result_file_path, "w")
 
 	def __del__(self):
 		""" Close the writer
@@ -139,11 +140,12 @@ class AICResultWriter(object):
 		for vehicle in vehicles:
 			gen_time = format((vehicle.last_timestamp - self.start_time), ".2f")
 			frame_id = vehicle.last_frame_index
-			moi_id = vehicle.moi_uuid
+			moi_id   = vehicle.moi_uuid
 			class_id = vehicle.label_id_by_majority
-			if class_id in [1, 2]:
-				result_str = f"{gen_time} {self.video_id} {frame_id} {moi_id} {class_id}\n"
-				self.result_writer.write(result_str)
+			# if class_id in [1, 2]:
+
+			result_str = f"{gen_time} {self.video_id} {frame_id} {moi_id} {class_id}\n"
+			self.result_writer.write(result_str)
 
 
 # MARK: - Compress result

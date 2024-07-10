@@ -30,7 +30,7 @@ output:
   write_video: True
     # Should concatenate the results into a video file? By default: false.
     # If ``true``, write result to ``file``
-  frame_rate: 3
+  frame_rate: 6
     # The frame rate of the video.
   fourcc: "mp4v"
     # The file type of video.
