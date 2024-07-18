@@ -6,6 +6,8 @@ python main.py  \
    --config Town10HD_location_4.yaml  \
    --write_video True
 
+
+
 #python main.py  \
 #    --dataset Korea_cctv_rain  \
 #    --config 23.yaml  \
