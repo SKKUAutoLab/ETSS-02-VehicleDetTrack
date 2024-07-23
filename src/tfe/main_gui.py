@@ -60,7 +60,7 @@ def main():
 	# Create an instance of our MainWindow class
 	window = TFEMainWindow(ui_path="tfe/views/tfe.ui")
 
-	# camera to WINDOW GUI
+	# Camera for WINDOW GUI
 	# window.create_display_thread(camera)
 	# window.create_display_thread(
 	# 	partial(
