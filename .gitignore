@@ -16,14 +16,12 @@
 *.mp4
 *.avi
 
-
 # PyTorch weights
 *.tar
 *.pth
 *.pt
 *.gz
 *.onnx
-
 
 # TensorRT weights
 *.engine
