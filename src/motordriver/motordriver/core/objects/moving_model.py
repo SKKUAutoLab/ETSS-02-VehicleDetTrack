@@ -49,15 +49,15 @@ class MovingModel(object):
 
 	def __init__(
 		self,
-		moving_state: MovingState   = MovingState.Candidate,
-		roi_uuid    : Optional[int] = None,
-		moi_uuid    : Optional[int] = None,
+		moving_state: MovingState    = MovingState.Candidate,
+		roi_uuid    : Optional[int]  = None,
+		moi_uuid    : Optional[int]  = None,
 		**kwargs
 	):
 		self.moving_state = moving_state
 		self.roi_uuid     = roi_uuid
 		self.moi_uuid     = moi_uuid
-	
+
 	# MARK: Property
 	
 	@property

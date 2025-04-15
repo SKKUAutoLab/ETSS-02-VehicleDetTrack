@@ -1,9 +1,20 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-"""
-
+# ==================================================================== #
+# Copyright (C) 2022 - Automation Lab - Sungkyunkwan University
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# ==================================================================== #
 from __future__ import annotations
 
 import os
@@ -62,8 +73,10 @@ __all__ = [
 
 
 # NOTE: only for ACI23_Track_5
-classes_aic23 = ['motorbike', 'DHelmet', 'DNoHelmet', 'P1Helmet',
-			   'P1NoHelmet', 'P2Helmet', 'P2NoHelmet']
+classes_aic23 = ['motorbike',
+				 'DHelmet', 'DNoHelmet',
+				 'P1Helmet', 'P1NoHelmet',
+				 'P2Helmet', 'P2NoHelmet']
 
 # MARK: - TrafficSafetyCamera
 
@@ -121,8 +134,10 @@ class TrafficSafetyCamera(BaseCamera):
 		"""
 		super().__init__(id_=id_, dataset=dataset, name=name)
 		# NOTE: Init attributes
-		self.start_time      = None
-		self.pbar            = None
+		self.start_time = None
+		self.pbar       = None
+		self.detector   = None
+		self.identifier = None
 
 		# NOTE: Define attributes
 		self.process         = process
@@ -150,7 +165,6 @@ class TrafficSafetyCamera(BaseCamera):
 		# NOTE: Init modules
 		self.init_dirs()
 		self.init_data_loader(data_loader_cfg = self.data_loader_cfg)
-		self.init_data_writer(data_writer_cfg = self.data_writer_cfg)
 		self.init_class_labels(class_labels   = self.detector_cfg['class_labels'])
 		self.init_detector(detector           = detector)
 		self.init_identifier(identifier       = identifier)
@@ -158,6 +172,9 @@ class TrafficSafetyCamera(BaseCamera):
 		self.init_matcher(matcher             = matcher)
 		self.init_analyzer(analyzer           = analyzer)
 		self.init_gmo(matcher                 = matcher)
+
+		# NOTE: Init for output
+		self.init_data_output()
 
 	# MARK: Configure
 
@@ -293,37 +310,46 @@ class TrafficSafetyCamera(BaseCamera):
 		GMO.min_hit_streak                   = matcher["gmo"]["min_hit_streak"]
 		GMO.max_age                          = matcher["gmo"]["max_age"]
 
-	def check_and_create_folder(self, attr, data_writer_cfg: dict):
-		"""CHeck and create the folder to store the result
+	def check_and_create_folder(self, folder_path):
+		"""Check and create the folder to store the result
 
 		Args:
-			attr (str):
-				the type of function/saving/creating
-			data_writer_cfg (dict):
-				configuration of camera
+			folder_path (str):
+				path to folder
 		Returns:
 			None
 		"""
-		path = os.path.join(self.outputs_dir, f"{data_writer_cfg[attr]}")
-		if not os.path.isdir(path):
-			os.makedirs(path)
-		data_writer_cfg[attr] = path
+		if not os.path.isdir(folder_path):
+			os.makedirs(folder_path)
 
-	def init_data_writer(self, data_writer_cfg: dict):
+	def init_data_output(self):
 		"""Initialize data writer.
-
-		Args:
-			data_writer_cfg (FrameWriter, dict):
-				Data writer object or a data writer's config dictionary.
 		"""
-		# NOTE: save detections crop
-		data_writer_cfg["dets_crop_pkl"] = f'{data_writer_cfg["dets_crop_pkl"]}/{self.detector_cfg["folder_out"]}'
-		self.check_and_create_folder("dets_crop_pkl", data_writer_cfg=data_writer_cfg)
+
+		# NOTE: save detections
+		self.data_writer_cfg["detector"]  = os.path.join(self.outputs_dir, "detector", self.detector_cfg['folder_out'])
+		self.check_and_create_folder(self.data_writer_cfg["detector"])
+
+		# NOTE: save identifier
+		self.data_writer_cfg["identifier"] = os.path.join(self.outputs_dir, "identifier", self.identifier_cfg['folder_out'])
+		self.check_and_create_folder(self.data_writer_cfg["identifier"])
+
+		# NOTE: save matcher
+		self.data_writer_cfg["matcher"] = os.path.join(self.outputs_dir, "matcher", self.matcher_cfg['folder_out'])
+		self.check_and_create_folder(self.data_writer_cfg["matcher"])
+
+		# NOTE: save analyzer
+		self.data_writer_cfg["analyzer"] = os.path.join(self.outputs_dir, "analyzer", self.analyzer_cfg['folder_out'])
+		self.check_and_create_folder(self.data_writer_cfg["analyzer"])
 
 	# MARK: Run
 
 	def run_detector(self):
 		"""Run detection model with videos"""
+		# NOTE: create directory to store result
+		folder_output = f"{self.data_writer_cfg['detector']}/{self.data_loader_cfg['data_path']}/detection/"
+		make_directory(folder_output)
+
 		# init value
 		height_img, width_img = None, None
 
@@ -367,12 +393,12 @@ class TrafficSafetyCamera(BaseCamera):
 					batch_detections_tracker    = []
 
 					# DEBUG: draw
-					# image_draw = images[index_b].copy()
+					image_draw = images[index_b].copy()
 
 					# NOTE: Process each detection
 					for index_in, instance in enumerate(batch):
 						bbox_xyxy = [int(i) for i in instance.bbox]
-						crop_id   = [int(index_image), int(index_in)]
+						crop_id   = [int(index_image), int(index_in)]  # frame_index, bounding_box index
 
 						# if size of bounding box is very small
 						# because the heuristic need the bigger bounding box
@@ -405,11 +431,11 @@ class TrafficSafetyCamera(BaseCamera):
 						batch_detections_identifier.append(Instance(**detection_result))
 
 						# DEBUG: draw
-						# image_draw = plot_one_box(
-						# 	bbox = bbox_xyxy,
-						# 	img  = image_draw,
-						# 	label= instance.label.name
-						# )
+						image_draw = plot_one_box(
+							bbox = bbox_xyxy,
+							img  = image_draw,
+							label= instance.label.name
+						)
 
 						# NOTE: crop the bounding box for tracker, add 40 or 1.2 scale
 						bbox_xyxy = [int(i) for i in instance.bbox]
@@ -436,12 +462,7 @@ class TrafficSafetyCamera(BaseCamera):
 						batch_detections_tracker.append(Instance(**detection_result))
 
 					# DEBUG: draw
-					# cv2.imwrite(
-					# 	f"{self.outputs_dir}"
-					# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_detection/"
-					# 	f"{index_image:04d}.jpg",
-					# 	image_draw
-					# )
+					cv2.imwrite(os.path.join(folder_output, f"{index_image:04d}.jpg"), image_draw)
 
 					# NOTE: Push detections to array
 					detections_queue_identifier.append([index_image, images[index_b], batch_detections_identifier])
@@ -450,21 +471,28 @@ class TrafficSafetyCamera(BaseCamera):
 				# update pbar
 				pbar.update(len(indexes))
 
+		pbar.close()
+
 		# NOTE: save pickle
 		pickle.dump(
 			detections_queue_identifier,
-			open(f"{self.outputs_dir}/dets_crop_debug/detections_queue_identifier.pkl", 'wb')
+			open(f"{self.data_writer_cfg['detector']}/{self.data_loader_cfg['data_path']}/detections_queue_identifier.pkl", 'wb')
 		)
 		pickle.dump(
 			detections_queue_tracker,
-			open(f"{self.outputs_dir}/dets_crop_debug/detections_queue_tracker.pkl", 'wb')
+			open(f"{self.data_writer_cfg['detector']}/{self.data_loader_cfg['data_path']}/detections_queue_tracker.pkl", 'wb')
 		)
+
 
 	def run_identifier(self):
 		"""Run identification model"""
+		# NOTE: create directory to store result
+		folder_output = f"{self.data_writer_cfg['identifier']}/{self.data_loader_cfg['data_path']}/identification/"
+		make_directory(folder_output)
+
 		# NOTE: init
 		pickle_loader = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/detections_queue_identifier.pkl",
+			data=f"{self.data_writer_cfg['detector']}/{self.data_loader_cfg['data_path']}/detections_queue_identifier.pkl",
 			batch_size=self.identifier_cfg["batch_size"]
 		)
 		identifications_queue = []
@@ -477,7 +505,7 @@ class TrafficSafetyCamera(BaseCamera):
 
 				for index_frame, frame, batch_detections in pickles:
 					# DEBUG: draw
-					# image_draw = frame.copy()
+					image_draw = frame.copy()
 
 					# Load crop images
 					crop_images = []
@@ -487,9 +515,12 @@ class TrafficSafetyCamera(BaseCamera):
 						indexes.append(detection_instance.id[1])
 
 					# NOTE: Identify batch of instances
-					batch_instances = self.identifier.detect(
-						indexes=indexes, images=crop_images
-					)
+					if len(indexes) > 0 and len(crop_images) > 0:
+						batch_instances = self.identifier.detect(
+							indexes=indexes, images=crop_images
+						)
+					else:
+						continue
 
 					# store result each crop image
 					batch_identifications = []
@@ -498,7 +529,7 @@ class TrafficSafetyCamera(BaseCamera):
 					for index_b, (detection_instance, batch_instance) in enumerate(zip(batch_detections, batch_instances)):
 						for index_in, instance in enumerate(batch_instance):
 							bbox_xyxy     = [int(i) for i in instance.bbox]
-							instance_id   = detection_instance.id + [int(index_in)]
+							instance_id   = detection_instance.id + [int(index_in)]  # frame_index, bounding_box index, instance_index
 
 							# NOTE: add the coordinate from crop image to original image
 							# DEBUG: comment doan nay neu extract anh nho
@@ -513,20 +544,22 @@ class TrafficSafetyCamera(BaseCamera):
 								continue
 
 							# NOTE: crop the bounding box, add 60 or 1.5 scale
-							bbox_xyxy = scaleup_bbox(
-								bbox_xyxy,
-								detection_instance.image_size[1],
-								detection_instance.image_size[0],
-								ratio   = 2.0,
-								padding = 60
-							)
-							# DEBUG: draw
-							# image_draw = plot_one_box(
-							# 	bbox = bbox_xyxy,
-							# 	img  = image_draw,
-							# 	label= instance.label.name
+							# bbox_xyxy = scaleup_bbox(
+							# 	bbox_xyxy,
+							# 	detection_instance.image_size[1],
+							# 	detection_instance.image_size[0],
+							# 	ratio   = 2.0,
+							# 	padding = 60
 							# )
-							# instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
+							# DEBUG: draw
+							image_draw = plot_one_box(
+								bbox = bbox_xyxy,
+								img  = image_draw,
+								color= AppleRGB.values()[instance.class_label["train_id"]],
+								label= instance.label.name
+							)
+
+							instance_image = frame[bbox_xyxy[1]:bbox_xyxy[3], bbox_xyxy[0]:bbox_xyxy[2]]
 
 							identification_result = {
 								'video_name'    : detection_instance.video_name,
@@ -541,30 +574,31 @@ class TrafficSafetyCamera(BaseCamera):
 							identification_instance = Instance(**identification_result)
 							batch_identifications.append(identification_instance)
 
-
 					# DEBUG: draw
-					# cv2.imwrite(
-					# 	f"{self.outputs_dir}"
-					# 	f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_identification/"
-					# 	f"{index_frame:04d}.jpg",
-					# 	image_draw
-					# )
+					cv2.imwrite(os.path.join(folder_output, f"{index_frame:04d}.jpg"), image_draw)
+
 					# NOTE: Push identifications to array
 					identifications_queue.append([index_frame, frame, batch_identifications])
 
 				pbar.update(len(indexes_img))
 
+		pbar.close()
+
 		# NOTE: save pickle
 		pickle.dump(
 			identifications_queue,
-			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'wb')
+			open(f"{self.data_writer_cfg['identifier']}/{self.data_loader_cfg['data_path']}/identifications_queue.pkl", 'wb')
 		)
 
 	def run_tracker_matching(self):
 		"""Run tracking"""
+		# NOTE: create directory to store result
+		folder_output = f"{self.data_writer_cfg['matcher']}/{self.data_loader_cfg['data_path']}/tracks_matching/"
+		make_directory(folder_output)
+
 		# NOTE: init
 		pickle_loader = PickleLoader(
-			data=f"{self.outputs_dir}/dets_crop_debug/detections_queue_tracker.pkl",
+			data=f"{self.data_writer_cfg['detector']}/{self.data_loader_cfg['data_path']}/detections_queue_tracker.pkl",
 			batch_size=self.tracker_cfg["batch_size"]
 		)
 		trackings_queue = []
@@ -579,11 +613,12 @@ class TrafficSafetyCamera(BaseCamera):
 
 				# NOTE: Update gmos by matcher
 				self.matcher.update(gmos)
+				self.matcher.update_lane(gmos)
 
 				# NOTE: Push tracking to array
 				trackings_queue.append([index_frame, frame, copy.deepcopy(gmos)])
 
-				# DEBUG:
+				# DEBUG: Draw tracking and matching
 				image_draw = frame.copy()
 				# for gmo in gmos:
 				# 	plot_one_box(
@@ -598,30 +633,32 @@ class TrafficSafetyCamera(BaseCamera):
 					rois    = self.matcher.rois,
 					mois    = self.matcher.mois,
 				)
-				cv2.imwrite(
-					f"{self.outputs_dir}"
-					f"/dets_crop_debug/{self.data_loader_cfg['data_path']}_tracks_matching/"
-					f"{index_frame:04d}.jpg",
-					image_draw
-				)
+				cv2.imwrite(os.path.join(folder_output, f"{index_frame:04d}.jpg"),image_draw)
 
 			pbar.update(len(indexes_img))
+
+		pbar.close()
 
 		# NOTE: save pickle
 		pickle.dump(
 			trackings_queue,
-			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'wb')
+			open(f"{self.data_writer_cfg['matcher']}/{self.data_loader_cfg['data_path']}/trackings_matching_queue.pkl", 'wb')
 		)
 
 	def run_analysis(self):
 		"""Run tracking"""
+		# NOTE: create directory to store result
+		folder_output = f"{self.data_writer_cfg['analyzer']}/{self.data_loader_cfg['data_path']}/motorbike_violation/"
+		make_directory(folder_output)
+
 		# NOTE: load picker
 		matching_pickle = pickle.load(
-			open(f"{self.outputs_dir}/dets_crop_debug/trackings_matching_queue.pkl", 'rb'))
+			open(f"{self.data_writer_cfg['matcher']}/{self.data_loader_cfg['data_path']}/trackings_matching_queue.pkl", 'rb'))
 
 		identifications_pickle = pickle.load(
-			open(f"{self.outputs_dir}/dets_crop_debug/identifications_queue.pkl", 'rb'))
+			open(f"{self.data_writer_cfg['identifier']}/{self.data_loader_cfg['data_path']}/identifications_queue.pkl", 'rb'))
 
+		# NOTE: load in list
 		matching_list = []
 		for index_frame_match, frame, gmos in matching_pickle:
 			matching_list.append([index_frame_match, frame, gmos])
@@ -630,18 +667,108 @@ class TrafficSafetyCamera(BaseCamera):
 		for index_frame_ident, _, batch_identifications in identifications_pickle:
 			identifications_list.append([index_frame_ident, _, batch_identifications])
 
-		# NOTE: sync data
-		for index_frame_match, frame, gmos in matching_list:
-			for index_frame_ident, _, batch_identifications in identifications_list:
-				if index_frame_match == index_frame_ident:
+		# NOTE: sync data frame by frame, trajectory by bounding boxes
+		for index_frame_match, _, gmos in tqdm(matching_list, desc="Sync"):  # load all matching pickle
+			for gmo in gmos:  # surf all gmo
+				# if gmo.moving_state == MovingState.Counted:  # Only the counted object
+				instances_in_bboxes = []
 
-					# NOTE: analyse the driver on the motorbike
-					self.analyzer.update(gmos, batch_identifications)
+				for bboxe_id in gmo.bboxes_id:  # surf all bounding boxes in trajectory
 
-					# NOTE: analyse the route on the motorbike
+					instances_in_bbox = []
+					for index_frame_ident, _, batch_identifications in identifications_list:  # load all identification
+						# if index_frame_match == index_frame_ident:  # check frame is the same or not
+						for identification_instance in batch_identifications:  # surf all instances in the same frame_index
+							if (bboxe_id[0] == identification_instance.id[0] and
+									bboxe_id[1] == identification_instance.id[1]):
+								instances_in_bbox.append(identification_instance)
 
-					# Get out of identifications_queue loop because
-					break
+					# if len(instances_in_bbox) > 0:  # if we get the people in the bounding box
+					instances_in_bboxes.append(instances_in_bbox)
+
+				# NOTE: update instances (people) in trajectory
+				gmo.instances_in_bboxes = instances_in_bboxes
+
+		# NOTE: analyse the violation
+		gmo_violated_dict = {}
+		gmo_violated_ids  = []
+		for index_frame_match, _, gmos in tqdm(matching_list, desc="Analyze "):  # load all matching pickle
+
+			# NOTE: analyse the violation on the motorbike
+			# self.matcher.update_lane(gmos)
+			self.analyzer.update(gmos)
+
+			# NOTE: store the violation from GMOs
+			for gmo in gmos:
+				if gmo.moving_state in [MovingState.Counting, MovingState.ToBeCounted, MovingState.Counted, MovingState.Exiting]:
+					if gmo.is_violated_num_people  \
+							or gmo.is_violated_movement  \
+							or gmo.is_violated_helmet:
+						gmo_violated_dict[gmo.id] = gmo
+						gmo_violated_ids.append(gmo.id)
+
+		# NOTE: print out the violation from GMOs
+		text_output_path = f"{self.data_writer_cfg['analyzer']}/{self.data_loader_cfg['data_path']}/motorbike_violation.txt"
+		with open(text_output_path, 'w') as f:
+			for key, value in gmo_violated_dict.items():
+				f.write(f"{key}\n"
+						f"\t--num::[{value.is_violated_num_people}]"
+						f"\t--mov::[{value.is_violated_movement}]"
+						f"\t--hel::[{value.is_violated_helmet}]\n")
+		for key, value in gmo_violated_dict.items():
+			print(f"{key}\n"
+				f"--num::[{value.is_violated_num_people}]"
+				f"--mov::[{value.is_violated_movement}]"
+				f"--hel::[{value.is_violated_helmet}]")
+
+		# DEBUG: draw violation of motorbike
+		for index_frame_match, frame, gmos in tqdm(matching_list, desc="Draw violation"):
+			# DEBUG: draw bounding boxes, instances in bounding boxes
+			image_draw = frame.copy()
+			for gmo in gmos:
+				# NOTE: draw instance in bounding box
+				for instances_in_bbox in gmo.instances_in_bboxes:
+					for instance_in_bbox in instances_in_bbox:
+						if instance_in_bbox.id[0] != gmo.bboxes_id[-1][0]:  # if not the same with tracker
+							break
+
+						image_draw = plot_one_box(
+							bbox=instance_in_bbox.bbox,
+							img=image_draw,
+							color=AppleRGB.values()[instance_in_bbox.class_id],
+							label=f"{classes_aic23[instance_in_bbox.class_id]}::{instance_in_bbox.id}"
+						)
+
+				# NOTE: draw bounding box
+				color_bbox = [AppleRGB.values()[gmo.current_label.train_id + 4]]
+				label_bbox = [(f"{classes_aic23[gmo.current_label.train_id]}::{gmo.id % 1000}--"
+							   f"{gmo.moving_state}--")]
+
+				if gmo.id in gmo_violated_dict:
+					if gmo_violated_dict[gmo.id].is_violated_num_people:
+						color_bbox.append((0, 0, 255))
+					else:
+						color_bbox.append(AppleRGB.values()[gmo.current_label.train_id + 4])
+					label_bbox.append(f"num::[{gmo_violated_dict[gmo.id].is_violated_num_people}]--")
+					if gmo_violated_dict[gmo.id].is_violated_movement:
+						color_bbox.append((0, 0, 255))
+					else:
+						color_bbox.append(AppleRGB.values()[gmo.current_label.train_id + 4])
+					label_bbox.append(f"mov::[{gmo_violated_dict[gmo.id].is_violated_movement}]--")
+					if gmo_violated_dict[gmo.id].is_violated_helmet:
+						color_bbox.append((0, 0, 255))
+					else:
+						color_bbox.append(AppleRGB.values()[gmo.current_label.train_id + 4])
+					label_bbox.append(f"hel::[{gmo_violated_dict[gmo.id].is_violated_helmet}]--")
+
+				plot_one_box_violated(
+					bbox  = gmo.bboxes[-1],
+					img   = image_draw,
+					colors= color_bbox,
+					labels= label_bbox
+				)
+
+			cv2.imwrite(os.path.join(folder_output, f"{index_frame_match:04d}.jpg"), image_draw)
 
 	def run_write_draw(self):
 		while True:
@@ -655,13 +782,13 @@ class TrafficSafetyCamera(BaseCamera):
 		self.run_routine_start()
 
 		# NOTE: detection
-		# self.run_detector()
+		self.run_detector()
 
 		# NOTE: identification
-		# self.run_identifier()
+		self.run_identifier()
 
 		# NOTE: tracking and matching
-		# self.run_tracker_matching()
+		self.run_tracker_matching()
 
 		# NOTE: analysis
 		self.run_analysis()
@@ -677,12 +804,14 @@ class TrafficSafetyCamera(BaseCamera):
 	def run_routine_end(self):
 		"""Perform operations when run routine ends."""
 		# NOTE: clear detector
-		self.detector.clear_model_memory()
-		self.detector = None
+		if self.detector is not None:
+			self.detector.clear_model_memory()
+			self.detector = None
 
 		# NOTE: clear identifier
-		self.identifier.clear_model_memory()
-		self.identifier = None
+		if self.identifier is not None:
+			self.identifier.clear_model_memory()
+			self.identifier = None
 
 		cv2.destroyAllWindows()
 		self.stop_time = timer()
@@ -795,3 +924,35 @@ def plot_one_box(bbox, img, color=None, label=None, line_thickness=1):
 		cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 	return img
+
+
+def plot_one_box_violated(bbox, img, colors=None, labels=None, line_thickness=1):
+	"""Plots one bounding box on image img
+
+	Returns:
+
+	"""
+	tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
+	colors = colors or [[random.randint(0, 255) for _ in range(3)]]
+	c1, c2 = (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3]))
+	cv2.rectangle(img, c1, c2, colors[0], thickness=tl, lineType=cv2.LINE_AA)
+	if labels:
+		for index, (color, label) in enumerate(zip(colors, labels)):
+			tf = max(tl - 1, 1)  # font thickness
+			t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+			c1 = c1[0], c1[1] - (t_size[1] * index)
+			c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+			cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
+			cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+
+	return img
+
+
+def make_directory(folder_path):
+	''' Create directory
+
+	Args:
+		folder_path (str, Path): the path to directory
+	'''
+	if not os.path.isdir(folder_path):
+		os.makedirs(folder_path)

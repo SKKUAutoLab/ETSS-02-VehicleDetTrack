@@ -33,6 +33,7 @@ __all__ = [
 	"RouteViolation"
 ]
 
+from core.objects.moving_model import MovingState
 
 # MARK: - RouteViolation
 
@@ -46,7 +47,62 @@ class RouteViolation(BaseAnalyzer):
 	def __init__(
 			self,
 			name: str = "route_violation",
-			**kwargs
+			*args, **kwargs
 	):
-		super().__init__(name=name, **kwargs)
+		super().__init__(name=name, *args, **kwargs)
 		pass
+
+	# MARK: Property
+
+	# MARK: processing
+
+	def update(self, gmos, batch_identifications):
+		"""Update the violation
+
+		Args:
+			gmos (list):
+				Tracking and Matching result
+			batch_identifications (list):
+				Identifier result
+		"""
+
+		# NOTE: sync tracking with identification
+		# id: [frame_index, bounding_box index, instance_index]
+		for gmo in gmos:
+			for identification_instance in batch_identifications:
+				if (gmo.bboxes_id[-1][0] == identification_instance.id[0] and
+						gmo.bboxes_id[-1][1] == identification_instance.id[1]):
+
+					# add person on the motorbike
+					gmo.num_people += 1
+
+					# DEBUG:
+					# print(identification_instance.id)
+					# if gmo.moving_state == MovingState.ToBeCounted:
+					# 	print(gmo.id)
+					# 	print(gmo.moving_state)
+					# 	for bbox_id in gmo.bboxes_id:
+					# 		print(bbox_id)
+					# 	for identification_instance_temp in batch_identifications:
+					# 		if (gmo.bboxes_id[-1][0] == identification_instance_temp.id[0] and
+					# 				gmo.bboxes_id[-1][1] == identification_instance_temp.id[1]):
+					# 			print(identification_instance_temp.id)
+					#
+					# 	sys.exit()
+
+					if gmo.moving_state == MovingState.Counted:
+
+						# DEBUG:
+						print(gmo.id)
+						# print(gmo.moving_state)
+
+						# for bbox_id in gmo.bboxes_id:
+						# 	print(bbox_id)
+
+						for identification_instance_temp in batch_identifications:
+							if (gmo.bboxes_id[-1][0] == identification_instance_temp.id[0] and
+									gmo.bboxes_id[-1][1] == identification_instance_temp.id[1]):
+								print(identification_instance_temp.id)
+								print(gmo.bboxes_id)
+
+				# sys.exit()

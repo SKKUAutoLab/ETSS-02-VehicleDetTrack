@@ -43,7 +43,7 @@ class MotionModel(metaclass=abc.ABCMeta):
 		self.age               = age
 		self.time_since_update = time_since_update
 		self.history           = []
-	
+
 	# MARK: Property
 	
 	@property

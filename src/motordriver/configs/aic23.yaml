@@ -9,7 +9,6 @@ id_: *camera_name
 data:
   type: "*.jpg"
   # Video file or image folder. By default, assume all video are put inside
-  # `aic21_vehicle_counting/<subset>/`.
   stream: null
   # If we run directly with the input stream, `stream` must be of some value.
   # By default, `null` means run with video file defined in `path`.
@@ -103,7 +102,7 @@ tracker:
   # CUDDevice, i.e. 0 or 0,1,2,3 or cpu
   batch_size: 32
   # Number of samples in one forward & backward pass.
-  folder_out: "yolov8x6"
+  folder_out: "sort"
   # The output folder
   class_labels:
     file: "class_labels_7cls.json"
@@ -118,6 +117,8 @@ matcher:
   # Number of samples in one forward & backward pass.
   queue_size: 30
   # Number of slot in the queue to store the general moving object result
+  folder_out: "matcher_rnt"
+  # The output folder
   roi:
     dataset: *dataset
     file:
@@ -134,6 +135,10 @@ matcher:
       # The maximum distance for counting with track
     angle_threshold: 45
       # The maximum angle for counting with track
+  loi:
+    dataset: *dataset
+    file:
+      - "004.json"
   gmo:
     min_entering_distance: -1
       # Min distance when an object enters the ROI to be Confirmed.
@@ -148,8 +153,14 @@ matcher:
 analyzer:
   name: "driver_violation"
     # Name of the analyzer
-  num_people: 2
-    # Maximum number of people in one motorbike
+  ratio_appear: 0.1
+    # Ratio of the number of frames that the number appear in trajectory
+  num_max_people: 2
+    # Maximum number of people in one motorbike, people > 2 is considered as violation
+  num_max_lane: 1
+    # Maximum number of lane that motorbike can be in, lane > 1 is considered as violation
+  folder_out: "driver_violation"
+    # The output folder
 
 data_writer:
   dst: "output_aic23"
@@ -162,23 +173,7 @@ data_writer:
   # Video codec. One of: ["mp4v", "xvid", "mjpg", "wmv1"].
   queue_size: 30
   # Number of slot in the queue to store data for writer
-  dets_crop_pkl: &dets_crop_pkl "dets_crop_pkl"
-  # Store the crop detection of each result of each images
-  dets_crop_pkl_debug: "dets_crop_pkl_debug"
-  # Store the drawing result of detection of each result of each images
-  dets_crop_heuristic_pkl: &dets_crop_heuristic_pkl "dets_crop_heuristic_pkl"
-  # Store the heuristic crop detection of each result of each images
-  dets_crop_heuristic_pkl_debug: "dets_crop_heuristic_pkl_debug"
-  # Store the full heuristic detection of each result of each images
-  dets_full_pkl: &dets_full_pkl "dets_full_pkl"
-  # Store the full detection of each result of each images
-  dets_full_pkl_debug: "dets_full_pkl_debug"
-  # Store the drawing of full detection of each result of each images
-  final_result: *dets_crop_heuristic_pkl
-  # Where we get the final result
-  final_file: "final_result_s2.txt"
-  # Name of file result file
-  min_confidence: 0.88
+  min_confidence: 0.1
   # Detection confidence threshold. Disregard all detections that have a
   # confidence lower than this value.
 

@@ -51,28 +51,32 @@ class GeneralObject(metaclass=abc.ABCMeta):
 
 	def __init__(
 		self,
-		id         : UUID                 = None,
-		frame_index: Optional[int]        = None,
-		timestamp  : float                = timer(),
-		bbox       : Optional[np.ndarray] = None,
-		bbox_id    : Optional[np.ndarray] = None,
-		clip_bbox  : Optional[np.ndarray] = None,
-		polygon    : Optional[np.ndarray] = None,
-		confidence : float                = 0.0,
-		label      : Optional[Dict]       = None,
+		id                 : UUID                       = None,
+		frame_index        : Optional[int]              = None,
+		timestamp          : float                      = timer(),
+		bbox               : Optional[np.ndarray]       = None,
+		bbox_id            : Optional[np.ndarray]       = None,
+		instances_in_bboxes: Optional[list, np.ndarray] = None,
+		clip_bbox          : Optional[np.ndarray]       = None,
+		lanes_id           : Optional[list, np.ndarray] = None,
+		polygon            : Optional[np.ndarray]       = None,
+		confidence         : float                      = 0.0,
+		label              : Optional[Dict]             = None,
 		**kwargs
 	):
 		super().__init__(**kwargs)
-		self.id            = id if id is not None else uuid.uuid4().int
-		self.frame_indexes = [frame_index] if (frame_index is not None) else []
-		self.timestamps    = [timestamp]   if (timestamp is not None)   else []
-		self.bboxes        = [bbox]        if (bbox is not None)        else []
-		self.bboxes_id     = [bbox_id]     if (bbox_id is not None)     else []
-		self.polygons      = [polygon]     if (polygon is not None)     else []
-		self._trajectory   = np.array([self.current_bbox_center]) if (bbox is not None) else np.empty((0, 2))
-		self.confidence    = confidence
-		self.labels        = [label]       if (label is not None)       else []
-		
+		self.id                  = id if id is not None else uuid.uuid4().int
+		self.frame_indexes       = [frame_index] if (frame_index is not None) else []
+		self.timestamps          = [timestamp]   if (timestamp is not None)   else []
+		self.bboxes              = [bbox]        if (bbox is not None)        else []
+		self.bboxes_id           = [bbox_id]     if (bbox_id is not None)     else []
+		self.instances_in_bboxes = [instances_in_bboxes]     if (instances_in_bboxes is not None)     else []
+		self.lanes_id            = [lanes_id]    if (lanes_id is not None)    else []
+		self.polygons            = [polygon]     if (polygon is not None)     else []
+		self._trajectory         = np.array([self.current_bbox_center]) if (bbox is not None) else np.empty((0, 2))
+		self.confidence          = confidence
+		self.labels              = [label]       if (label is not None)       else []
+
 	# MARK: Property
 	
 	@property

@@ -168,7 +168,7 @@ class BaseDetector(metaclass=abc.ABCMeta):
 			input (Tensor):
 				Input image of shape [B, C, H, W].
 			pred (Tensor):
-			   Prediction.
+				Prediction.
 
 		Returns:
 			instances (list):

@@ -31,6 +31,7 @@ from core.objects.moving_model import MovingState
 
 from matcher import BaseMatcher
 from matcher.moi import MOI
+from matcher.loi import LOI
 from matcher.roi import ROI
 
 __all__ = [
@@ -65,10 +66,12 @@ class MatcherRnT(BaseMatcher):
 		self.in_roi_gmos        = None
 		self.countable_gmos     = None
 		self.to_be_counted_gmos = None
+		self.is_counted_gmos    = None
 
 		# NOTE: Load components
 		self.load_mois(self.moi_cfg["file"])
 		self.load_rois(self.roi_cfg["file"])
+		self.load_lois(self.loi_cfg["file"])
 
 	# MARK: Property
 
@@ -104,19 +107,64 @@ class MatcherRnT(BaseMatcher):
 					file    = moi_path
 				)
 
+	def load_lois(self, lois: dict):
+		"""Load the list of movement of interest
+
+		Args:
+			lois (dict):
+				List of path
+
+		"""
+		self.lois = []
+		for loi_path in lois:
+			self.lois = self.lois + LOI.load_lois_from_file(
+					dataset = self.roi_cfg["dataset"],
+					file    = loi_path
+			)
+
 	# MARK: Processing
 
 	def update(self, gmos):
+		"""Update the state of the moving objects and perform counting.
+
+		Args:
+			gmos (list):
+				The moving objects to be updated.
+		"""
 		self.update_moving_state(gmos)
 		self.associate_gmos_with_mois(gmos)
 		self.counting(gmos)
 
+	def update_lane(self, gmos):
+		"""
+		Update the lane of the moving objects.
+
+		Args:
+			gmos:
+				The moving objects to be updated.
+		"""
+		self.associate_gmos_with_lois(gmos)
+
 	def update_moving_state(self, gmos):
+		"""Update the moving state of the moving objects.
+
+		Args:
+			gmos (list):
+				The moving objects to be updated
+		Returns:
+
+		"""
 		for gmo in gmos:
 			gmo.update_moving_state(rois=self.rois)
 			gmo.timestamps.append(timer())
 
 	def associate_gmos_with_mois(self, gmos):
+		"""Associate the moving objects with the movements of interest.
+
+		Args:
+			gmos (list):
+				The moving objects to be associated.
+		"""
 		# NOTE: Associate gmos with MOIs
 		self.in_roi_gmos = [o for o in gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
 		MOI.associate_moving_objects_to_mois(
@@ -124,6 +172,19 @@ class MatcherRnT(BaseMatcher):
 		self.to_be_counted_gmos = [o for o in self.in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
 		MOI.associate_moving_objects_to_mois(
 			gmos=self.to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+
+	def associate_gmos_with_lois(self, gmos):
+		"""Associate the moving objects with the lines of interest.
+
+		Args:
+			gmos (list):
+				The moving objects to be associated.
+		"""
+		self.is_counted_gmos = [o for o in gmos]
+		for gmo in self.is_counted_gmos:
+			gmo.lanes_id = [None for _ in range(len(gmo.bboxes))]
+		LOI.associate_moving_objects_to_lois(
+			gmos=self.is_counted_gmos, lois=self.lois, shape_type="polygon")
 
 	def counting(self, gmos):
 		self.countable_gmos = [o for o in self.in_roi_gmos if (o.is_countable and o.is_to_be_counted)]

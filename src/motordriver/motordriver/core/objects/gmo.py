@@ -19,7 +19,6 @@
 
 from typing import List
 
-from core.objects.driver_model import DriverModel
 from core.objects.instance import Instance
 from core.utils.constants import AppleRGB
 from core.objects.general_object import GeneralObject
@@ -27,13 +26,14 @@ from core.objects.moving_model import(
 	MovingModel,
 	MovingState
 )
+from core.objects.driver_model import MotorbikeDriverModel
 from core.objects.motion_model import MotionModel
 from matcher.roi import ROI
 
 
 # MARK: - GMO (General Moving Object)
 
-class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
+class GMO(GeneralObject, MotionModel, MovingModel, MotorbikeDriverModel):
 	# MARK: Class Property
 	
 	min_entering_distance: int = 0
@@ -44,12 +44,13 @@ class GMO(GeneralObject, MotionModel, MovingModel, DriverModel):
 	# MARK: Magic Functions
 	
 	def __init__(self, **kwargs):
-		# For matching, flow estimation
+		# NOTE: For matching, flow estimation
 		GeneralObject.__init__(self, **kwargs)
 		MotionModel.__init__(self, **kwargs)
 		MovingModel.__init__(self, **kwargs)
-		# For driver violation detection
-		DriverModel.__init__(self, **kwargs)
+
+		# NOTE: For driver violation detection
+		MotorbikeDriverModel.__init__(self, **kwargs)
 
 	# MARK: Configure
 	

@@ -2,8 +2,8 @@
 
 # NOTE: Run each camera
 python main.py  \
-   --dataset carla_rain  \
-   --config Town10HD_location_4.yaml  \
+   --dataset carla_weather  \
+   --config Town10HD_location_2.yaml  \
    --write_video True
 
 #python main.py  \

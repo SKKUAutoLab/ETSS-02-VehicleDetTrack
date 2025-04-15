@@ -16,16 +16,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
 
-import abc
 import enum
+import abc
 from typing import Optional
-
-from core.utils.rich import console, error_console
 
 import numpy as np
 
 __all__ = [
-	"DriverModel"
+	"MotorbikeDriverModel"
 ]
 
 
@@ -36,20 +34,43 @@ class ViolationState(enum.Enum):
 	Counting    = 3  # Object is in the counting zone/counting state.
 
 
-class DriverModel(object):
-	"""Moving Model for matching (or Flow Estimation)
+class MotorbikeDriverModel(object):
+	"""Motorbike Model for check the motorbike driver status
 	"""
 
 	# MARK: Magic Functions
 
 	def __init__(
 			self,
-			num_people : Optional[int]        = 0,
-			helmets    : Optional[np.ndarray] = None,
+			num_people            : Optional[int]        = 0,
+			helmets               : Optional[np.ndarray] = None,
+			ratio_appear          : Optional[float]      = 0.1,
+			is_violated_num_people: Optional[bool]       = False,
+			is_violated_helmet    : Optional[bool]       = False,
+			is_violated_movement  : Optional[bool]       = False,
 			**kwargs
 	):
-		self.num_people = num_people
-		self.helmets    = helmets if (helmets is not None) else np.zeros(self.num_people)
+		"""
+
+		Args:
+			num_people (int, optional):
+				The number of people on the motorbike. Defaults to 0.
+			helmets:
+			ratio_appear:
+			is_violated_num_people:
+			is_violated_helmet:
+			is_violated_movement:
+			**kwargs:
+		"""
+		# super().__init__(**kwargs)
+		self.num_people   = num_people
+		self.ratio_appear = ratio_appear
+		self.helmets      = helmets
+
+		# NOTE: check the violated state
+		self.is_violated_num_people = is_violated_num_people
+		self.is_violated_helmet     = is_violated_helmet
+		self.is_violated_movement   = is_violated_movement
 
 	# MARK: Property
 
@@ -69,7 +90,31 @@ class DriverModel(object):
 	def helmets(self, helmets: list):
 		self._helmets = helmets
 
+	@property
+	def is_violated_num_people(self):
+		return self._is_violated_num_people
+
+	@is_violated_num_people.setter
+	def is_violated_num_people(self, value):
+		self._is_violated_num_people = value
+
+	@property
+	def is_violated_helmet(self):
+		return self._is_violated_helmet
+
+	@is_violated_helmet.setter
+	def is_violated_helmet(self, is_violated_helmet: bool):
+		self._is_violated_helmet = is_violated_helmet
+
+	@property
+	def is_violated_movement(self):
+		return self._is_violated_movement
+
+	@is_violated_movement.setter
+	def is_violated_movement(self, is_violated_movement: bool):
+		self._is_violated_movement = is_violated_movement
+
 	# MARK: Update
 
-	def update(self):
-		pass
+	# def update(self):
+	# 	pass
