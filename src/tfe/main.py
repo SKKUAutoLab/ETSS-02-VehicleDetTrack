@@ -26,7 +26,7 @@ from tfe.utils import process_config
 
 # MARK: - Args
 
-parser = argparse.ArgumentParser(description="Config parser")
+parser = argparse.ArgumentParser(description="Config parser for running")
 parser.add_argument(
 	"--dataset",
 	default="carla",
