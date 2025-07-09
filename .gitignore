@@ -11,6 +11,7 @@
 # Image extension
 *.jpg
 *.png
+*.jpeg
 
 # Video extension
 *.mp4
