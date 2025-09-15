@@ -1,0 +1,8 @@
+{
+  "labels" : [
+    { "name": "other"     , "id": 0, "train_id": 0, "category": "other"  , "catId": 0, "color": [0  , 0 , 0  ] },
+    { "name": "car"       , "id": 1, "train_id": 2, "category": "vehicle", "catId": 1, "color": [0  , 0 , 142] },
+    { "name": "truck"     , "id": 2, "train_id": 8, "category": "vehicle", "catId": 1, "color": [0  , 0 , 70 ] },
+    { "name": "bus"       , "id": 3, "train_id": 6, "category": "vehicle", "catId": 1, "color": [0  , 0 , 255] }
+  ]
+}

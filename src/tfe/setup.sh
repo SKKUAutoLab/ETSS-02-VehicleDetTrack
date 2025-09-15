@@ -3,8 +3,8 @@
 # stop at the first error
 set -e
 
-#conda create --name pbvs25_mot python=3.10 -y
-#conda activate pbvs25_mot
+#conda create --name etss-vehicledettrack python=3.10 -y
+#conda activate etss-vehicledettrack
 
 # Install the required packages.
 pip install poetry==1.2.0  # Python dependency management and packaging made easy.
@@ -25,7 +25,6 @@ pip install tensorboard  # TensorFlow's Visualization Toolkit
 pip install yacs==0.1.8  # Yet Another Configuration System
 pip install termcolor==2.5.0  # ANSI color formatting for output in terminal
 pip install lap==0.5.12  # Linear Assignment Problem solver (LAPJV/LAPMOD).
-pip install cython-bbox==0.1.5  # Standalone cython_bbox
 pip install einops==0.8.1  # A new flavour of deep learning operations
 
 

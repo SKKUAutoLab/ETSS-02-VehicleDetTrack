@@ -1,13 +1,13 @@
 [tool.poetry]
-name          = "pbvs25_tp-mot"
-version       = "0.0.1"
+name          = "Traffic Flow Estimation"
+version       = "0.0.2"
 description   = "Deep learning model."
-license       = "MIT"
+license       = "Apache-2.0"
 authors       = [
-    "Duong Nguyen-Ngoc Tran",
+    "Automation Lab - Sungkyunkwan University",
 ]
 maintainers   = [
-    "Duong Nguyen-Ngoc Tran",
+    "Automation Lab - Sungkyunkwan University",
 ]
 readme        = "README.md"
 keywords      = [
@@ -19,19 +19,14 @@ keywords      = [
 classifiers = [
     "Development Status :: 1 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
 ]
 packages = [
-    {include = "thermal_pedestrian" , from = "src"},
-    {include = "ultralytics"        , from = "third_party"},
-    {include = "fast_reid"          , from = "third_party"},
-    {include = "torchreid"          , from = "third_party"},
-    {include = "BoostTrack_source"  , from = "third_party"},
-    {include = "DiffMOT"            , from = "third_party"},
+    {include = "tfe" , from = "."}
 ]
 include = [
     "LICENSE",
