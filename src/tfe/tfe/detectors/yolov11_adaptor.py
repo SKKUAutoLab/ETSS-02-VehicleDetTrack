@@ -16,10 +16,10 @@ import numpy as np
 import platform
 from torch import Tensor
 import torch
-from thermal_pedestrian.core.utils.image import is_channel_first
-from thermal_pedestrian.core.factory.builder import DETECTORS
-from thermal_pedestrian.core.objects.instance import Instance
-from thermal_pedestrian.detectors import BaseDetector
+from tfe.utils.image import is_channel_first
+from tfe.factory.builder import DETECTORS
+from tfe.objects.instance import Instance
+from tfe.detectors import BaseDetector
 
 from ultralytics.models.yolo import detect
 

@@ -26,7 +26,8 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 packages = [
-    {include = "tfe" , from = "."}
+    {include = "tfe"        , from = "."},
+    {include = "ultralytics", from = "third_party"},
 ]
 include = [
     "LICENSE",

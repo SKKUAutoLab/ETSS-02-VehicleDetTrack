@@ -22,7 +22,6 @@ from timeit import default_timer as timer
 import multiprocessing
 
 from tfe.camera import CameraMultithread
-from tfe.io import compress_all_result
 from tfe.utils import data_dir
 from tfe.utils import process_config
 

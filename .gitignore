@@ -50,6 +50,7 @@
 /src/tfe/data/carla_night/bbox/
 /src/tfe/data/carla_weather/bbox/
 /src/tfe/data/carla_weather/outputs/
+/src/tfe/tfe/utils/eval_count/venv/
 
 /src/tfe_OLD/data/carla_rain/bbox/
 /src/tfe_OLD/data/carla_night/bbox/

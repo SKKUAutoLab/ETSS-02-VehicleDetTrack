@@ -26,6 +26,9 @@ pip install yacs==0.1.8  # Yet Another Configuration System
 pip install termcolor==2.5.0  # ANSI color formatting for output in terminal
 pip install lap==0.5.12  # Linear Assignment Problem solver (LAPJV/LAPMOD).
 pip install einops==0.8.1  # A new flavour of deep learning operations
+pip install opencv-python==4.12.0.88  # Open Source Computer Vision Library
+pip install ordered-enum==0.0.10  # An ordered enum class for Python
+pip install loguru==0.7.3 # Python logging made (stupidly) simple.
 
 
 # In stall the project in editable mode.

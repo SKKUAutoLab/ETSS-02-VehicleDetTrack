@@ -20,7 +20,6 @@ from typing import Optional
 
 from loguru import logger
 
-
 # MARK: - MovingState
 
 class MovingState(enum.Enum):

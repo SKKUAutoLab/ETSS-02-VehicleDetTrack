@@ -1,216 +1,277 @@
-# ==================================================================== #
-# Copyright (C) 2022 - Automation Lab - Sungkyunkwan University
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-# ==================================================================== #
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+"""
+
+from __future__ import annotations
+
 import os
+from pathlib import Path
 from typing import Optional
-from typing import Tuple
 
 import cv2
 import numpy as np
 
+from thermal_pedestrian.core.io.filedir import create_dirs
+from thermal_pedestrian.core.type.type import Arrays
+from thermal_pedestrian.core.type.type import Dim3
+from thermal_pedestrian.core.utils.image import is_channel_first
+from thermal_pedestrian.core.utils.image import to_channel_last
+from thermal_pedestrian.core.io.format import VideoFormat
 
-from tfe.ops import image_channel_last
-from tfe.ops import resize_image_cv2
-from tfe.utils import data_dir
-from tfe.utils import is_video_file
-from tfe.utils import is_video_stream
-from loguru import logger
+__all__ = [
+	"is_video_file",
+	"is_video_stream",
+	"VideoLoader",
+	"VideoWriter"
+]
 
 
-# MARK: - VideoReader
+# MARK: - Read
 
-class VideoReader(object):
+def is_video_file(path: Optional[str]) -> bool:
+	"""Check if the given path is a video file."""
+	if path is None:
+		return False
+	
+	video_formats = VideoFormat.values()
+	if os.path.isfile(path=path):
+		extension = os.path.splitext(path.lower())[1]
+		if extension in video_formats:
+			return True
+	return False
+
+
+def is_video_stream(path: str) -> bool:
+	"""Check if the given path is a video stream."""
+	path = path.lower()
+	return "rtsp" in path
+
+
+# MARK: - VideoLoader/Writer
+
+class VideoLoader:
+	"""Video Loader loads frames from a video file or a video stream.
+
+	Attributes:
+		data (str):
+			Data source. Can be a path to video file or a stream link.
+		batch_size (int):
+			Number of samples in one forward & backward pass.
+		video_capture (VideoCapture):
+			`VideoCapture` object from OpenCV.
+		num_frames (int):
+			Total number of frames in the video.
+		index (int, optional):
+			Current frame index.
+	"""
+
 	# MARK: Magic Functions
-	
-	def __init__(
-		self,
-		dataset   : Optional[str] = None,
-		file      : Optional[str] = None,
-		stream    : Optional[str] = None,
-		dims      : Tuple[int, int, int] = (3, 1920, 1080),
-		frame_rate: float         = 10,
-		batch_size: Optional[int] = 1,
-		**kwargs
-	):
-		super().__init__(**kwargs)
-		self.dataset    = dataset
-		self.file       = file
-		self.stream     = stream
-		self.dims       = dims
-		self.frame_rate = frame_rate
-		self.batch_size = batch_size
-		self.cap        = None
-		self.num_frames = -1
-		self.frame_idx  = 0
+
+	def __init__(self, data: str, batch_size: int = 1):
+		super().__init__()
+		self.data          = data
+		self.batch_size    = batch_size
+		self.video_capture = None
+		self.num_frames    = -1
+		self.index         = 0
+
+		self.init_video_capture(data=self.data)
 		
-		# NOTE: Setup stream
-		if self.stream:
-			self.create_online_stream()
-		elif self.file:
-			self.create_video_stream()
-		
-		if self.cap is None:
-			logger.error("Error when reading input stream or video file")
-			raise IOError
-	
 	def __len__(self):
-		""" Get the len of video.
+		"""Return the number of frames in the video.
+
+		Returns:
+			num_frames (int):
+				>0 if the offline video.
+				-1 if the online video.
 		"""
 		return self.num_frames  # number of frame, [>0 : video, -1 : online_stream]
-	
+
 	def __iter__(self):
-		""" The returns an iterator from them.
-		"""
-		self.frame_idx = 0
+		"""Returns an iterator starting at index 0."""
+		self.index = 0
 		return self
-	
+
 	def __next__(self):
-		""" The next iterator for capture video 
 		"""
-		if self.frame_idx >= self.num_frames:
+		e.g.:
+				>>> video_stream = VideoLoader("cam_1.mp4")
+				>>> for image, index in enumerate(video_stream):
+
+		Returns:
+			images (np.ndarray):
+				List of numpy.array images from OpenCV.
+			indexes (list):
+				List of image indexes in the video.
+			files (list):
+				List of image files.
+			rel_paths (list):
+				List of images' relative paths corresponding to data.
+		"""
+		if self.index >= self.num_frames:
 			raise StopIteration
 		else:
-			frame_indexes = []
-			images        = []
-			
+			images    = []
+			indexes   = []
+			files     = []
+			rel_paths = []
+
 			for i in range(self.batch_size):
-				self.frame_idx += 1
-				if self.frame_idx >= self.num_frames:
+				if self.index >= self.num_frames:
 					break
-				# DEBUG:
-				# print(f"{self.cap.isOpened()=}")
-				# print(self.cap.read())
-
-				ret_val, image = self.cap.read()
-
-				# DEBUG:
-				# print("*******")
-
-				frame_indexes.append(self.frame_idx)
+					
+				ret_val, image = self.video_capture.read()
+				rel_path       = os.path.basename(self.data)
+				
 				images.append(image)
+				indexes.append(self.index)
+				files.append(self.data)
+				rel_paths.append(rel_path)
+				
+				self.index += 1
 
-			return frame_indexes, np.array(images)
-	
+			return images, indexes, files, rel_paths
+
 	def __del__(self):
-		""" Close the reading stream.
-		"""
-		self.close_stream()
-		
-	# MARK: Setup
-	
-	def create_online_stream(self):
-		""" Create the capture for online camera
-		"""
-		if is_video_stream(stream=self.stream):
-			self.cap = cv2.VideoCapture(self.stream)  # stream
-			self.cap.set(cv2.CAP_PROP_BUFFERSIZE, self.batch_size)  # set buffer (batch) size
-		else:
-			logger.error(f"{self.stream} is not a corrected stream format.")
-			raise FileNotFoundError
-		
-	def create_video_stream(self):
-		""" Create the capture for video
-		"""
-		# NOTE: Get path to video file
-		video_file = os.path.join(data_dir, self.dataset, "video", self.file)
-		if is_video_file(file=video_file):
-			self.cap        = cv2.VideoCapture(video_file)
-			self.num_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-		else:
-			logger.error(f"Video file not found or wrong file type at {video_file}.")
-			raise FileNotFoundError
-			
-	def close_stream(self):
-		"""Release the current video capture.
-		"""
-		if self.cap:
-			self.cap.release()
-	
+		"""Close the `video_capture` object."""
+		self.close()
 
-# MARK: - VideoWriter
+	# MARK: Configure
+	
+	def init_video_capture(self, data: str):
+		"""Initialize `video_capture` object.
+		
+		Args:
+			data (str):
+				Data source. Can be a path to video file or a stream link.
+		"""
+		if is_video_file(data):
+			self.video_capture = cv2.VideoCapture(data)
+			self.num_frames    = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+		elif is_video_stream(data):
+			self.video_capture = cv2.VideoCapture(data)  # stream
+			# Set buffer (batch) size
+			self.video_capture.set(cv2.CAP_PROP_BUFFERSIZE, self.batch_size)
+		
+		if self.video_capture is None:
+			raise IOError("Error when reading input stream or video file!")
 
-class VideoWriter(object):
+	def close(self):
+		"""Release the current `video_capture` object."""
+		if self.video_capture:
+			self.video_capture.release()
+
+
+class VideoWriter:
+	"""Video Writer saves images to a video file.
+
+	Attributes:
+		dst (str):
+			Output video file.
+		video_writer (VideoWriter):
+			`VideoWriter` object from OpenCV.
+		shape (tuple):
+			Output size as [H, W, C]. This is also used to reshape the input.
+		frame_rate (int):
+			Frame rate of the video.
+		fourcc (str):
+			Fvideo codec. One of: ["mp4v", "xvid", "mjpg", "wmv1"].
+		save_image (bool):
+			Should write individual image?
+		index (int):
+			Current index.
+	"""
+
 	# MARK: Magic Functions
-	
+
 	def __init__(
 		self,
-		output_dir: str,
-		file      : Optional[str]        = None,
-		dims      : Tuple[int, int, int] = (3, 1920, 1080),
-		frame_rate: float                = 10,
-		fourcc    : Optional[str]        = "mp4v",
-		**kwargs
+		dst       : str,
+		shape     : Dim3  = (480, 640, 3),
+		frame_rate: float = 10,
+		fourcc    : str   = "mp4v",
+		save_image: bool  = False,
 	):
 		super().__init__()
-		self.output_dir   = output_dir
-		self.file         = file
-		self.dims         = dims
+		self.shape        = shape
 		self.frame_rate   = frame_rate
 		self.fourcc       = fourcc
+		self.save_image	  = save_image
 		self.video_writer = None
-		
-		# NOTE: Setup video writer
-		if self.file:
-			self.create_video_writer()
-		
-		if self.video_writer is None:
-			logger.error("No video writer is defined. Please check again!")
-			raise ValueError
-		
-	def __del__(self):
-		""" Close the writing stream
-		"""
-		self.close_video_writer()
-		
-	# MARK: Setup stream
-	
-	def create_video_writer(self):
-		""" Create the new video writer.
-		"""
-		video_file        = os.path.join(self.output_dir, self.file)
-		fourcc            = cv2.VideoWriter_fourcc(*self.fourcc)
-		self.video_writer = cv2.VideoWriter(video_file, fourcc, self.frame_rate, (self.dims[2], self.dims[1]))
-			
-		if not self.video_writer:
-			logger.error(f"Video file cannot be created at {video_file}.")
-			raise FileNotFoundError
-		
-	def write_frame(self, image: np.ndarray):
-		""" Add one frame to writing video.
-		"""
-		# NOTE: Convert to channel last
-		# DEBUG:
-		# print(f"{self.video_writer=}")
-		# print(f"{image.shape=}")
-		# print(f"{self.dims[1:3]=}")
-		image = image_channel_last(image=image)
-		# print(f"{image.shape=}")
-		# NOTE: get the image for create rmois
-		# cv2.imwrite("/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv_rain/rmois_description/23.png", image)
-		image = resize_image_cv2(image=image, size=self.dims[1:3])
-		# DEBUG:
-		# print(f"{image.shape=}")
-		# print(f"{self.dims=}")
-		# print()
+		self.index		  = 0
 
-		self.video_writer.write(image)
+		self.init_video_writer(dst=dst)
+
+	def __len__(self):
+		"""Return the number of already written frames."""
+		return self.index
+
+	def __del__(self):
+		"""Close the `video_writer` object."""
+		self.close()
+
+	# MARK: Configure
 	
-	def close_video_writer(self):
-		"""Release the current video capture.
+	def init_video_writer(self, dst: str):
+		"""Initialize `video_writer` object.
+
+		Args:
+			dst (str):
+				Output video file.
 		"""
+		if os.path.isdir(dst):
+			parent_dir = dst
+			self.dst   = os.path.join(parent_dir, f"result.mp4")
+		else:
+			parent_dir = str(Path(dst).parent)
+			stem       = str(Path(dst).stem)
+			self.dst   = os.path.join(parent_dir, f"{stem}.mp4")
+		create_dirs(paths=[parent_dir])
+
+		fourcc            = cv2.VideoWriter_fourcc(*self.fourcc)
+		self.video_writer = cv2.VideoWriter(
+			self.dst, fourcc, self.frame_rate,
+			tuple([self.shape[1], self.shape[0]])  # Must be [W, H]
+		)
+
+		if self.video_writer is None:
+			raise FileNotFoundError(f"Video file cannot be created at "
+									f"{self.dst}.")
+
+	def close(self):
+		"""Release the `video_writer` object."""
 		if self.video_writer:
 			self.video_writer.release()
+
+	# MARK: Write
+
+	def write_frame(self, image: np.ndarray):
+		"""Add a frame to video.
+
+		Args:
+			image (np.ndarray):
+				Image for writing of shape [H, W, C].
+		"""
+		if is_channel_first(image):
+			image = to_channel_last(image)
+
+		if self.save_image:
+			parent_dir = os.path.splitext(self.dst)[0]
+			image_file = os.path.join(parent_dir, f"{self.index}.png")
+			create_dirs(paths=[parent_dir])
+			cv2.imwrite(image_file, image)
+
+		self.video_writer.write(image)
+		self.index += 1
+
+	def write_frames(self, images: Arrays):
+		"""Add batch of frames to video.
+
+		Args:
+			images (Arrays):
+				Images.
+		"""
+		for image in images:
+			self.write_frame(image=image)
