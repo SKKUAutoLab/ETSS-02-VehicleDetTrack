@@ -14,6 +14,8 @@ from collections import OrderedDict
 
 import numpy as np
 import platform
+
+from loguru import logger
 from torch import Tensor
 import torch
 from tfe.utils.image import is_channel_first
@@ -24,19 +26,19 @@ from tfe.detectors import BaseDetector
 from ultralytics.models.yolo import detect
 
 __all__ = [
-	"YOLOv8_Adapter"
+	"YOLOv11_Adapter"
 ]
 
 
-# MARK: - YOLOv8
+# MARK: - YOLOv11
 
-@DETECTORS.register(name="yolov8")
-class YOLOv8_Adapter(BaseDetector):
+@DETECTORS.register(name="yolov11")
+class YOLOv11_Adapter(BaseDetector):
 
 	# MARK: Magic Functions
 
 	def __init__(self,
-	             name: str = "yolov8",
+	             name: str = "yolov11",
 	             *args, **kwargs):
 		super().__init__(name=name, *args, **kwargs)
 
@@ -87,7 +89,7 @@ class YOLOv8_Adapter(BaseDetector):
 		"""
 		# NOTE: Safety check
 		if self.model is None:
-			print("Model has not been defined yet!")
+			logger.error("Model has not been defined yet!")
 			raise NotImplementedError
 
 		# NOTE: Preprocess

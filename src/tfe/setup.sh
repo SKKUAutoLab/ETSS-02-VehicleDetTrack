@@ -29,6 +29,12 @@ pip install einops==0.8.1  # A new flavour of deep learning operations
 pip install opencv-python==4.12.0.88  # Open Source Computer Vision Library
 pip install ordered-enum==0.0.10  # An ordered enum class for Python
 pip install loguru==0.7.3 # Python logging made (stupidly) simple.
+pip install PyQt6==6.9.1 # Python bindings for the Qt cross-platform application and UI framework.
+
+# Run line by line
+pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu118
+pip install torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu118
+pip install torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118
 
 
 # In stall the project in editable mode.

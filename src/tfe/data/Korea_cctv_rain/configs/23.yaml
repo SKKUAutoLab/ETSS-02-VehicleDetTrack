@@ -11,7 +11,7 @@ data:
   stream: null
     # If we run directly with the input stream, ``stream`` must be of some value.
     # By default ``null`` means run with video file defined in ``path``.
-  dims: &dims [3, 720, 1280]
+#  dims: &dims [3, 650, 1280]
     # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
   frame_rate: 5
     # The frame rate of the video.
@@ -24,7 +24,9 @@ output:
     # In case of image folder, it is the prefix for the output images.
 #  dims: *dims
     # The output size (C, H, W). By default, the same as ``aicity2021.dims``.
-  write_image: false
+#  shape: *dims
+    # The output size (C, H, W), same as DIMS
+  write_image: True
     # Should write each result image to result folder? By default: false.
     # If true, create a folder named as in ``file`` and output images.
   write_video: True
@@ -58,16 +60,18 @@ moi:
 detector:
   api: "pytorch"
     # Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
-  name: "yolov7"
+  name: "yolov11"
     # The name of the detector model.
-  variant: "yolov7-e6e"
+  variant: "yolov11x"
     # The detector model's variant name.
-  weights: "yolov7/yolov7.pt"
+  weights: "yolo11x_suwon#23_03_01/weights/best.pt"
     # The pretrained weights file.
   dataset: *dataset
     # The dataset base on aicity2021 above, mean base on contest, app
-  dims: [3, 768, 768]
+  dims:  [3, 768, 768]
     # Input size as [C, H, W]. This is also used to reshape the input aicity2021.
+  shape: [3, 768, 768]
+    # Input size as [C, H, W], same as DIMS
   min_confidence: 0.4
     # Detection confidence threshold. Disregard all detections that have  a confidence lower than this value.
   nms_max_overlap: 0.4

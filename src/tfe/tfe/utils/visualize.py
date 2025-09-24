@@ -15,13 +15,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from thermal_pedestrian.core.data import ClassLabels
-from thermal_pedestrian.core.type import Arrays
-from thermal_pedestrian.core.utils import concatenate_images
-from thermal_pedestrian.core.utils import to_4d_image_list
-from thermal_pedestrian.core.utils import to_channel_last
-from thermal_pedestrian.core.utils import to_image
-from thermal_pedestrian.core.utils import to_pil_image
+from tfe.data import ClassLabels
+from tfe.type import Arrays
+from tfe.utils import concatenate_images
+from tfe.utils import to_4d_image_list
+from tfe.utils import to_channel_last
+from tfe.utils import to_image
+from tfe.utils import to_pil_image
 
 plt.ion()
 # SUGAR: comment cho nay neu chay tren server, vi server unable GUI
@@ -66,7 +66,7 @@ def show_images(
 	cat_image = cat_image.numpy() if torch.is_tensor(cat_image) else cat_image
 	cat_image = to_channel_last(cat_image)
 	if denormalize:
-		from thermal_pedestrian.core.enhance import denormalize_naive
+		from tfe.enhance import denormalize_naive
 		cat_image = denormalize_naive(cat_image)
 	"""
 	# NOTE: Convert to PIL Image
@@ -131,7 +131,7 @@ def imshow_plt(
 	# NOTE: Prepare images
 	images_ = to_4d_image_list(images)  # List of 4D-array
 	images_ = [to_channel_last(i)	for i in images_]
-	from thermal_pedestrian.core.enhance import denormalize_naive
+	from tfe.enhance import denormalize_naive
 	images_ = [denormalize_naive(i) for i in images_]
 	images_ = [i[: show_max_n]    	for i in images_]
 	

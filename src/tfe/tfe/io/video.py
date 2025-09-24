@@ -13,12 +13,12 @@ from typing import Optional
 import cv2
 import numpy as np
 
-from thermal_pedestrian.core.io.filedir import create_dirs
-from thermal_pedestrian.core.type.type import Arrays
-from thermal_pedestrian.core.type.type import Dim3
-from thermal_pedestrian.core.utils.image import is_channel_first
-from thermal_pedestrian.core.utils.image import to_channel_last
-from thermal_pedestrian.core.io.format import VideoFormat
+from tfe.io.filedir import create_dirs
+from tfe.type.type import Arrays
+# from tfe.type.type import Dim3
+from tfe.utils.image import is_channel_first
+from tfe.utils.image import to_channel_last
+from tfe.io.format import VideoFormat
 
 __all__ = [
 	"is_video_file",
@@ -69,10 +69,11 @@ class VideoLoader:
 
 	# MARK: Magic Functions
 
-	def __init__(self, data: str, batch_size: int = 1):
+	def __init__(self, data: str, batch_size: int = 1, *args, **kwargs):
 		super().__init__()
 		self.data          = data
 		self.batch_size    = batch_size
+
 		self.video_capture = None
 		self.num_frames    = -1
 		self.index         = 0
@@ -189,10 +190,11 @@ class VideoWriter:
 	def __init__(
 		self,
 		dst       : str,
-		shape     : Dim3  = (480, 640, 3),
+		shape     : tuple[int, int, int]  = (480, 640, 3),
 		frame_rate: float = 10,
 		fourcc    : str   = "mp4v",
 		save_image: bool  = False,
+		*args, **kwargs
 	):
 		super().__init__()
 		self.shape        = shape
@@ -242,7 +244,7 @@ class VideoWriter:
 
 	def close(self):
 		"""Release the `video_writer` object."""
-		if self.video_writer:
+		if hasattr(self, 'video_writer') and self.video_writer is not None and self.video_writer:
 			self.video_writer.release()
 
 	# MARK: Write

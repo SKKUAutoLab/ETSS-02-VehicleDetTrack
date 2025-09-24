@@ -26,11 +26,11 @@ import cv2
 import numpy as np
 from munch import Munch
 
-from tfe.detector import Detection
-from tfe.ops import AppleRGB as colors
-from tfe.utils import data_dir
-from tfe.utils import is_json_file
-from tfe.utils import parse_config_from_json
+from tfe.objects.instance import Instance
+from tfe.utils.constants import AppleRGB as colors
+from tfe.configuration import data_dir
+from tfe.io.filedir import is_json_file
+from tfe.utils.config import parse_config_from_json
 from loguru import logger
 
 
@@ -88,7 +88,7 @@ class ROI(object):
 			path = os.path.join(data_dir, dataset, "rmois", file)
 		else:
 			path = os.path.join(data_dir, "rmois", file)
-		if not is_json_file(file=path):
+		if not is_json_file(path=path):
 			logger.error(f"File not found or given a wrong file type at {path}.")
 			raise FileNotFoundError
 		
@@ -106,12 +106,12 @@ class ROI(object):
 	
 	@staticmethod
 	def associate_detections_to_rois(
-		detections: List[Detection],
+		instances: List[Instance],
 		rois
 	):
 		"""A static method to check if a given bbox belong to one of the many rois in the image.
 		"""
-		for d in detections:
+		for d in instances:
 			d.roi_uuid = ROI.find_roi_for_bbox(bbox_xyxy=d.bbox, rois=rois)
 	
 	@staticmethod

@@ -30,19 +30,19 @@ import torch
 
 from loguru import logger
 
-from tfe.detector import get_detector
+from tfe.detectors import get_detector
 from tfe.io import AICResultWriter
 from tfe.io import VideoReader
 from tfe.io import VideoWriter
 from tfe.ops import AppleRGB, padded_resize_image
-from tfe.road_objects import GeneralObject
-from tfe.road_objects import GMO
-from tfe.road_objects import MovingState
+from tfe.objects import GeneralObject
+from tfe.objects import GMO
+from tfe.objects import MovingState
 from tfe.tracker import get_tracker
 from tfe.utils import data_dir
-from tfe.utils import parse_config_from_json
-from .moi import MOI
-from .roi import ROI
+from tfe.utils.config import parse_config_from_json
+from tfe.cameras.moi import MOI
+from tfe.cameras.roi import ROI
 
 
 # MARK: - CameraMultithread
@@ -248,7 +248,7 @@ class CameraMultithread(object):
 
 			for idx, detections in enumerate(batch_detections):
 				# NOTE: Track (in batch)
-				self.tracker.update(detections=detections)
+				self.tracker.update(instances=detections)
 				gmos = self.tracker.tracks
 
 				# NOTE: Update moving state

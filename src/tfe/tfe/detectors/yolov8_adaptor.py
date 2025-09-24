@@ -14,6 +14,8 @@ from collections import OrderedDict
 
 import numpy as np
 import platform
+
+from loguru import logger
 from torch import Tensor
 import torch
 from tfe.utils.image import is_channel_first
@@ -87,7 +89,7 @@ class YOLOv8_Adapter(BaseDetector):
 		"""
 		# NOTE: Safety check
 		if self.model is None:
-			print("Model has not been defined yet!")
+			logger.error("Model has not been defined yet!")
 			raise NotImplementedError
 
 		# NOTE: Preprocess

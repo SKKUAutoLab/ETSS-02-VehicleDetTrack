@@ -15,9 +15,8 @@ from typing import Union
 import cv2
 import numpy as np
 
-from thermal_pedestrian.core.type.type import Color
-from thermal_pedestrian.core.utils.bbox import bbox_xyxy_center
-from thermal_pedestrian.core.utils.bbox import bbox_xyxy_to_cxcyrh
+from tfe.type.type import Color
+from tfe.utils.bbox import ( bbox_xyxy_center, bbox_xyxy_to_cxcyrh)
 
 __all__ = [
 	"Instance"

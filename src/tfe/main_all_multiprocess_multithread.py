@@ -34,30 +34,30 @@ import torch
 parser = argparse.ArgumentParser(description="Config parser")
 parser.add_argument(
 	"--dataset",
-	default="aicity2021_final",
-	help="The dataset to run on."
+	default = "aicity2021_final",
+	help    = "The dataset to run on."
 )
 parser.add_argument(
 	"--queue_size",
-	default=10,
-	type=int,
-	help="The max queue size"
+	default = 10,
+	type    = int,
+	help    = "The max queue size"
 )
 parser.add_argument(
 	"--nodes",
-	default=2,
-	type=int,
-	help="The number of nodes"
+	default = 1,
+	type    = int,
+	help    = "The number of nodes"
 )
 parser.add_argument(
 	"--visualize",
-	default=False,
-	help="Should visualize the processed images"
+	default = False,
+	help    = "Should visualize the processed images"
 )
 parser.add_argument(
 	"--write_video",
-	default=False,
-	help="Should write processed images to video"
+	default = False,
+	help    = "Should write processed images to video"
 )
 
 config_files = [

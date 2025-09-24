@@ -19,13 +19,13 @@
 
 from typing import List
 
-from tfe.camera.roi import ROI
-from tfe.detector import Detection
-from tfe.ops import AppleRGB
-from tfe.road_objects.general_object import GeneralObject
-from tfe.road_objects.motion_model import MotionModel
-from tfe.road_objects.moving_model import MovingModel
-from tfe.road_objects.moving_model import MovingState
+from tfe.cameras.roi import ROI
+from tfe.objects.instance import Instance
+from tfe.utils.constants import AppleRGB
+from tfe.objects.general_object import GeneralObject
+from tfe.objects.motion_model import MotionModel
+from tfe.objects.moving_model import MovingModel
+from tfe.objects.moving_model import MovingState
 
 
 # MARK: - GMO (General Moving Object)
@@ -48,23 +48,23 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 	# MARK: Configure
 	
 	@classmethod
-	def gmo_from_detection(cls, detection: Detection, **kwargs):
+	def gmo_from_detection(cls, instance: Instance, **kwargs):
 
 		return cls(
-			frame_index = detection.frame_index,
-			bbox        = detection.bbox,
-			polygon     = detection.polygon,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			roi_uuid    = detection.roi_uuid,
+			frame_index = instance.frame_index,
+			bbox        = instance.bbox,
+			polygon     = instance.polygon,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			roi_uuid    = instance.roi_uuid,
 			**kwargs
 		)
 		
 	# MARK: Update
 	
-	def update_gmo(self, detection: Detection):
+	def update_gmo(self, instance: Instance):
 		# NOTE: First update ``GeneralObject``
-		self.update_go_from_detection(detection=detection)
+		self.update_go_from_detection(instance=instance)
 		
 		# NOTE: Second, update motion model
 		self.update_motion_state()

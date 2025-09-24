@@ -40,10 +40,11 @@ from pathlib import Path
 from typing import Optional
 
 import validators
+from loguru import logger
 
-from thermal_pedestrian.core.type.type import ScalarListOrTupleAnyT
-from thermal_pedestrian.core.type.collection import unique
-from thermal_pedestrian.core.utils.rich import console
+from tfe.type.type import ScalarListOrTupleAnyT
+from tfe.type.collection import unique
+from tfe.utils.rich import console
 
 __all__ = [
     "create_dirs",
@@ -96,7 +97,7 @@ def create_dirs(paths: ScalarListOrTupleAnyT[str], recreate: bool = False):
                 os.makedirs(d)
         return 0
     except Exception as err:
-        console.log(f"Cannot create directory: {err}.")
+        logger.warning(f"Cannot create directory: {err}.")
         # exit(-1)
         
         

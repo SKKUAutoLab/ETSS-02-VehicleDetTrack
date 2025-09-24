@@ -2,7 +2,7 @@ import argparse
 import os
 from timeit import default_timer as timer
 
-from tfe.camera import CameraQT6
+from tfe.cameras import CameraQT6
 from tfe.utils import data_dir
 from tfe.utils import process_config
 from tfe.views.traffic_flow_estimation_view import *

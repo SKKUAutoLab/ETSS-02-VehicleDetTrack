@@ -19,11 +19,11 @@ from multipledispatch import dispatch
 from torch import Tensor
 from torchvision.transforms.functional import _is_numpy, _is_pil_image
 
-from thermal_pedestrian.core.type.collection import is_list_of
-from thermal_pedestrian.core.type.type import Size2T
-from thermal_pedestrian.core.utils.rich import error_console
+from tfe.type.collection import is_list_of
+from tfe.type.type import Size2T
+from tfe.utils.rich import error_console
 
-from thermal_pedestrian.core.factory.builder import TRANSFORMS
+from tfe.factory.builder import TRANSFORMS
 
 __all__ = [
 	"get_image_size",
@@ -503,7 +503,7 @@ def to_tensor(
 
 	# NOTE: Normalize
 	if normalize:
-		from thermal_pedestrian.core.enhance import normalize_naive
+		from tfe.enhance import normalize_naive
 		_image = normalize_naive(_image)
 
 	if isinstance(_image, torch.ByteTensor):
@@ -634,7 +634,7 @@ def to_image(
 
 	# NOTE: Denormalize
 	if denormalize:
-		from thermal_pedestrian.core.enhance import denormalize_naive
+		from tfe.enhance import denormalize_naive
 		image = denormalize_naive(image)
 
 	return image.astype(np.uint8)

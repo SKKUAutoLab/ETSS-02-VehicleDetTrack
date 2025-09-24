@@ -20,7 +20,7 @@
 import abc
 import uuid
 from timeit import default_timer as timer
-from typing import Dict
+from typing import Dict, Callable
 from typing import Optional
 from typing import Tuple
 from uuid import UUID
@@ -28,10 +28,11 @@ from uuid import UUID
 import cv2
 import numpy as np
 
-from tfe.detector.detection import Detection
-from tfe.ops import bbox_xyxy_center
-from tfe.ops import distance_between_points
-from tfe.ops import get_majority_label
+from tfe.objects.instance import Instance
+from tfe.utils.bbox import bbox_xyxy_center
+from tfe.utils.distance import get_distance_function
+# from tfe.utils.point import distance_between_points
+from tfe.utils.label import get_majority_label
 
 
 # MARK: - GeneralObject
@@ -55,6 +56,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		polygon    : Optional[np.ndarray] = None,
 		confidence : float                = 0.0,
 		label      : Optional[Dict]       = None,
+		distance_function : str           = "euclidean",
 		**kwargs
 	):
 		super().__init__(**kwargs)
@@ -66,7 +68,9 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self._trajectory   = np.array([self.current_bbox_center]) if (bbox is not None) else np.empty((0, 2))
 		self.confidence    = confidence
 		self.labels        = [label]       if (label is not None)       else []
-		
+		self.distance_function: Callable[[np.ndarray, np.ndarray], float] \
+			= get_distance_function(name=distance_function)
+
 	# MARK: Property
 	
 	@property
@@ -95,8 +99,9 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	
 	@property
 	def travelled_distance(self) -> np.ndarray:
-		return distance_between_points(self._trajectory[0], self._trajectory[-1])
-	
+		# return distance_between_points(self._trajectory[0], self._trajectory[-1])
+		return self.distance_function(self._trajectory[0], self._trajectory[-1])
+
 	@property
 	def current_label(self) -> Dict:
 		return self.labels[-1]
@@ -112,16 +117,16 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	# MARK: Configure
 	
 	@classmethod
-	def go_from_detection(cls, detection: Detection, **kwargs):
+	def go_from_detection(cls, instance: Instance, **kwargs):
 
 		return cls(
-			frame_index = detection.frame_index,
-			timestamp   = detection.timestamp,
-			bbox        = detection.bbox,
-			polygon     = detection.polygon,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			roi_uuid    = detection.roi_uuid,
+			frame_index = instance.frame_index,
+			timestamp   = instance.timestamp,
+			bbox        = instance.bbox,
+			polygon     = instance.polygon,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			roi_uuid    = instance.roi_uuid,
 			**kwargs
 		)
 	
@@ -145,10 +150,11 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		if polygon:
 			self.polygons = np.append(self.polygons, [polygon], axis=0)
 			
-		if distance_between_points(self.trajectory[-1], self.current_bbox_center) >= GeneralObject.min_travelled_distance:
+		# if distance_between_points(self.trajectory[-1], self.current_bbox_center) >= GeneralObject.min_travelled_distance:
+		if self.distance_function(self.trajectory[-1], self.current_bbox_center) >= GeneralObject.min_travelled_distance:
 			self._trajectory = np.append(self._trajectory, [self.current_bbox_center], axis=0)
 	
-	def update_go_from_detection(self, detection: Detection, **kwargs):
+	def update_go_from_detection(self, instance: Instance, **kwargs):
 		self.update_go(
 			frame_index = instance.frame_index,
 			timestamp   = instance.timestamp,

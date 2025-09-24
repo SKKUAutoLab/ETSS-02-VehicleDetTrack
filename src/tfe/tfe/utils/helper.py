@@ -13,7 +13,7 @@ import torch
 from packaging import version
 from torch import Tensor
 
-from thermal_pedestrian.core.utils import error_console
+from loguru import logger
 
 
 def torch_version() -> str:
@@ -159,7 +159,7 @@ def safe_solve_with_mask(B: Tensor, A: Tensor) -> tuple[Tensor, Tensor, Tensor]:
 	"""
 	if not torch_version_geq(1, 10):
 		sol, lu = _torch_solve_cast(B, A)
-		error_console.log("PyTorch version < 1.10, solve validness mask maybe not "
+		logger.error("PyTorch version < 1.10, solve validness mask maybe not "
 						  "correct", RuntimeWarning)
 		return sol, lu, torch.ones(len(A), dtype=torch.bool, device=A.device)
 	# Based on https://github.com/pytorch/pytorch/issues/31546#issuecomment-694135622
@@ -181,7 +181,7 @@ def safe_inverse_with_mask(A: Tensor) -> tuple[Tensor, Tensor]:
 	# Based on https://github.com/pytorch/pytorch/issues/31546#issuecomment-694135622
 	if not torch_version_geq(1, 9):
 		inv = _torch_inverse_cast(A)
-		error_console.log("PyTorch version < 1.9, inverse validness mask maybe not "
+		logger.error("PyTorch version < 1.9, inverse validness mask maybe not "
 						  "correct", RuntimeWarning)
 		return inv, torch.ones(len(A), dtype=torch.bool, device=A.device)
 	if not isinstance(A, Tensor):

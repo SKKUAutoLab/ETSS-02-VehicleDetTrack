@@ -28,14 +28,13 @@ import numpy as np
 import cv2
 from munch import Munch
 
-from tfe.road_objects import GMO
-from tfe.ops import angle_between_arrays
-from tfe.ops import AppleRGB
-from tfe.ops import get_distance_function
-from tfe.utils import data_dir
-from tfe.utils import is_json_file
-from tfe.utils import parse_config_from_json
-
+from tfe.objects import GMO
+from tfe.utils.config import parse_config_from_json
+from tfe.utils.distance import angle_between_arrays
+from tfe.utils.distance import get_distance_function
+from tfe.utils.constants import AppleRGB
+from tfe.configuration import data_dir
+from tfe.io.filedir import is_json_file
 
 from loguru import logger
 
@@ -108,7 +107,7 @@ class MOI(object):
 			path = os.path.join(data_dir, dataset, "rmois", file)
 		else:
 			path = os.path.join(data_dir, "rmois", file)
-		if not is_json_file(file=path):
+		if not is_json_file(path=path):
 			logger.error(f"File not found or given a wrong file type at {path}.")
 			raise FileNotFoundError
 		

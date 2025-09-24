@@ -15,14 +15,14 @@ from typing import Optional
 import cv2
 import numpy as np
 
-from thermal_pedestrian.core.io.filedir import create_dirs
-from thermal_pedestrian.core.type.type import Arrays
-from thermal_pedestrian.core.type.type import Dim3
-from thermal_pedestrian.core.utils.image import is_channel_first
-from thermal_pedestrian.core.utils.image import to_channel_last
-from thermal_pedestrian.core.io.image import is_image_file
-from thermal_pedestrian.core.io.video import is_video_file
-from thermal_pedestrian.core.io.video import is_video_stream
+from tfe.io.filedir import create_dirs
+from tfe.type.type import Arrays
+# from tfe.type.type import Dim3
+from tfe.utils.image import is_channel_first
+from tfe.utils.image import to_channel_last
+from tfe.io.image import is_image_file
+from tfe.io.video import is_video_file
+from tfe.io.video import is_video_stream
 
 __all__ = [
 	"FrameLoader", "FrameWriter"
@@ -230,7 +230,7 @@ class FrameWriter:
 	def __init__(
 		self,
 		dst		  : str,
-		shape     : Dim3  = (480, 640, 3),
+		shape     : tuple[int, int, int]  = (480, 640, 3),
 		frame_rate: float = 10,
 		fourcc    : str   = "mp4v",
 		save_image: bool  = False,

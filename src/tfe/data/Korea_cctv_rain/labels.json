@@ -1,8 +1,12 @@
 {
-  "labels" : [
-    { "name": "other"     , "id": 0, "train_id": 0, "category": "other"  , "catId": 0, "color": [0  , 0 , 0  ] },
-    { "name": "car"       , "id": 1, "train_id": 2, "category": "vehicle", "catId": 1, "color": [0  , 0 , 142] },
-    { "name": "truck"     , "id": 2, "train_id": 8, "category": "vehicle", "catId": 1, "color": [0  , 0 , 70 ] },
-    { "name": "bus"       , "id": 3, "train_id": 6, "category": "vehicle", "catId": 1, "color": [0  , 0 , 255] }
+  "labels"  : [
+    { "name": "unidentified" , "id": 0, "train_id": 0, "category": "other"  , "catId": 0, "color": [31 , 119, 180] },
+    { "name": "others"       , "id": 1, "train_id": 1, "category": "vehicle", "catId": 1, "color": [255, 127, 14] },
+    { "name": "pedestrian"   , "id": 2, "train_id": 2, "category": "person" , "catId": 1, "color": [44 , 160, 44] },
+    { "name": "micromobility", "id": 3, "train_id": 3, "category": "vehicle", "catId": 1, "color": [214, 39 , 40] },
+    { "name": "car"          , "id": 4, "train_id": 4, "category": "vehicle", "catId": 1, "color": [148, 103, 189] },
+    { "name": "bus"          , "id": 5, "train_id": 5, "category": "vehicle", "catId": 1, "color": [140, 86 , 75] },
+    { "name": "small truck"  , "id": 6, "train_id": 6, "category": "vehicle", "catId": 1, "color": [227, 119, 194] },
+    { "name": "truck"        , "id": 7, "train_id": 7, "category": "vehicle", "catId": 1, "color": [127, 127, 127] }
   ]
 }

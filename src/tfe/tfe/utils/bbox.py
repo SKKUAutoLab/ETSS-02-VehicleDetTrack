@@ -16,10 +16,9 @@ import numpy as np
 import torch
 from multipledispatch import dispatch
 from torch import Tensor
-from torch.distributions import Uniform
 
-from thermal_pedestrian.core.type.type import Dim2
-from thermal_pedestrian.core.type.type import ListOrTuple2T
+from tfe.type.type import Dim2
+from tfe.type.type import ListOrTuple2T
 
 __all__ = [
 	"batch_bbox_iou",
@@ -1878,8 +1877,8 @@ def bbox_area(xyxy: np.ndarray) -> float:
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
 	"""
 	return (xyxy[2] - xyxy[0]) * (xyxy[3] - xyxy[1])
-	
-	
+
+
 @dispatch(Tensor)
 def bbox_xyxy_center(xyxy: Tensor) -> Tensor:
 	"""Return the center of the box of format
@@ -1893,7 +1892,7 @@ def bbox_xyxy_center(xyxy: Tensor) -> Tensor:
 		return xyah[:, 0:2]
 	else:
 		raise ValueError(f"Farray dimensions {xyah.ndim} is not supported.")
-	
+
 
 @dispatch(np.ndarray)
 def bbox_xyxy_center(xyxy: np.ndarray) -> np.ndarray:
@@ -1950,7 +1949,7 @@ def infer_bbox_shape(boxes: Tensor) -> ListOrTuple2T[Tensor]:
 
 def bbox_ioa(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
 	"""Calculate the intersection over area given xyxy1, xyxy2.
-	
+
 	Args:
 		xyxy1 (np.ndarray):
 			A single bounding box as
@@ -1958,25 +1957,25 @@ def bbox_ioa(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
 		xyxy2 (np.ndarray):
 			An array of bounding boxes as
 			[:, top_left_x, top_left_y, bottom_right_x, bottom_right_y].
-			
+
 	Returns:
 		ioa (np.ndarray):
 			Fioa metrics.
 	"""
 	xyxy2 = xyxy2.transpose()
-	
+
 	# Get the coordinates of bounding boxes
 	b1_x1, b1_y1, b1_x2, b1_y2 = xyxy1[0], xyxy1[1], xyxy1[2], xyxy1[3]
 	b2_x1, b2_y1, b2_x2, b2_y2 = xyxy2[0], xyxy2[1], xyxy2[2], xyxy2[3]
-	
+
 	# Intersection area
 	inter_area = \
 		(np.minimum(b1_x2, b2_x2) - np.maximum(b1_x1, b2_x1)).clip(0) \
 		* (np.minimum(b1_y2, b2_y2) - np.maximum(b1_y1, b2_y1)).clip(0)
-		
+
 	# bbox2 area
 	bbox2_area = (b2_x2 - b2_x1) * (b2_y2 - b2_y1) + 1e-16
-	
+
 	# Intersection over box2 area
 	return inter_area / bbox2_area
 
@@ -2171,7 +2170,7 @@ def cutout_bbox(
 	h, w               = image.shape[:2]
 	image_cutout       = image.copy()
 	bbox_labels_cutout = bbox_labels.copy()
-	
+
 	# NOTE: Create random masks
 	scales = ([0.5] * 1 +
 			  [0.25] * 2 +
@@ -2181,17 +2180,17 @@ def cutout_bbox(
 	for s in scales:
 		mask_h = random.randint(1, int(h * s))
 		mask_w = random.randint(1, int(w * s))
-		
+
 		# Box
 		xmin = max(0, random.randint(0, w) - mask_w // 2)
 		ymin = max(0, random.randint(0, h) - mask_h // 2)
 		xmax = min(w, xmin + mask_w)
 		ymax = min(h, ymin + mask_h)
-		
+
 		# Apply random color mask
 		image_cutout[ymin:ymax, xmin:xmax] = [random.randint(64, 191)
 											  for _ in range(3)]
-		
+
 		# Return unobscured bounding boxes
 		if len(bbox_labels_cutout) and s > 0.03:
 			box = np.array([xmin, ymin, xmax, ymax], np.float32)
@@ -2199,7 +2198,7 @@ def cutout_bbox(
 			ioa = bbox_ioa(box, bbox_labels_cutout[:, 2:6])
 			# Remove >60% obscured labels
 			bbox_labels_cutout = bbox_labels_cutout[ioa < 0.60]
-	
+
 	return image_cutout, bbox_labels_cutout
 
 
@@ -2218,19 +2217,19 @@ def bbox_random_perspective(
 	width     = image.shape[1] + border[1] * 2
 	image_new = image.clone()
 	bbox_new  = bbox.clone()
-	
+
 	# NOTE: Center
 	C       = torch.eye(3)
 	C[0, 2] = -image_new.shape[2] / 2  # x translation (pixels)
 	C[1, 2] = -image_new.shape[1] / 2  # y translation (pixels)
-	
+
 	# NOTE: Perspective
 	P       = torch.eye(3)
 	P[2, 0] = Uniform(-perspective, perspective).sample((1,))
 	# x perspective (about y)
 	P[2, 1] = Uniform(-perspective, perspective).sample((1,))
 	# y perspective (about x)
-	
+
 	# NOTE: Rotation and Scale
 	R = torch.eye(3)
 	a = Uniform(-rotate, rotate).sample((1,))
@@ -2239,24 +2238,24 @@ def bbox_random_perspective(
 	s = Uniform(1 - scale, 1 + scale).sample((1,))
 	# s = 2 ** random.uniform(-scale, scale)
 	R[:2] = get_rotation_matrix2d(center=torch.tensor((0, 0)), angle=a, scale=s)
-	
+
 	# NOTE: Shear
 	S       = torch.eye(3)
 	# x shear (deg)
 	S[0, 1] = torch.tan(Uniform(-shear, shear).sample((1,)) * pi / 180)
 	# y shear (deg)
 	S[1, 0] = torch.tan(Uniform(-shear, shear).sample((1,)) * pi / 180)
-	
+
 	# NOTE: Translation
 	T       = torch.eye(3)
 	# x translation (pixels)
 	T[0, 2] = Uniform(0.5 - translate, 0.5 + translate).sample((1,)) * width
 	# y translation (pixels)
 	T[1, 2] = Uniform(0.5 - translate, 0.5 + translate).sample((1,)) * height
-	
+
 	# NOTE: Combined rotation matrix
 	M = T @ S @ R @ P @ C  # Order of operations (right to left) is IMPORTANT
-	
+
 	# NOTE: Image changed
 	if (border[0] != 0) or (border[1] != 0) or (M != torch.eye(3)).any():
 		if perspective:
@@ -2313,17 +2312,17 @@ def random_bbox_perspective(
 	width     = image.shape[1] + border[1] * 2
 	image_new = image.copy()
 	bbox_new  = bbox.copy()
-	
+
 	# NOTE: Center
 	C       = np.eye(3)
 	C[0, 2] = -image_new.shape[1] / 2  # x translation (pixels)
 	C[1, 2] = -image_new.shape[0] / 2  # y translation (pixels)
-	
+
 	# NOTE: Perspective
 	P       = np.eye(3)
 	P[2, 0] = random.uniform(-perspective, perspective)  # x perspective (about y)
 	P[2, 1] = random.uniform(-perspective, perspective)  # y perspective (about x)
-	
+
 	# NOTE: Rotation and Scale
 	R = np.eye(3)
 	a = random.uniform(-rotate, rotate)
@@ -2332,21 +2331,21 @@ def random_bbox_perspective(
 	s = random.uniform(1 - scale, 1 + scale)
 	# s = 2 ** random.uniform(-scale, scale)
 	R[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)
-	
+
 	# NOTE: Shear
 	S       = np.eye(3)
 	# x shear (deg)
 	S[0, 1] = math.tan(random.uniform(-shear, shear) * math.pi / 180)
 	# y shear (deg)
 	S[1, 0] = math.tan(random.uniform(-shear, shear) * math.pi / 180)
-	
+
 	# NOTE: Translation
 	T       = np.eye(3)
 	# x translation (pixels)
 	T[0, 2] = random.uniform(0.5 - translate, 0.5 + translate) * width
 	# y translation (pixels)
 	T[1, 2] = random.uniform(0.5 - translate, 0.5 + translate) * height
-	
+
 	# NOTE: Combined rotation matrix
 	M = T @ S @ R @ P @ C  # Order of operations (right to left) is IMPORTANT
 	# Image changed
@@ -2374,12 +2373,12 @@ def random_bbox_perspective(
 			xy = (xy[:, :2] / xy[:, 2:3]).reshape(n, 8)  # Rescale
 		else:  # Affine
 			xy = xy[:, :2].reshape(n, 8)
-		
+
 		# NOTE: Create new boxes
 		x  = xy[:, [0, 2, 4, 6]]
 		y  = xy[:, [1, 3, 5, 7]]
 		xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
-		
+
 		# # apply angle-based reduction of bounding boxes
 		# radians = a * math.pi / 180
 		# reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
@@ -2388,18 +2387,18 @@ def random_bbox_perspective(
 		# w = (xy[:, 2] - xy[:, 0]) * reduction
 		# h = (xy[:, 3] - xy[:, 1]) * reduction
 		# xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
-		
+
 		# clip boxes
 		xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
 		xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
-		
+
 		# NOTE: Filter candidates
 		i = is_bbox_candidates(
 			bbox_new[:, 2:6].T * s, xy.T
 		)
 		bbox_new = bbox_new[i]
 		bbox_new[:, 2:6] = xy[i]
-	
+
 	return image_new, bbox_new
 
 
@@ -2431,7 +2430,7 @@ def scale_bbox_xyxy(
 	else:
 		gain = ratio_pad[0][0]
 		pad  = ratio_pad[1]
-	
+
 	xyxy[:, [0, 2]] -= pad[0]  # x padding
 	xyxy[:, [1, 3]] -= pad[1]  # y padding
 	xyxy[:, :4]     /= gain

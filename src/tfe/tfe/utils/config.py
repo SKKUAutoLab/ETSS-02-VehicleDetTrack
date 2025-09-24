@@ -31,7 +31,8 @@ from typing import Optional
 import yaml
 from munch import Munch
 
-from . import dir
+from tfe.configuration import data_dir, models_zoo_dir
+from tfe.io.filedir import create_dirs
 
 
 # MARK: Process Config
@@ -85,19 +86,21 @@ def add_dirs_to_config(config: Dict) -> Munch:
     """Define necessary dir paths to the config dictionary.
     """
     # NOTE: Define output_dir
-    data_output_dir   = os.path.join(dir.data_dir, config.data.dataset, "outputs")
-    data_groundtruth_dir   = os.path.join(dir.data_dir, config.data.dataset, "groundtruths")
-    camera_output_dir = os.path.join(data_output_dir, config.camera_name)
+    data_output_dir       = os.path.join(data_dir, config.data.dataset, "outputs")
+    data_groundtruth_dir  = os.path.join(data_dir, config.data.dataset, "groundtruths")
+    camera_output_dir     = os.path.join(data_output_dir, config.camera_name)
     
     # NOTE: Add dirs to config
     config.dirs                      = Munch()
+    config.dirs.data_dir             = data_dir
+    config.dirs.models_zoo_dir       = models_zoo_dir
     config.dirs.data_output_dir      = data_output_dir
     config.dirs.data_groundtruth_dir = data_groundtruth_dir
     config.dirs.camera_output_dir    = camera_output_dir
 
     # NOTE: Create dirs
-    dir.create_dirs(
-        dirs=[
+    create_dirs(
+        paths=[
             config.dirs.data_output_dir,
             config.dirs.camera_output_dir
             ]

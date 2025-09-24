@@ -11,9 +11,9 @@ from typing import Optional
 
 # noinspection PyUnresolvedReferences
 
-from thermal_pedestrian.core.type.type import Callable
-from thermal_pedestrian.core.utils.rich import console
-from thermal_pedestrian.core.utils.rich import print_table
+from tfe.type.type import Callable
+from tfe.utils.rich import console
+from tfe.utils.rich import print_table
 
 __all__ = [
 	"Registry"

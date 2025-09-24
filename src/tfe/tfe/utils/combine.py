@@ -14,8 +14,8 @@ import torchvision
 from multipledispatch import dispatch
 from torch import Tensor
 
-from thermal_pedestrian.core.utils.image import is_channel_first
-from thermal_pedestrian.core.utils import to_channel_last
+from tfe.utils.image import is_channel_first
+from tfe.utils import to_channel_last
 
 __all__ = [
 	"concatenate_images"

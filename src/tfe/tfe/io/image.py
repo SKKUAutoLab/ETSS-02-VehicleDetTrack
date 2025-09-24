@@ -25,15 +25,15 @@ from PIL import ExifTags
 from PIL import Image
 from torch import Tensor
 
-from thermal_pedestrian.core.io.filedir import create_dirs
-from thermal_pedestrian.core.type.type import Arrays
-from thermal_pedestrian.core.enhance.normalize import denormalize_naive
-from thermal_pedestrian.core.utils.backend import interpolation_vision_backend_from_int
-from thermal_pedestrian.core.utils.backend import interpolation_vision_backend_from_str
-from thermal_pedestrian.core.utils.backend import VisionBackend
-from thermal_pedestrian.core.utils.image import is_channel_first
-from thermal_pedestrian.core.utils.image import to_channel_last
-from thermal_pedestrian.core.io.format import ImageFormat
+from tfe.io.filedir import create_dirs
+from tfe.type.type import Arrays
+from tfe.enhance.normalize import denormalize_naive
+from tfe.utils.backend import interpolation_vision_backend_from_int
+from tfe.utils.backend import interpolation_vision_backend_from_str
+from tfe.utils.backend import VisionBackend
+from tfe.utils.image import is_channel_first
+from tfe.utils.image import to_channel_last
+from tfe.io.format import ImageFormat
 
 __all__ = [
 	"exif_size",

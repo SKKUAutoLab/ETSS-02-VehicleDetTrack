@@ -12,9 +12,9 @@ from typing import Union
 
 from munch import Munch
 
-from thermal_pedestrian.core.type.collection import is_list_of
-from thermal_pedestrian.core.utils.rich import error_console
-from thermal_pedestrian.core.factory.registry import Registry
+from tfe.type.collection import is_list_of
+from tfe.utils.rich import error_console
+from tfe.factory.registry import Registry
 
 __all__ = [
     "Factory",

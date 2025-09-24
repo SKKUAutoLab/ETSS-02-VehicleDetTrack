@@ -14,13 +14,10 @@ from typing import Optional
 import numpy as np
 import torch
 from torch import Tensor
-from torchvision.transforms import functional as F
 
-from thermal_pedestrian.core.data.class_label import ClassLabels
-from thermal_pedestrian.core.type.type import Dim3
-from thermal_pedestrian.core.utils.device import select_device
-from thermal_pedestrian.core.utils.geometric_transformation import padded_resize
-from thermal_pedestrian.core.utils.image import to_tensor
+from tfe.objects.class_label import ClassLabels
+from tfe.type.type import Dim3
+from tfe.utils.device import select_device
 
 __all__ = [
 	"BaseDetector"
@@ -68,15 +65,15 @@ class BaseDetector(metaclass=abc.ABCMeta):
 	def __init__(
 			self,
 			name           : str,
-			model_cfg      : Optional[dict],
 			class_labels   : ClassLabels,
+			model_cfg      : Optional[dict]  = None,
 			weights        : Optional[str]   = None,
 			shape          : Optional[Dim3]  = None,
 			min_confidence : Optional[float] = 0.5,
 			nms_max_overlap: Optional[float] = 0.4,
 			device         : Optional[str]   = None,
-			variant        : Optional[str] = None,
-			batch_size     : Optional[int] = 1,
+			variant        : Optional[str]   = None,
+			batch_size     : Optional[int]   = 1,
 			*args, **kwargs
 	):
 		super().__init__()
@@ -86,7 +83,6 @@ class BaseDetector(metaclass=abc.ABCMeta):
 		self.variant         = variant if variant is not None else name
 		self.class_labels    = class_labels
 		self.allowed_ids     = self.class_labels.ids(key="train_id")
-
 
 		self.weights         = weights
 		self.shape           = shape

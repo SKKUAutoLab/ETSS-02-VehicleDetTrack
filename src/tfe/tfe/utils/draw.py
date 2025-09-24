@@ -14,7 +14,7 @@ import torch
 from multipledispatch import dispatch
 from torch import Tensor
 
-from thermal_pedestrian.core.utils import to_channel_last
+from tfe.utils import to_channel_last
 
 __all__ = [
 	"_draw_bbox",
@@ -355,7 +355,7 @@ def draw_bbox(
 	image = to_channel_last(image)
 
 	# NOTE: Unnormalize image
-	from thermal_pedestrian.core.enhance import denormalize_naive
+	from tfe.enhance import denormalize_naive
 	image = denormalize_naive(image)
 	image = image.astype(np.uint8)
 

@@ -27,9 +27,9 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-from thermal_pedestrian.core.type.collection import is_list_of
-from thermal_pedestrian.core.utils.device import get_gpu_memory
-from thermal_pedestrian.core.utils.device import MemoryUnit
+from tfe.type.collection import is_list_of
+from tfe.utils.device import get_gpu_memory
+from tfe.utils.device import MemoryUnit
 
 __all__ = [
 	"console",

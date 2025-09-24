@@ -21,7 +21,7 @@ from typing import TextIO
 from typing import Union
 import numpy as np
 
-from thermal_pedestrian.core.factory.builder import FILE_HANDLERS
+from tfe.factory.builder import FILE_HANDLERS
 
 __all__ = [
 	"dump",

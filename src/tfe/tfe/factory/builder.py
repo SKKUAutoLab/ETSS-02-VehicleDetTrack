@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from thermal_pedestrian.core.factory.factory import Factory
+from tfe.factory.factory import Factory
 
 __all__ = [
 	"CAMERAS",

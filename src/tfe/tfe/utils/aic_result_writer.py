@@ -20,8 +20,9 @@ import time
 from typing import List
 from typing import Optional
 
-from tfe.road_objects import GMO
-from tfe.utils import data_dir
+from tfe.objects import GMO
+from tfe.configuration import data_dir
+
 from loguru import logger
 
 # MARK: - Global Vars

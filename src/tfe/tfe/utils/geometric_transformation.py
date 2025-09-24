@@ -56,16 +56,16 @@ try:
 except ImportError:
 	from torchvision.transforms import _functional_tensor as F_t
 
-from thermal_pedestrian.core.type.type import Color
-from thermal_pedestrian.core.type.type import Dim2
-from thermal_pedestrian.core.type.type import Dim3
-from thermal_pedestrian.core.type.type import ScalarOrTuple2T
-from thermal_pedestrian.core.type.type import Size3T
-from thermal_pedestrian.core.utils.rich import error_console
-from thermal_pedestrian.core.utils.image import get_image_size
-from thermal_pedestrian.core.utils.image import to_channel_last
+from tfe.type.type import Color
+from tfe.type.type import Dim2
+from tfe.type.type import Dim3
+from tfe.type.type import ScalarOrTuple2T
+from tfe.type.type import Size3T
+from tfe.utils.rich import error_console
+from tfe.utils.image import get_image_size
+from tfe.utils.image import to_channel_last
 
-from thermal_pedestrian.core.factory.builder import TRANSFORMS
+from tfe.factory.builder import TRANSFORMS
 
 __all__ = [
 	"center_crop",
