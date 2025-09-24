@@ -47,7 +47,7 @@ class ROI(object):
 		uuid      : Optional[int]        = None,
 		points    : Optional[np.ndarray] = None,
 		shape_type: Optional[str]        = None,
-		**kwargs
+		*args, **kwargs
 	):
 		super().__init__(**kwargs)
 		self.uuid       = uuid
@@ -79,7 +79,7 @@ class ROI(object):
 		cls,
 		file   : str,
 		dataset: Optional[str] = None,
-		**kwargs
+		*args, **kwargs
 	) :
 		"""Load roi from external .json file.
 		"""
@@ -99,7 +99,7 @@ class ROI(object):
 		
 		rois: List = []
 		for roi_data in rois_data:
-			rois.append(cls(**roi_data, **kwargs))
+			rois.append(cls(**roi_data))
 		return rois
 	
 	# MARK: Validate

@@ -22,7 +22,7 @@ output:
   file: "23.mp4"
     # In case of video it is the name of the output video file.
     # In case of image folder, it is the prefix for the output images.
-  dims: *dims
+#  dims: *dims
     # The output size (C, H, W). By default, the same as ``aicity2021.dims``.
   write_image: false
     # Should write each result image to result folder? By default: false.
@@ -39,6 +39,8 @@ roi:
   dataset: *dataset
   file: "23.json"
     # Name of the roi aicity2021 file with extension.
+  shape: &rmois_shape [3, 416, 768]
+    # Input size as [C, H, W] of RMOIS.
 
 moi:
   dataset: *dataset
@@ -50,6 +52,8 @@ moi:
     # The maximum distance for counting with track
   angle_threshold: 30
     # The maximum angle for counting with track
+  shape: *rmois_shape
+    # Input size as [C, H, W] of RMOIS.
 
 detector:
   api: "pytorch"

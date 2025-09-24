@@ -31,7 +31,7 @@ from typing import Union
 
 import numpy as np
 
-from tfe.road_objects import GMO
+from tfe.objects import GMO
 from loguru import logger
 
 

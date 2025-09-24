@@ -83,7 +83,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	
 	@property
 	def current_bbox_center(self) -> np.ndarray:
-		return bbox_xyxy_center(bbox_xyxy=self.bboxes[-1])
+		return bbox_xyxy_center(self.bboxes[-1])
 	
 	@property
 	def current_polygon(self) -> np.ndarray:
@@ -150,12 +150,12 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	
 	def update_go_from_detection(self, detection: Detection, **kwargs):
 		self.update_go(
-			frame_index = detection.frame_index,
-			timestamp   = detection.timestamp,
-			bbox        = detection.bbox,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			polygon     = detection.polygon
+			frame_index = instance.frame_index,
+			timestamp   = instance.timestamp,
+			bbox        = instance.bbox,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			polygon     = instance.polygon
 		)
 		
 	# MARK: Visualize
@@ -183,9 +183,12 @@ class GeneralObject(metaclass=abc.ABCMeta):
 									  angle=0, startAngle=0, endAngle=360, color=color, thickness=-1)
 			else:
 				# NOTE: bounding box cover the object
-				cv2.rectangle(img=drawing, pt1=(curr_bbox[0], curr_bbox[1]), pt2=(curr_bbox[2], curr_bbox[3]),
+				cv2.rectangle(img=drawing,
+				              pt1=(int(curr_bbox[0]), int(curr_bbox[1])),
+				              pt2=(int(curr_bbox[2]), int(curr_bbox[3])),
 							  color=color, thickness=2)
-				cv2.circle(img=drawing, center=tuple(self.current_bbox_center), radius=3, thickness=-1, color=color)
+
+				cv2.circle(img=drawing, center=tuple(np.array(self.current_bbox_center, dtype=int)), radius=3, thickness=-1, color=color)
 
 		if polygon:
 			curr_polygon = self.current_polygon
@@ -197,10 +200,10 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			curr_label = self.label_by_majority
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
-			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=org, color=color, thickness=2)
+			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=np.array(org, dtype=int), color=color, thickness=2)
 		
 		if trajectory:
 			pts = self.trajectory.reshape((-1, 1, 2))
-			cv2.polylines(img=drawing, pts=[pts], isClosed=False, color=color, thickness=2)
+			cv2.polylines(img=drawing, pts=[np.array(pts, dtype=int)], isClosed=False, color=color, thickness=2)
 			for point in self.trajectory:
-				cv2.circle(img=drawing, center=tuple(point), radius=3, thickness=2, color=color)
+				cv2.circle(img=drawing, center=np.array(point, dtype=int), radius=3, thickness=2, color=color)

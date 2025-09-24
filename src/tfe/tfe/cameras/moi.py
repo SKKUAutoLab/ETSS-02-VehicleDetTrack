@@ -57,7 +57,7 @@ class MOI(object):
 		distance_threshold: float                         = 300.0,
 		angle_threshold   : float                         = 45.0,
 		color             : Tuple[int, int, int]          = None,
-		**kwargs
+		*args, **kwargs
 	):
 		super().__init__(**kwargs)
 		self.uuid               = uuid
@@ -99,7 +99,7 @@ class MOI(object):
 		cls,
 		file   : str,
 		dataset: Optional[str] = None,
-		**kwargs
+		*args, **kwargs
 	):
 		"""Load moi's points from external .json file.
 		"""
@@ -119,7 +119,7 @@ class MOI(object):
 		
 		mois: List[MOI] = []
 		for moi_data in mois_data:
-			mois.append(cls(**moi_data, **kwargs))
+			mois.append(cls(**moi_data))
 		return mois
 	
 	# MARK: Matching

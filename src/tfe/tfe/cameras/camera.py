@@ -38,10 +38,14 @@ from tfe.road_objects import GeneralObject
 from tfe.road_objects import GMO
 from tfe.road_objects import MovingState
 from tfe.tracker import get_tracker
-from tfe.utils import data_dir
-from tfe.utils import parse_config_from_json
-from .moi import MOI
-from .roi import ROI
+from tfe.configuration import data_dir
+from tfe.utils.aic_result_writer import AICResultWriter
+from tfe.utils.config import parse_config_from_json
+from tfe.cameras.moi import MOI
+from tfe.cameras.roi import ROI
+
+
+from ultralytics.data.augment import LetterBox
 
 
 # MARK: - Camera
@@ -84,6 +88,7 @@ class Camera(object):
 		self.configure_video_reader()
 		self.configure_video_writer()
 		self.configure_result_writer()
+		# self.configure_writer()
 
 		# NOTE: Final check before running
 		self.check_components()
@@ -176,6 +181,19 @@ class Camera(object):
 		# NOTE: Start timer
 		start_time = timer()
 		self.result_writer.start_time = start_time
+
+		# configure letterbox for image preprocessing (used in YOLO models)
+		letterbox = LetterBox(
+			new_shape=(
+				self.config.detector.shape[1],
+				self.config.detector.shape[2]
+			),  # [C, H, W] in config.roi.shape  Target size
+			auto       = False, # Use exact new_shape
+			scale_fill = False, # Maintain aspect ratio with padding
+			scaleup    = True,  # Allow upscaling if needed
+			stride     = 32,    # Model stride (common for YOLO)
+			center     = False
+		)
 
 		# NOTE: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")

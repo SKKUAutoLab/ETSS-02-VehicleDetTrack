@@ -23,12 +23,13 @@ from typing import Union
 import numpy as np
 from filterpy.kalman import KalmanFilter
 
-from tfe.detector import Detection
-from tfe.road_objects import GMO
+from tfe.objects.gmo import GMO
+from tfe.objects.instance import Instance
+
 from tfe.tracker import Tracker
-from tfe.ops import bbox_xyxy_to_z
-from tfe.ops import iou_batch
-from tfe.ops import x_to_bbox_xyxy
+from tfe.utils.bbox import bbox_xyxy_to_z
+from tfe.utils.bbox import x_to_bbox_xyxy
+from tfe.utils.bbox import batch_bbox_iou
 
 np.random.seed(0)
 
@@ -60,24 +61,24 @@ class KalmanBBoxTrack(GMO):
 		self.kf.x[:4] = bbox_xyxy_to_z(self.current_bbox)
 	
 	@classmethod
-	def track_from_detection(cls, detection: Detection, **kwargs):
-		"""Create ``GMO`` object from ``Detection`` object.
+	def track_from_detection(cls, instance: Instance, **kwargs):
+		"""Create ``GMO`` object from ``Instance`` object.
 		
 		Args:
-			detection (Detection):
+			instance (Instance):
 		
 		Returns:
 			gmo (GMO):
 				The GMO object.
 		"""
 		return cls(
-			frame_index = detection.frame_index,
-			timestamp   = detection.timestamp,
-			bbox        = detection.bbox,
-			polygon     = detection.polygon,
-			confidence  = detection.confidence,
-			label       = detection.label,
-			roi_uuid    = detection.roi_uuid,
+			frame_index = instance.frame_index,
+			timestamp   = instance.timestamp,
+			bbox        = instance.bbox,
+			polygon     = instance.polygon,
+			confidence  = instance.confidence,
+			label       = instance.label,
+			roi_uuid    = instance.roi_uuid,
 			**kwargs
 		)
 	
@@ -136,12 +137,12 @@ class Sort(Tracker):
 		
 	# MARK: Update
 	
-	def update(self, detections: List[Detection]):
+	def update(self, instances: List[Instance]):
 		"""Update ``self.tracks`` with new detections.
 		
 		Args:
-			detections (list):
-				The list of newly ``Detection`` objects.
+			instances (list):
+				The list of newly ``Instance`` objects.
 		
 		Requires:
 			This method must be called once for each frame even with empty detections, just call update with empty list [].
@@ -152,9 +153,9 @@ class Sort(Tracker):
 		self.frame_count += 1  # Should be the same with VideoReader.frame_idx
 		
 		# NOTE: Extract and convert bbox from detections for easier use.
-		if len(detections) > 0:
+		if len(instances) > 0:
 			# dets - a numpy array of detections in the format [[x1,y1,x2,y2,score], [x1,y1,x2,y2,score],...]
-			dets = np.array([np.append(np.float64(d.bbox), np.float64(d.confidence)) for d in detections])
+			dets = np.array([np.append(np.float64(d.bbox), np.float64(d.confidence)) for d in instances])
 		else:
 			dets = np.empty((0, 5))
 		
@@ -174,10 +175,10 @@ class Sort(Tracker):
 		matched, unmatched_dets, unmatched_trks = self.associate_detections_to_tracks(dets, trks)
 		
 		# NOTE: Update matched trackers with assigned detections
-		self.update_matched_tracks(matched=matched, detections=detections)
+		self.update_matched_tracks(matched=matched, instances=instances)
 			
 		# NOTE: Create and initialise new trackers for unmatched detections
-		self.create_new_tracks(unmatched_dets=unmatched_dets, detections=detections)
+		self.create_new_tracks(unmatched_dets=unmatched_dets, instances=instances)
 		
 		# NOTE: Remove dead tracklets
 		self.delete_dead_tracks()
@@ -185,41 +186,41 @@ class Sort(Tracker):
 	def update_matched_tracks(
 		self,
 		matched   : Union[List, np.ndarray],
-		detections: List[Detection]
+		instances: List[Instance]
 	):
 		"""Update the track that has been matched with new detection
 		
 		Args:
 			matched (list or np.ndarray):
 				Matching between self.tracks index and detection index.
-			detections (any):
+			instances (any):
 				The newly detections.
 		"""
 		for m in matched:
 			track_idx     = m[1]
-			detection_idx = m[0]
+			instance_idx = m[0]
 			# HERE, we call ``GMO.update_gmo()``. This contains all necessary functions to update the whole GMO object.
-			self.tracks[track_idx].update_gmo(detections[detection_idx])
+			self.tracks[track_idx].update_gmo(instances[instance_idx])
 			
 			# IF you don't call the function above, then call the following functions:
-			# self.tracks[track_idx].update_go_from_detection(detection=detections[detection_idx])
+			# self.tracks[track_idx].update_go_from_detection(instance=instances[instance_idx])
 			# self.tracks[track_idx].update_motion_state()
 	
 	def create_new_tracks(
 		self,
 		unmatched_dets: Union[List, np.ndarray],
-		detections    : List[Detection]
+		instances    : List[Instance]
 	):
 		"""Create new tracks.
 		
 		Args:
 			unmatched_dets (list or np.ndarray):
 				Index of the newly detection in ``detections`` that has not matched with any tracks.
-			detections (any):
+			instances (any):
 				The newly detections.
 		"""
 		for i in unmatched_dets:
-			new_trk = KalmanBBoxTrack.track_from_detection(detections[i])
+			new_trk = KalmanBBoxTrack.track_from_detection(instances[i])
 			self.tracks.append(new_trk)
 	
 	def delete_dead_tracks(self):
@@ -245,7 +246,7 @@ class Sort(Tracker):
 		
 		Args:
 			dets (np.ndarray):
-				The list of newly ``Detection`` objects.
+				The list of newly ``Instance`` objects.
 			trks (np.ndarray):
 
 		Returns:
@@ -254,7 +255,7 @@ class Sort(Tracker):
 		if len(trks) == 0:
 			return np.empty((0, 2), dtype=int), np.arange(len(dets)), np.empty((0, 5), dtype=int)
 		
-		iou_matrix = iou_batch(dets, trks)
+		iou_matrix = batch_bbox_iou(dets, trks)
 		
 		if min(iou_matrix.shape) > 0:
 			a = (iou_matrix > self.iou_threshold).astype(np.int32)
