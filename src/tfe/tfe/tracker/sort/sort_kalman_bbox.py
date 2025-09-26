@@ -27,8 +27,8 @@ from tfe.objects.gmo import GMO
 from tfe.objects.instance import Instance
 
 from tfe.tracker import Tracker
-from tfe.utils.bbox import bbox_xyxy_to_z
-from tfe.utils.bbox import x_to_bbox_xyxy
+from tfe.utils.bbox import bbox_xyxy_to_z_ndarray
+from tfe.utils.bbox import x_to_bbox_xyxy_ndarray
 from tfe.utils.bbox import batch_bbox_iou
 
 np.random.seed(0)
@@ -58,7 +58,7 @@ class KalmanBBoxTrack(GMO):
 		
 		# Here we assume that the ``GMO`` object has already been init().
 		# So ``self.current_bbox`` return the first bbox value.
-		self.kf.x[:4] = bbox_xyxy_to_z(self.current_bbox)
+		self.kf.x[:4] = bbox_xyxy_to_z_ndarray(self.current_bbox)
 	
 	@classmethod
 	def track_from_detection(cls, instance: Instance, **kwargs):
@@ -99,7 +99,7 @@ class KalmanBBoxTrack(GMO):
 		self.history           = []
 		self.hits             += 1
 		self.hit_streak       += 1
-		self.kf.update(bbox_xyxy_to_z(self.matching_features))
+		self.kf.update(bbox_xyxy_to_z_ndarray(self.matching_features))
 		
 	def predict_motion_state(self):
 		"""Advances the state of the motion model and returns the predicted estimate.
@@ -111,14 +111,14 @@ class KalmanBBoxTrack(GMO):
 		if self.time_since_update > 0:
 			self.hit_streak = 0
 		self.time_since_update += 1
-		self.history.append(x_to_bbox_xyxy(self.kf.x))
+		self.history.append(x_to_bbox_xyxy_ndarray(self.kf.x))
 		return self.history[-1]
 
 	def current_motion_state(self):
 		"""
 		Returns the current motion model estimate.
 		"""
-		return x_to_bbox_xyxy(self.kf.x)
+		return x_to_bbox_xyxy_ndarray(self.kf.x)
 	
 
 # MARK: - Tracker

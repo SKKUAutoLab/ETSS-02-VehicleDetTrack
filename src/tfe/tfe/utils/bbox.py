@@ -23,51 +23,122 @@ from tfe.type.type import ListOrTuple2T
 __all__ = [
 	"batch_bbox_iou",
 	"bbox_area",
+	"bbox_cxcyar_to_cxcyrh_tensor",
+	"bbox_cxcyar_to_cxcyrh_ndarray",
 	"bbox_cxcyar_to_cxcyrh",
+	"bbox_cxcyar_to_cxcywh_tensor",
+	"bbox_cxcyar_to_cxcywh_ndarray",
 	"bbox_cxcyar_to_cxcywh",
+	"bbox_cxcyar_to_cxcywhnorm_tensor",
+	"bbox_cxcyar_to_cxcywhnorm_ndarray",
 	"bbox_cxcyar_to_cxcywhnorm",
+	"bbox_cxcyar_to_xywh_tensor",
+	"bbox_cxcyar_to_xywh_ndarray",
 	"bbox_cxcyar_to_xywh",
+	"bbox_cxcyar_to_xyxy_tensor",
+	"bbox_cxcyar_to_xyxy_ndarray",
 	"bbox_cxcyar_to_xyxy",
+	"bbox_cxcyrh_to_cxcyar_tensor",
+	"bbox_cxcyrh_to_cxcyar_ndarray",
 	"bbox_cxcyrh_to_cxcyar",
+	"bbox_cxcyrh_to_cxcywh_tensor",
+	"bbox_cxcyrh_to_cxcywh_ndarray",
 	"bbox_cxcyrh_to_cxcywh",
+	"bbox_cxcyrh_to_cxcywh_norm_tensor",
+	"bbox_cxcyrh_to_cxcywh_norm_ndarray",
 	"bbox_cxcyrh_to_cxcywh_norm",
+	"bbox_cxcyrh_to_xywh_tensor",
+	"bbox_cxcyrh_to_xywh_ndarray",
 	"bbox_cxcyrh_to_xywh",
+	"bbox_cxcyrh_to_xyxy_tensor",
+	"bbox_cxcyrh_to_xyxy_ndarray",
 	"bbox_cxcyrh_to_xyxy",
+	"bbox_cxcywh_norm_to_cxcyar_tensor",
+	"bbox_cxcywh_norm_to_cxcyar_ndarray",
 	"bbox_cxcywh_norm_to_cxcyar",
+	"bbox_cxcywh_norm_to_cxcyrh_tensor",
+	"bbox_cxcywh_norm_to_cxcyrh_ndarray",
 	"bbox_cxcywh_norm_to_cxcyrh",
+	"bbox_cxcywh_norm_to_cxcywh_tensor",
+	"bbox_cxcywh_norm_to_cxcywh_ndarray",
 	"bbox_cxcywh_norm_to_cxcywh",
+	"bbox_cxcywh_norm_to_xywh_tensor",
+	"bbox_cxcywh_norm_to_xywh_ndarray",
 	"bbox_cxcywh_norm_to_xywh",
+	"bbox_cxcywh_norm_to_xyxy_tensor",
+	"bbox_cxcywh_norm_to_xyxy_ndarray",
 	"bbox_cxcywh_norm_to_xyxy",
+	"bbox_cxcywh_to_cxcyar_tensor",
+	"bbox_cxcywh_to_cxcyar_ndarray",
 	"bbox_cxcywh_to_cxcyar",
+	"bbox_cxcywh_to_cxcyrh_tensor",
+	"bbox_cxcywh_to_cxcyrh_ndarray",
+	"bbox_cxcywh_to_cxcyrh",
+	"bbox_cxcywh_to_cxcywh_norm_tensor",
+	"bbox_cxcywh_to_cxcywh_norm_ndarray",
 	"bbox_cxcywh_to_cxcywh_norm",
+	"bbox_cxcywh_to_xywh_tensor",
+	"bbox_cxcywh_to_xywh_ndarray",
 	"bbox_cxcywh_to_xywh",
+	"bbox_cxcywh_to_xyxy_tensor",
+	"bbox_cxcywh_to_xyxy_ndarray",
 	"bbox_cxcywh_to_xyxy",
 	"bbox_generator",
-	"bbox_ioa",
+	"bbox_ioa_ndarray",
+	"bbox_iou_tensor",
+	"bbox_iou_ndarray",
 	"bbox_iou",
-	"bbox_to_mask",
+	"bbox_to_mask_tensor",
+	"bbox_xywh_to_cxcyar_tensor",
+	"bbox_xywh_to_cxcyar_ndarray",
 	"bbox_xywh_to_cxcyar",
+	"bbox_xywh_to_cxcyrh_tensor",
+	"bbox_xywh_to_cxcyrh_ndarray",
 	"bbox_xywh_to_cxcyrh",
+	"bbox_xywh_to_cxcywh_tensor",
+	"bbox_xywh_to_cxcywh_ndarray",
 	"bbox_xywh_to_cxcywh",
+	"bbox_xywh_to_cxcywh_norm_tensor",
+	"bbox_xywh_to_cxcywh_norm_ndarray",
 	"bbox_xywh_to_cxcywh_norm",
+	"bbox_xywh_to_xyxy_tensor",
+	"bbox_xywh_to_xyxy_ndarray",
 	"bbox_xywh_to_xyxy",
+	"bbox_xyxy_center_tensor",
+	"bbox_xyxy_center_ndarray",
 	"bbox_xyxy_center",
+	"bbox_xyxy_to_cxcyar_tensor",
+	"bbox_xyxy_to_cxcyar_ndarray",
 	"bbox_xyxy_to_cxcyar",
+	"bbox_xyxy_to_cxcyrh_tensor",
+	"bbox_xyxy_to_cxcyrh_ndarray",
 	"bbox_xyxy_to_cxcyrh",
+	"bbox_xyxy_to_cxcywh_tensor",
+	"bbox_xyxy_to_cxcywh_ndarray",
 	"bbox_xyxy_to_cxcywh",
+	"bbox_xyxy_to_cxcywh_norm_tensor",
+	"bbox_xyxy_to_cxcywh_norm_ndarray",
 	"bbox_xyxy_to_cxcywh_norm",
+	"bbox_xyxy_to_xywh_tensor",
+	"bbox_xyxy_to_xywh_ndarray",
 	"bbox_xyxy_to_xywh",
+	"clip_bbox_xyxy_tensor",
+	"clip_bbox_xyxy_ndarray",
 	"clip_bbox_xyxy",
 	"cutout_bbox",
 	"infer_bbox_shape",
 	"is_bbox_candidates",
 	"nms",
 	"random_bbox_perspective",
+	"scale_bbox_xyxy_tensor",
+	"scale_bbox_xyxy_ndarray",
 	"scale_bbox_xyxy",
+	"shift_bbox_tensor",
+	"shift_bbox_ndarray",
 	"shift_bbox",
 	"validate_bbox",
-	"bbox_xyxy_to_z",
-	"x_to_bbox_xyxy"
+	"bbox_xyxy_to_z_ndarray",
+	"x_to_bbox_xyxy_ndarray"
 ]
 
 
@@ -167,8 +238,7 @@ def bbox_generator(
 """
 
 
-@dispatch(Tensor)
-def bbox_cxcyar_to_cxcyrh(cxcyar: Tensor) -> Tensor:
+def bbox_cxcyar_to_cxcyrh_tensor(cxcyar: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x, center_y, aspect_ratio, height].
@@ -194,8 +264,7 @@ def bbox_cxcyar_to_cxcyrh(cxcyar: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyar_to_cxcyrh(cxcyar: np.ndarray) -> np.ndarray:
+def bbox_cxcyar_to_cxcyrh_ndarray(cxcyar: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x, center_y, aspect_ratio, height].
@@ -221,8 +290,20 @@ def bbox_cxcyar_to_cxcyrh(cxcyar: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_cxcyar_to_cxcywh(cxcyar: Tensor) -> Tensor:
+def bbox_cxcyar_to_cxcyrh(cxcyar):
+	"""
+	Automatically dispatches to the correct bbox_cxcyar_to_cxcyrh function
+	based on input type (Tensor or ndarray).
+	"""
+	if isinstance(cxcyar, torch.Tensor):
+		return bbox_cxcyar_to_cxcyrh_tensor(cxcyar)
+	elif isinstance(cxcyar, np.ndarray):
+		return bbox_cxcyar_to_cxcyrh_ndarray(cxcyar)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyar_to_cxcywh_tensor(cxcyar: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x, center_y, width, height].
@@ -248,8 +329,7 @@ def bbox_cxcyar_to_cxcywh(cxcyar: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyar_to_cxcywh(cxcyar: np.ndarray) -> np.ndarray:
+def bbox_cxcyar_to_cxcywh_ndarray(cxcyar: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x, center_y, width, height].
@@ -275,10 +355,19 @@ def bbox_cxcyar_to_cxcywh(cxcyar: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcyar_to_cxcywhnorm(
-	cxcyar: Tensor, height, width
-) -> Tensor:
+def bbox_cxcyar_to_cxcywh(cxcyar):
+	"""
+	Dispatches to the correct bbox_cxcyar_to_cxcywh function based on input type.
+	"""
+	if isinstance(cxcyar, torch.Tensor):
+		return bbox_cxcyar_to_cxcywh_tensor(cxcyar)
+	elif isinstance(cxcyar, np.ndarray):
+		return bbox_cxcyar_to_cxcywh_ndarray(cxcyar)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyar_to_cxcywhnorm_tensor(cxcyar: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -313,8 +402,7 @@ def bbox_cxcyar_to_cxcywhnorm(
 	return cxcyrh
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcyar_to_cxcywhnorm(cxcyar: np.ndarray, height, width) -> np.ndarray:
+def bbox_cxcyar_to_cxcywhnorm_ndarray(cxcyar: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -349,8 +437,19 @@ def bbox_cxcyar_to_cxcywhnorm(cxcyar: np.ndarray, height, width) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_cxcyar_to_xywh(cxcyar: Tensor) -> Tensor:
+def bbox_cxcyar_to_cxcywhnorm(cxcyar, height, width):
+	"""
+	Dispatches to the correct bbox_cxcyar_to_cxcywhnorm function based on input type.
+	"""
+	if isinstance(cxcyar, torch.Tensor):
+		return bbox_cxcyar_to_cxcywhnorm_tensor(cxcyar, height, width)
+	elif isinstance(cxcyar, np.ndarray):
+		return bbox_cxcyar_to_cxcywhnorm_ndarray(cxcyar, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyar_to_xywh_tensor(cxcyar: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[top_left_x, top_left_y, width, height].
@@ -379,8 +478,7 @@ def bbox_cxcyar_to_xywh(cxcyar: Tensor) -> Tensor:
 	return xywh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyar_to_xywh(cxcyar: np.ndarray) -> np.ndarray:
+def bbox_cxcyar_to_xywh_ndarray(cxcyar: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[top_left_x, top_left_y, width, height].
@@ -409,8 +507,19 @@ def bbox_cxcyar_to_xywh(cxcyar: np.ndarray) -> np.ndarray:
 	return xywh
 
 
-@dispatch(Tensor)
-def bbox_cxcyar_to_xyxy(cxcyar: Tensor) -> Tensor:
+def bbox_cxcyar_to_xywh(cxcyar):
+	"""
+	Dispatches to the correct bbox_cxcyar_to_xywh function based on input type.
+	"""
+	if isinstance(cxcyar, torch.Tensor):
+		return bbox_cxcyar_to_xywh_tensor(cxcyar)
+	elif isinstance(cxcyar, np.ndarray):
+		return bbox_cxcyar_to_xywh_ndarray(cxcyar)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyar_to_xyxy_tensor(cxcyar: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -439,8 +548,7 @@ def bbox_cxcyar_to_xyxy(cxcyar: Tensor) -> Tensor:
 	return xyxy
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyar_to_xyxy(cxcyar: np.ndarray) -> np.ndarray:
+def bbox_cxcyar_to_xyxy_ndarray(cxcyar: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, area, aspect_ratio] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -469,8 +577,20 @@ def bbox_cxcyar_to_xyxy(cxcyar: np.ndarray) -> np.ndarray:
 	return xyxy
 
 
-@dispatch(Tensor)
-def bbox_cxcyrh_to_cxcyar(cxcyrh: Tensor) -> Tensor:
+def bbox_cxcyar_to_xyxy(cxcyar):
+	"""
+	Dispatches to the correct bbox_cxcyar_to_xyxy function based on input type.
+	"""
+	if isinstance(cxcyar, torch.Tensor):
+		return bbox_cxcyar_to_xyxy_tensor(cxcyar)
+	elif isinstance(cxcyar, np.ndarray):
+		return bbox_cxcyar_to_xyxy_ndarray(cxcyar)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+
+def bbox_cxcyrh_to_cxcyar_tensor(cxcyrh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x, center_y, area, aspect_ratio].
@@ -496,8 +616,7 @@ def bbox_cxcyrh_to_cxcyar(cxcyrh: Tensor) -> Tensor:
 	return cxcyar
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyrh_to_cxcyar(cxcyrh: np.ndarray) -> np.ndarray:
+def bbox_cxcyrh_to_cxcyar_ndarray(cxcyrh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x, center_y, area, aspect_ratio].
@@ -523,8 +642,19 @@ def bbox_cxcyrh_to_cxcyar(cxcyrh: np.ndarray) -> np.ndarray:
 	return cxcyar
 
 
-@dispatch(Tensor)
-def bbox_cxcyrh_to_cxcywh(cxcyrh: Tensor) -> Tensor:
+def bbox_cxcyrh_to_cxcyar(cxcyrh):
+	"""
+	Dispatches to the correct bbox_cxcyrh_to_cxcyar function based on input type.
+	"""
+	if isinstance(cxcyrh, torch.Tensor):
+		return bbox_cxcyrh_to_cxcyar_tensor(cxcyrh)
+	elif isinstance(cxcyrh, np.ndarray):
+		return bbox_cxcyrh_to_cxcyar_ndarray(cxcyrh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyrh_to_cxcywh_tensor(cxcyrh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x, center_y, width, height].
@@ -543,8 +673,7 @@ def bbox_cxcyrh_to_cxcywh(cxcyrh: Tensor) -> Tensor:
 	return cxcywh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyrh_to_cxcywh(cxcyrh: np.ndarray) -> np.ndarray:
+def bbox_cxcyrh_to_cxcywh_ndarray(cxcyrh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x, center_y, width, height].
@@ -563,10 +692,19 @@ def bbox_cxcyrh_to_cxcywh(cxcyrh: np.ndarray) -> np.ndarray:
 	return cxcywh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcyrh_to_cxcywh_norm(
-	cxcyrh: Tensor, height, width
-) -> Tensor:
+def bbox_cxcyrh_to_cxcywh(cxcyrh):
+	"""
+	Dispatches to the correct bbox_cxcyrh_to_cxcywh function based on input type.
+	"""
+	if isinstance(cxcyrh, torch.Tensor):
+		return bbox_cxcyrh_to_cxcywh_tensor(cxcyrh)
+	elif isinstance(cxcyrh, np.ndarray):
+		return bbox_cxcyrh_to_cxcywh_ndarray(cxcyrh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyrh_to_cxcywh_norm_tensor(cxcyrh: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -578,7 +716,7 @@ def bbox_cxcyrh_to_cxcywh_norm(
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_cxcyrh_to_cxcywh(cxcyrh)
+	cxcywh_norm = bbox_cxcyrh_to_cxcywh_tensor(cxcyrh)
 	if cxcyrh.ndim == 1:
 		cxcywh_norm[0] /= width
 		cxcywh_norm[1] /= height
@@ -595,8 +733,7 @@ def bbox_cxcyrh_to_cxcywh_norm(
 	return cxcywh_norm
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcyrh_to_cxcywh_norm(cxcyrh: np.ndarray, height, width) -> np.ndarray:
+def bbox_cxcyrh_to_cxcywh_norm_ndarray(cxcyrh: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -608,7 +745,7 @@ def bbox_cxcyrh_to_cxcywh_norm(cxcyrh: np.ndarray, height, width) -> np.ndarray:
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_cxcyrh_to_cxcywh(cxcyrh)
+	cxcywh_norm = bbox_cxcyrh_to_cxcywh_ndarray(cxcyrh)
 	if cxcyrh.ndim == 1:
 		cxcywh_norm[0] /= width
 		cxcywh_norm[1] /= height
@@ -625,8 +762,19 @@ def bbox_cxcyrh_to_cxcywh_norm(cxcyrh: np.ndarray, height, width) -> np.ndarray:
 	return cxcywh_norm
 
 
-@dispatch(Tensor)
-def bbox_cxcyrh_to_xywh(cxcyrh: Tensor) -> Tensor:
+def bbox_cxcyrh_to_cxcywh_norm(cxcyrh, height, width):
+	"""
+	Dispatches to the correct bbox_cxcyrh_to_cxcywh_norm function based on input type.
+	"""
+	if isinstance(cxcyrh, torch.Tensor):
+		return bbox_cxcyrh_to_cxcywh_norm_tensor(cxcyrh, height, width)
+	elif isinstance(cxcyrh, np.ndarray):
+		return bbox_cxcyrh_to_cxcywh_norm_ndarray(cxcyrh, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyrh_to_xywh_tensor(cxcyrh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[top_left_x, top_left_y, width, height].
@@ -654,8 +802,7 @@ def bbox_cxcyrh_to_xywh(cxcyrh: Tensor) -> Tensor:
 	return xywh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyrh_to_xywh(cxcyrh: np.ndarray) -> np.ndarray:
+def bbox_cxcyrh_to_xywh_ndarray(cxcyrh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[top_left_x, top_left_y, width, height].
@@ -683,8 +830,19 @@ def bbox_cxcyrh_to_xywh(cxcyrh: np.ndarray) -> np.ndarray:
 	return xywh
 
 
-@dispatch(Tensor)
-def bbox_cxcyrh_to_xyxy(cxcyrh: Tensor) -> Tensor:
+def bbox_cxcyrh_to_xywh(cxcyrh):
+	"""
+	Dispatches to the correct bbox_cxcyrh_to_xywh function based on input type.
+	"""
+	if isinstance(cxcyrh, torch.Tensor):
+		return bbox_cxcyrh_to_xywh_tensor(cxcyrh)
+	elif isinstance(cxcyrh, np.ndarray):
+		return bbox_cxcyrh_to_xywh_ndarray(cxcyrh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcyrh_to_xyxy_tensor(cxcyrh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y],
@@ -712,8 +870,7 @@ def bbox_cxcyrh_to_xyxy(cxcyrh: Tensor) -> Tensor:
 	return xyxy
 
 
-@dispatch(np.ndarray)
-def bbox_cxcyrh_to_xyxy(cxcyrh: np.ndarray) -> np.ndarray:
+def bbox_cxcyrh_to_xyxy_ndarray(cxcyrh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, aspect_ratio, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -741,38 +898,81 @@ def bbox_cxcyrh_to_xyxy(cxcyrh: np.ndarray) -> np.ndarray:
 	return xyxy
 
 
-@dispatch(Tensor)
-def bbox_cxcywh_to_cxcyar(cxcywh: Tensor) -> Tensor:
+def bbox_cxcyrh_to_xyxy(cxcyrh):
+	"""
+	Dispatches to the correct bbox_cxcyrh_to_xyxy function based on input type.
+	"""
+	if isinstance(cxcyrh, torch.Tensor):
+		return bbox_cxcyrh_to_xyxy_tensor(cxcyrh)
+	elif isinstance(cxcyrh, np.ndarray):
+		return bbox_cxcyrh_to_xyxy_ndarray(cxcyrh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_to_cxcyar_tensor(cxcyar: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[center_x, center_y, area, aspect_ratio].
 	Where:
 		- `aspect_ratio` is `width / height`.
 	"""
-	cxcyrh = cxcywh.clone()
+	cxcyrh = cxcyar.clone()
 	cxcyrh = cxcyrh.float()
 	if cxcyrh.ndim == 1:
-		cxcyrh[2] = cxcywh[2] * cxcywh[3]
-		cxcyrh[3] = cxcywh[2] / cxcywh[3]
+		cxcyrh[2] = cxcyar[2] * cxcyar[3]
+		cxcyrh[3] = cxcyar[2] / cxcyar[3]
 	elif cxcyrh.ndim == 2:
-		cxcyrh[:, 2] = cxcywh[:, 2] * cxcywh[:, 3]
-		cxcyrh[:, 3] = cxcywh[:, 2] / cxcywh[:, 3]
+		cxcyrh[:, 2] = cxcyar[:, 2] * cxcyar[:, 3]
+		cxcyrh[:, 3] = cxcyar[:, 2] / cxcyar[:, 3]
 	else:
 		raise ValueError(f"Farray dimensions {cxcyrh.ndim} is not "
 						 f"supported.")
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcywh_to_cxcyar(cxcywh: np.ndarray) -> np.ndarray:
+def bbox_cxcywh_to_cxcyar_ndarray(cxcyar: np.ndarray) -> np.ndarray:
+	"""Convert the bounding box's format from
+	[center_x, center_y, width, height] to
+	[center_x, center_y, area, aspect_ratio].
+	Where:
+		- `aspect_ratio` is `width / height`.
+	"""
+	cxcyrh = cxcyar.copy()
+	cxcyrh = cxcyrh.astype(float)
+	if cxcyrh.ndim == 1:
+		cxcyrh[2] = cxcyar[2] * cxcyar[3]
+		cxcyrh[3] = cxcyar[2] / cxcyar[3]
+	elif cxcyrh.ndim == 2:
+		cxcyrh[:, 2] = cxcyar[:, 2] * cxcyar[:, 3]
+		cxcyrh[:, 3] = cxcyar[:, 2] / cxcyar[:, 3]
+	else:
+		raise ValueError(f"Farray dimensions {cxcyrh.ndim} is not "
+		                 f"supported.")
+	return cxcyrh
+
+
+def bbox_cxcywh_to_cxcyar(cxcywh):
+	"""
+	Dispatches to the correct bbox_cxcywh_to_cxcyar function based on input type.
+	"""
+	if isinstance(cxcywh, torch.Tensor):
+		return bbox_cxcywh_to_cxcyar_tensor(cxcywh)
+	elif isinstance(cxcywh, np.ndarray):
+		return bbox_cxcywh_to_cxcyar_ndarray(cxcywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_to_cxcyrh_tensor(cxcyrh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[center_x, center_y, aspect_ratio, height]
 	Where:
 		- `aspect_ratio` is `width / height`.
 	"""
-	cxcyrh = cxcywh.copy()
-	cxcyrh = cxcyrh.astype(float)
+	cxcyrh = cxcyrh.clone()
+	cxcyrh = cxcyrh.float()
 	if cxcyrh.ndim == 1:
 		cxcyrh[2] = cxcyrh[2] / cxcyrh[3]
 	elif cxcyrh.ndim == 2:
@@ -783,52 +983,38 @@ def bbox_cxcywh_to_cxcyar(cxcywh: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_cxcywh_to_cxcyar(cxcywh: Tensor) -> Tensor:
+def bbox_cxcywh_to_cxcyrh_ndarray(cxcyrh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[center_x, center_y, aspect_ratio, height]
 	Where:
 		- `aspect_ratio` is `width / height`.
 	"""
-	cxcyrh = cxcywh.clone()
-	cxcyrh = cxcyrh.float()
+	cxcyrh = cxcyrh.copy()
+	cxcyrh = cxcyrh.astype(float)
 	if cxcyrh.ndim == 1:
 		cxcyrh[2] = cxcyrh[2] / cxcyrh[3]
 	elif cxcyrh.ndim == 2:
 		cxcyrh[:, 2] = cxcyrh[:, 2] / cxcyrh[:, 3]
 	else:
 		raise ValueError(f"Farray dimensions {cxcyrh.ndim} is not "
-						 f"supported.")
+		                 f"supported.")
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcywh_to_cxcyar(cxcywh: np.ndarray) -> np.ndarray:
-	"""Convert the bounding box's format from
-	[center_x, center_y, width, height] to
-	[center_x, center_y, area, aspect_ratio].
-	Where:
-		- `aspect_ratio` is `width / height`.
+def bbox_cxcywh_to_cxcyrh(cxcywh):
 	"""
-	cxcyrh = cxcywh.copy()
-	cxcyrh = cxcyrh.astype(float)
-	if cxcyrh.ndim == 1:
-		cxcyrh[2] = cxcywh[2] * cxcywh[3]
-		cxcyrh[3] = cxcywh[2] / cxcywh[3]
-	elif cxcyrh.ndim == 2:
-		cxcyrh[:, 2] = cxcywh[:, 2] * cxcywh[:, 3]
-		cxcyrh[:, 3] = cxcywh[:, 2] / cxcywh[:, 3]
+	Dispatches to the correct bbox_cxcywh_to_cxcyrh function based on input type.
+	"""
+	if isinstance(cxcywh, torch.Tensor):
+		return bbox_cxcywh_to_cxcyrh_tensor(cxcywh)
+	elif isinstance(cxcywh, np.ndarray):
+		return bbox_cxcywh_to_cxcyrh_ndarray(cxcywh)
 	else:
-		raise ValueError(f"Farray dimensions {cxcyrh.ndim} is not "
-						 f"supported.")
-	return cxcyrh
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_to_cxcywh_norm(
-	cxcywh: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_to_cxcywh_norm_tensor(cxcywh: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -857,10 +1043,7 @@ def bbox_cxcywh_to_cxcywh_norm(
 	return cxcywh_norm
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_to_cxcywh_norm(
-	cxcywh: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_to_cxcywh_norm_ndarray(cxcywh: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -889,8 +1072,19 @@ def bbox_cxcywh_to_cxcywh_norm(
 	return cxcywh_norm
 
 
-@dispatch(Tensor)
-def bbox_cxcywh_to_xywh(cxcywh: Tensor) -> Tensor:
+def bbox_cxcywh_to_cxcywh_norm(cxcywh, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_to_cxcywh_norm function based on input type.
+	"""
+	if isinstance(cxcywh, torch.Tensor):
+		return bbox_cxcywh_to_cxcywh_norm_tensor(cxcywh, height, width)
+	elif isinstance(cxcywh, np.ndarray):
+		return bbox_cxcywh_to_cxcywh_norm_ndarray(cxcywh, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_to_xywh_tensor(cxcywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[top_left_x, top_left_y, width, height].
@@ -909,8 +1103,7 @@ def bbox_cxcywh_to_xywh(cxcywh: Tensor) -> Tensor:
 	return xywh
 
 
-@dispatch(np.ndarray)
-def bbox_cxcywh_to_xywh(cxcywh: np.ndarray) -> np.ndarray:
+def bbox_cxcywh_to_xywh_ndarray(cxcywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[top_left_x, top_left_y, width, height].
@@ -928,8 +1121,19 @@ def bbox_cxcywh_to_xywh(cxcywh: np.ndarray) -> np.ndarray:
 	return xywh
 
 
-@dispatch(Tensor)
-def bbox_cxcywh_to_xyxy(cxcywh: Tensor) -> Tensor:
+def bbox_cxcywh_to_xywh(cxcywh):
+	"""
+	Dispatches to the correct bbox_cxcywh_to_xywh function based on input type.
+	"""
+	if isinstance(cxcywh, torch.Tensor):
+		return bbox_cxcywh_to_xywh_tensor(cxcywh)
+	elif isinstance(cxcywh, np.ndarray):
+		return bbox_cxcywh_to_xywh_ndarray(cxcywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_to_xyxy_tensor(cxcywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -956,8 +1160,7 @@ def bbox_cxcywh_to_xyxy(cxcywh: Tensor) -> Tensor:
 	return xyxy
 
 
-@dispatch(np.ndarray)
-def bbox_cxcywh_to_xyxy(cxcywh: np.ndarray) -> np.ndarray:
+def bbox_cxcywh_to_xyxy_ndarray(cxcywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x, center_y, width, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -984,10 +1187,19 @@ def bbox_cxcywh_to_xyxy(cxcywh: np.ndarray) -> np.ndarray:
 	return xyxy
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcyar(
-	cxcywh_norm: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_to_xyxy(cxcywh):
+	"""
+	Dispatches to the correct bbox_cxcywh_to_xyxy function based on input type.
+	"""
+	if isinstance(cxcywh, torch.Tensor):
+		return bbox_cxcywh_to_xyxy_tensor(cxcywh)
+	elif isinstance(cxcywh, np.ndarray):
+		return bbox_cxcywh_to_xyxy_ndarray(cxcywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_norm_to_cxcyar_tensor(cxcywh_norm: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, area, aspect_ratio].
@@ -1017,10 +1229,7 @@ def bbox_cxcywh_norm_to_cxcyar(
 	return cxcyrh
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcyar(
-	cxcywh_norm: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_norm_to_cxcyar_ndarray(cxcywh_norm: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, area, aspect_ratio].
@@ -1050,10 +1259,19 @@ def bbox_cxcywh_norm_to_cxcyar(
 	return cxcyrh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcyrh(
-	cxcywh_norm: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_norm_to_cxcyar(cxcywh_norm, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_norm_to_cxcyar function based on input type.
+	"""
+	if isinstance(cxcywh_norm, torch.Tensor):
+		return bbox_cxcywh_norm_to_cxcyar_tensor(cxcywh_norm, height, width)
+	elif isinstance(cxcywh_norm, np.ndarray):
+		return bbox_cxcywh_norm_to_cxcyar_ndarray(cxcywh_norm, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_norm_to_cxcyrh_tensor(cxcywh_norm: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1083,10 +1301,7 @@ def bbox_cxcywh_norm_to_cxcyrh(
 	return cxcyrh
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcyrh(
-	cxcywh_norm: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_norm_to_cxcyrh_ndarray(cxcywh_norm: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1116,10 +1331,19 @@ def bbox_cxcywh_norm_to_cxcyrh(
 	return cxcyrh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcywh(
-	cxcywh_norm: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_norm_to_cxcyrh(cxcywh_norm, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_norm_to_cxcyrh function based on input type.
+	"""
+	if isinstance(cxcywh_norm, torch.Tensor):
+		return bbox_cxcywh_norm_to_cxcyrh_tensor(cxcywh_norm, height, width)
+	elif isinstance(cxcywh_norm, np.ndarray):
+		return bbox_cxcywh_norm_to_cxcyrh_ndarray(cxcywh_norm, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_norm_to_cxcywh_tensor(cxcywh_norm: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, width, height].
@@ -1148,10 +1372,7 @@ def bbox_cxcywh_norm_to_cxcywh(
 	return cxcywh
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_norm_to_cxcywh(
-	cxcywh_norm: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_norm_to_cxcywh_ndarray(cxcywh_norm: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[center_x, center_y, width, height].
@@ -1180,10 +1401,19 @@ def bbox_cxcywh_norm_to_cxcywh(
 	return cxcywh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_norm_to_xywh(
-	cxcywh_norm: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_norm_to_cxcywh(cxcywh_norm, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_norm_to_cxcywh function based on input type.
+	"""
+	if isinstance(cxcywh_norm, torch.Tensor):
+		return bbox_cxcywh_norm_to_cxcywh_tensor(cxcywh_norm, height, width)
+	elif isinstance(cxcywh_norm, np.ndarray):
+		return bbox_cxcywh_norm_to_cxcywh_ndarray(cxcywh_norm, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_norm_to_xywh_tensor(cxcywh_norm: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[top_left_x, top_left_y, width, height].
@@ -1212,10 +1442,7 @@ def bbox_cxcywh_norm_to_xywh(
 	return xywh
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_norm_to_xywh(
-	cxcywh_norm: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_norm_to_xywh_ndarray(cxcywh_norm: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[top_left_x, top_left_y, width, height].
@@ -1244,10 +1471,19 @@ def bbox_cxcywh_norm_to_xywh(
 	return xywh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_cxcywh_norm_to_xyxy(
-	cxcywh_norm: Tensor, height, width
-) -> Tensor:
+def bbox_cxcywh_norm_to_xywh(cxcywh_norm, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_norm_to_xywh function based on input type.
+	"""
+	if isinstance(cxcywh_norm, torch.Tensor):
+		return bbox_cxcywh_norm_to_xywh_tensor(cxcywh_norm, height, width)
+	elif isinstance(cxcywh_norm, np.ndarray):
+		return bbox_cxcywh_norm_to_xywh_ndarray(cxcywh_norm, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_cxcywh_norm_to_xyxy_tensor(cxcywh_norm: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -1276,10 +1512,7 @@ def bbox_cxcywh_norm_to_xyxy(
 	return xyxy
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_cxcywh_norm_to_xyxy(
-	cxcywh_norm: np.ndarray, height, width
-) -> np.ndarray:
+def bbox_cxcywh_norm_to_xyxy_ndarray(cxcywh_norm: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[center_x_norm, center_y_norm, width_norm, height_norm] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -1308,8 +1541,19 @@ def bbox_cxcywh_norm_to_xyxy(
 	return xyxy
 
 
-@dispatch(Tensor)
-def bbox_xywh_to_cxcyar(xywh: Tensor) -> Tensor:
+def bbox_cxcywh_norm_to_xyxy(cxcywh_norm, height, width):
+	"""
+	Dispatches to the correct bbox_cxcywh_norm_to_xyxy function based on input type.
+	"""
+	if isinstance(cxcywh_norm, torch.Tensor):
+		return bbox_cxcywh_norm_to_xyxy_tensor(cxcywh_norm, height, width)
+	elif isinstance(cxcywh_norm, np.ndarray):
+		return bbox_cxcywh_norm_to_xyxy_ndarray(cxcywh_norm, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xywh_to_cxcyar_tensor(xywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, area, aspect_ratio]
@@ -1334,8 +1578,7 @@ def bbox_xywh_to_cxcyar(xywh: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_xywh_to_cxcyar(xywh: np.ndarray) -> np.ndarray:
+def bbox_xywh_to_cxcyar_ndarray(xywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, area, aspect_ratio].
@@ -1360,8 +1603,20 @@ def bbox_xywh_to_cxcyar(xywh: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_xywh_to_cxcyrh(xywh: Tensor) -> Tensor:
+def bbox_xywh_to_cxcyar(xywh):
+	"""
+	Dispatches to the correct bbox_xywh_to_cxcyar function based on input type.
+	"""
+	if isinstance(xywh, torch.Tensor):
+		return bbox_xywh_to_cxcyar_tensor(xywh)
+	elif isinstance(xywh, np.ndarray):
+		return bbox_xywh_to_cxcyar_ndarray(xywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+
+def bbox_xywh_to_cxcyrh_tensor(xywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1384,8 +1639,7 @@ def bbox_xywh_to_cxcyrh(xywh: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_xywh_to_cxcyrh(xywh: np.ndarray) -> np.ndarray:
+def bbox_xywh_to_cxcyrh_ndarray(xywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1408,8 +1662,19 @@ def bbox_xywh_to_cxcyrh(xywh: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_xywh_to_cxcywh(xywh: Tensor) -> Tensor:
+def bbox_xywh_to_cxcyrh(xywh):
+	"""
+	Dispatches to the correct bbox_xywh_to_cxcyrh function based on input type.
+	"""
+	if isinstance(xywh, torch.Tensor):
+		return bbox_xywh_to_cxcyrh_tensor(xywh)
+	elif isinstance(xywh, np.ndarray):
+		return bbox_xywh_to_cxcyrh_ndarray(xywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xywh_to_cxcywh_tensor(xywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, width, height].
@@ -1428,8 +1693,7 @@ def bbox_xywh_to_cxcywh(xywh: Tensor) -> Tensor:
 	return cxcywh
 
 
-@dispatch(np.ndarray)
-def bbox_xywh_to_cxcywh(xywh: np.ndarray) -> np.ndarray:
+def bbox_xywh_to_cxcywh_ndarray(xywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x, center_y, width, height].
@@ -1448,8 +1712,19 @@ def bbox_xywh_to_cxcywh(xywh: np.ndarray) -> np.ndarray:
 	return cxcywh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_xywh_to_cxcywh_norm(xywh: Tensor, height, width) -> Tensor:
+def bbox_xywh_to_cxcywh(xywh):
+	"""
+	Dispatches to the correct bbox_xywh_to_cxcywh function based on input type.
+	"""
+	if isinstance(xywh, torch.Tensor):
+		return bbox_xywh_to_cxcywh_tensor(xywh)
+	elif isinstance(xywh, np.ndarray):
+		return bbox_xywh_to_cxcywh_ndarray(xywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xywh_to_cxcywh_norm_tensor(xywh: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -1460,7 +1735,7 @@ def bbox_xywh_to_cxcywh_norm(xywh: Tensor, height, width) -> Tensor:
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_xywh_to_cxcywh(xywh)
+	cxcywh_norm = bbox_xywh_to_cxcywh_tensor(xywh)
 	if cxcywh_norm.ndim == 1:
 		cxcywh_norm[0] /= width
 		cxcywh_norm[1] /= height
@@ -1477,8 +1752,7 @@ def bbox_xywh_to_cxcywh_norm(xywh: Tensor, height, width) -> Tensor:
 	return cxcywh_norm
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_xywh_to_cxcywh_norm(xywh: np.ndarray, height, width) -> np.ndarray:
+def bbox_xywh_to_cxcywh_norm_ndarray(xywh: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -1489,7 +1763,7 @@ def bbox_xywh_to_cxcywh_norm(xywh: np.ndarray, height, width) -> np.ndarray:
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_xywh_to_cxcywh(xywh)
+	cxcywh_norm = bbox_xywh_to_cxcywh_ndarray(xywh)
 	if cxcywh_norm.ndim == 1:
 		cxcywh_norm[0] /= width
 		cxcywh_norm[1] /= height
@@ -1506,8 +1780,19 @@ def bbox_xywh_to_cxcywh_norm(xywh: np.ndarray, height, width) -> np.ndarray:
 	return cxcywh_norm
 
 
-@dispatch(Tensor)
-def bbox_xywh_to_xyxy(xywh: Tensor) -> Tensor:
+def bbox_xywh_to_cxcywh_norm(xywh, height, width):
+	"""
+	Dispatches to the correct bbox_xywh_to_cxcywh_norm function based on input type.
+	"""
+	if isinstance(xywh, torch.Tensor):
+		return bbox_xywh_to_cxcywh_norm_tensor(xywh, height, width)
+	elif isinstance(xywh, np.ndarray):
+		return bbox_xywh_to_cxcywh_norm_ndarray(xywh, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xywh_to_xyxy_tensor(xywh: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -1524,8 +1809,7 @@ def bbox_xywh_to_xyxy(xywh: Tensor) -> Tensor:
 	return xyxy
 
 
-@dispatch(np.ndarray)
-def bbox_xywh_to_xyxy(xywh: np.ndarray) -> np.ndarray:
+def bbox_xywh_to_xyxy_ndarray(xywh: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, width, height] to
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
@@ -1542,8 +1826,19 @@ def bbox_xywh_to_xyxy(xywh: np.ndarray) -> np.ndarray:
 	return xyxy
 
 
-@dispatch(Tensor)
-def bbox_xyxy_to_cxcyar(xyxy: Tensor) -> Tensor:
+def bbox_xywh_to_xyxy(xywh):
+	"""
+	Dispatches to the correct bbox_xywh_to_xyxy function based on input type.
+	"""
+	if isinstance(xywh, torch.Tensor):
+		return bbox_xywh_to_xyxy_tensor(xywh)
+	elif isinstance(xywh, np.ndarray):
+		return bbox_xywh_to_xyxy_ndarray(xywh)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xyxy_to_cxcyar_tensor(xyxy: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, area, aspect_ratio].
@@ -1572,8 +1867,7 @@ def bbox_xyxy_to_cxcyar(xyxy: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_xyxy_to_cxcyar(xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_to_cxcyar_ndarray(xyxy: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, area, aspect_ratio].
@@ -1602,8 +1896,19 @@ def bbox_xyxy_to_cxcyar(xyxy: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_xyxy_to_cxcyrh(xyxy: Tensor) -> Tensor:
+def bbox_xyxy_to_cxcyar(xyxy):
+	"""
+	Dispatches to the correct bbox_xyxy_to_cxcyar function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_to_cxcyar_tensor(xyxy)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_to_cxcyar_ndarray(xyxy)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xyxy_to_cxcyrh_tensor(xyxy: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1632,8 +1937,7 @@ def bbox_xyxy_to_cxcyrh(xyxy: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_xyxy_to_cxcyrh(xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_to_cxcyrh_ndarray(xyxy: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, aspect_ratio, height].
@@ -1662,8 +1966,19 @@ def bbox_xyxy_to_cxcyrh(xyxy: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor)
-def bbox_xyxy_to_cxcywh(xyxy: Tensor) -> Tensor:
+def bbox_xyxy_to_cxcyrh(xyxy):
+	"""
+	Dispatches to the correct bbox_xyxy_to_cxcyrh function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_to_cxcyrh_tensor(xyxy)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_to_cxcyrh_ndarray(xyxy)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xyxy_to_cxcywh_tensor(xyxy: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, width, height].
@@ -1690,8 +2005,7 @@ def bbox_xyxy_to_cxcywh(xyxy: Tensor) -> Tensor:
 	return cxcyrh
 
 
-@dispatch(np.ndarray)
-def bbox_xyxy_to_cxcywh(xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_to_cxcywh_ndarray(xyxy: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x, center_y, width, height].
@@ -1718,8 +2032,19 @@ def bbox_xyxy_to_cxcywh(xyxy: np.ndarray) -> np.ndarray:
 	return cxcyrh
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def bbox_xyxy_to_cxcywh_norm(xyxy: Tensor, height, width) -> Tensor:
+def bbox_xyxy_to_cxcywh(xyxy):
+	"""
+	Dispatches to the correct bbox_xyxy_to_cxcywh function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_to_cxcywh_tensor(xyxy)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_to_cxcywh_ndarray(xyxy)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xyxy_to_cxcywh_norm_tensor(xyxy: Tensor, height, width) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -1730,7 +2055,7 @@ def bbox_xyxy_to_cxcywh_norm(xyxy: Tensor, height, width) -> Tensor:
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_xyxy_to_cxcywh(xyxy)
+	cxcywh_norm = bbox_xyxy_to_cxcywh_tensor(xyxy)
 	cxcywh_norm = cxcywh_norm.float()
 	if cxcywh_norm.ndim == 1:
 		cxcywh_norm[0] /= width
@@ -1748,8 +2073,7 @@ def bbox_xyxy_to_cxcywh_norm(xyxy: Tensor, height, width) -> Tensor:
 	return cxcywh_norm
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def bbox_xyxy_to_cxcywh_norm(xyxy: np.ndarray, height, width) -> np.ndarray:
+def bbox_xyxy_to_cxcywh_norm_ndarray(xyxy: np.ndarray, height, width) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[center_x_norm, center_y_norm, width_norm, height_norm].
@@ -1760,7 +2084,7 @@ def bbox_xyxy_to_cxcywh_norm(xyxy: np.ndarray, height, width) -> np.ndarray:
 			  `x_norm = absolute_x / image_width`
 			  `height_norm = absolute_height / image_height`.
 	"""
-	cxcywh_norm = bbox_xyxy_to_cxcywh(xyxy)
+	cxcywh_norm = bbox_xyxy_to_cxcywh_ndarray(xyxy)
 	cxcywh_norm = cxcywh_norm.astype(float)
 	if cxcywh_norm.ndim == 1:
 		cxcywh_norm[0] /= width
@@ -1778,8 +2102,19 @@ def bbox_xyxy_to_cxcywh_norm(xyxy: np.ndarray, height, width) -> np.ndarray:
 	return cxcywh_norm
 
 
-@dispatch(Tensor)
-def bbox_xyxy_to_xywh(xyxy: Tensor) -> Tensor:
+def bbox_xyxy_to_cxcywh_norm(xyxy, height, width):
+	"""
+	Dispatches to the correct bbox_xyxy_to_cxcywh_norm function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_to_cxcywh_norm_tensor(xyxy, height, width)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_to_cxcywh_norm_ndarray(xyxy, height, width)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def bbox_xyxy_to_xywh_tensor(xyxy: Tensor) -> Tensor:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[top_left_x, top_left_y, width, height].
@@ -1797,8 +2132,7 @@ def bbox_xyxy_to_xywh(xyxy: Tensor) -> Tensor:
 	return xywh
 
 
-@dispatch(np.ndarray)
-def bbox_xyxy_to_xywh(xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_to_xywh_ndarray(xyxy: np.ndarray) -> np.ndarray:
 	"""Convert the bounding box's format from
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y] to
 	[top_left_x, top_left_y, width, height].
@@ -1816,9 +2150,21 @@ def bbox_xyxy_to_xywh(xyxy: np.ndarray) -> np.ndarray:
 	return xywh
 
 
+def bbox_xyxy_to_xywh(xyxy):
+	"""
+	Dispatches to the correct bbox_xyxy_to_xywh function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_to_xywh_tensor(xyxy)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_to_xywh_ndarray(xyxy)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
 # MARK: - Bbox <-> Mask
 
-def bbox_to_mask(boxes: Tensor, width: int, height: int) -> Tensor:
+def bbox_to_mask_tensor(boxes: Tensor, width: int, height: int) -> Tensor:
 	"""Convert 2D bounding boxes to masks. Covered area is 1. and the remaining
 	is 0.
 
@@ -1848,7 +2194,7 @@ def bbox_to_mask(boxes: Tensor, width: int, height: int) -> Tensor:
 		...        [3., 2.],
 		...        [1., 2.],
 		...   ]])  # [1, 4, 2]
-		>>> bbox_to_mask(boxes, 5, 5)
+		>>> bbox_to_mask_tensor(boxes, 5, 5)
 		image([[[0., 0., 0., 0., 0.],
 				 [0., 1., 1., 1., 0.],
 				 [0., 1., 1., 1., 0.],
@@ -1879,12 +2225,11 @@ def bbox_area(xyxy: np.ndarray) -> float:
 	return (xyxy[2] - xyxy[0]) * (xyxy[3] - xyxy[1])
 
 
-@dispatch(Tensor)
-def bbox_xyxy_center(xyxy: Tensor) -> Tensor:
+def bbox_xyxy_center_tensor(xyxy: Tensor) -> Tensor:
 	"""Return the center of the box of format
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
 	"""
-	xyah = bbox_xyxy_to_cxcywh(xyxy)
+	xyah = bbox_xyxy_to_cxcywh_tensor(xyxy)
 	xyah = xyah.float()
 	if xyah.ndim == 1:
 		return xyah[0:2]
@@ -1894,12 +2239,11 @@ def bbox_xyxy_center(xyxy: Tensor) -> Tensor:
 		raise ValueError(f"Farray dimensions {xyah.ndim} is not supported.")
 
 
-@dispatch(np.ndarray)
-def bbox_xyxy_center(xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_center_ndarray(xyxy: np.ndarray) -> np.ndarray:
 	"""Return the center of the box of format
 	[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
 	"""
-	xyah = bbox_xyxy_to_cxcywh(xyxy)
+	xyah = bbox_xyxy_to_cxcywh_ndarray(xyxy)
 	xyah = xyah.astype(float)
 	if xyah.ndim == 1:
 		return xyah[0:2]
@@ -1907,6 +2251,19 @@ def bbox_xyxy_center(xyxy: np.ndarray) -> np.ndarray:
 		return xyah[:, 0:2]
 	else:
 		raise ValueError(f"Farray dimensions {xyah.ndim} is not supported.")
+
+
+def bbox_xyxy_center(xyxy):
+	"""
+	Return the center of the box of format [top_left_x, top_left_y, bottom_right_x, bottom_right_y].
+	Dispatches to the correct function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return bbox_xyxy_center_tensor(xyxy)
+	elif isinstance(xyxy, np.ndarray):
+		return bbox_xyxy_center_ndarray(xyxy)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
 
 
 def infer_bbox_shape(boxes: Tensor) -> ListOrTuple2T[Tensor]:
@@ -1947,7 +2304,7 @@ def infer_bbox_shape(boxes: Tensor) -> ListOrTuple2T[Tensor]:
 
 # MARK: - Box-Box Interaction
 
-def bbox_ioa(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
+def bbox_ioa_ndarray(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
 	"""Calculate the intersection over area given xyxy1, xyxy2.
 
 	Args:
@@ -1980,8 +2337,7 @@ def bbox_ioa(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
 	return inter_area / bbox2_area
 
 
-@dispatch(Tensor, Tensor)
-def bbox_iou(xyxy1: Tensor, xyxy2: Tensor) -> float:
+def bbox_iou_tensor(xyxy1: Tensor, xyxy2: Tensor) -> float:
 	"""Find the Intersection over Union (IoU) between two 2 boxes.
 
 	Args:
@@ -1998,11 +2354,10 @@ def bbox_iou(xyxy1: Tensor, xyxy2: Tensor) -> float:
 	"""
 	xyxy1_np = xyxy1.numpy()
 	xyxy2_np = xyxy2.numpy()
-	return bbox_iou(xyxy1_np, xyxy2_np)
+	return bbox_iou_ndarray(xyxy1_np, xyxy2_np)
 
 
-@dispatch(np.ndarray, np.ndarray)
-def bbox_iou(xyxy1: np.ndarray, xyxy2: np.ndarray) -> float:
+def bbox_iou_ndarray(xyxy1: np.ndarray, xyxy2: np.ndarray) -> float:
 	"""Find the Intersection over Union (IoU) between two 2 boxes.
 
 	Args:
@@ -2029,7 +2384,18 @@ def bbox_iou(xyxy1: np.ndarray, xyxy2: np.ndarray) -> float:
 	return ou
 
 
-@dispatch(np.ndarray, np.ndarray)
+def bbox_iou(xyxy1, xyxy2):
+	"""
+	Dispatches to the correct bbox_iou function based on input type.
+	"""
+	if isinstance(xyxy1, torch.Tensor) and isinstance(xyxy2, torch.Tensor):
+		return bbox_iou_tensor(xyxy1, xyxy2)
+	elif isinstance(xyxy1, np.ndarray) and isinstance(xyxy2, np.ndarray):
+		return bbox_iou_ndarray(xyxy1, xyxy2)
+	else:
+		raise TypeError("Inputs must both be torch.Tensor or np.ndarray.")
+
+
 def batch_bbox_iou(xyxy1: np.ndarray, xyxy2: np.ndarray) -> np.ndarray:
 	"""From SORT: Computes IOU between two sets of boxes.
 
@@ -2125,7 +2491,7 @@ def nms(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
 
 # region MARK: - Transformation
 
-def clip_bbox_xyxy(xyxy: Tensor, image_size: Dim2) -> Tensor:
+def clip_bbox_xyxy_tensor(xyxy: Tensor, image_size: Dim2) -> Tensor:
 	"""Clip bounding boxes to image size [H, W].
 
 	Args:
@@ -2144,6 +2510,38 @@ def clip_bbox_xyxy(xyxy: Tensor, image_size: Dim2) -> Tensor:
 	xyxy[:, 2].clamp_(0, image_size[1])  # x2
 	xyxy[:, 3].clamp_(0, image_size[0])  # y2
 	return xyxy
+
+def clip_bbox_xyxy_ndarray(xyxy: np.ndarray, image_size: Dim2) -> np.ndarray:
+	"""Clip bounding boxes to image size [H, W].
+
+	Args:
+		xyxy (Tensor):
+			Bounding boxes coordinates as
+			[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
+		image_size (Dim2):
+			Image size as [H, W].
+
+	Returns:
+		box_xyxy (Tensor):
+			Clipped bounding boxes.
+	"""
+	xyxy[:, 0].clamp_(0, image_size[1])  # x1
+	xyxy[:, 1].clamp_(0, image_size[0])  # y1
+	xyxy[:, 2].clamp_(0, image_size[1])  # x2
+	xyxy[:, 3].clamp_(0, image_size[0])  # y2
+	return xyxy
+
+
+def clip_bbox_xyxy(xyxy, image_size):
+	"""
+	Dispatches to the correct clip_bbox_xyxy function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return clip_bbox_xyxy_tensor(xyxy, image_size)
+	elif isinstance(xyxy, np.ndarray):
+		return clip_bbox_xyxy_ndarray(xyxy, image_size)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
 
 
 def cutout_bbox(
@@ -2195,7 +2593,7 @@ def cutout_bbox(
 		if len(bbox_labels_cutout) and s > 0.03:
 			box = np.array([xmin, ymin, xmax, ymax], np.float32)
 			# Intersection over area
-			ioa = bbox_ioa(box, bbox_labels_cutout[:, 2:6])
+			ioa = bbox_ioa_ndarray(box, bbox_labels_cutout[:, 2:6])
 			# Remove >60% obscured labels
 			bbox_labels_cutout = bbox_labels_cutout[ioa < 0.60]
 
@@ -2402,9 +2800,8 @@ def random_bbox_perspective(
 	return image_new, bbox_new
 
 
-def scale_bbox_xyxy(
-	xyxy: Tensor, image_size: Dim2, new_size: Dim2, ratio_pad=None
-) -> Tensor:
+def scale_bbox_xyxy_tensor(xyxy: Tensor, image_size: Dim2, new_size: Dim2, ratio_pad=None
+                           ) -> Tensor:
 	"""Scale bounding boxes coordinates (from detector size) to the original
 	image size.
 
@@ -2434,11 +2831,56 @@ def scale_bbox_xyxy(
 	xyxy[:, [0, 2]] -= pad[0]  # x padding
 	xyxy[:, [1, 3]] -= pad[1]  # y padding
 	xyxy[:, :4]     /= gain
-	return clip_bbox_xyxy(xyxy, new_size)
+	return clip_bbox_xyxy_tensor(xyxy, new_size)
 
 
-@dispatch(Tensor, (int, float), (int, float))
-def shift_bbox(xyxy: Tensor, ver, hor) -> np.ndarray:
+def scale_bbox_xyxy_ndarray(xyxy: np.ndarray, image_size: Dim2, new_size: Dim2, ratio_pad=None
+                           ) -> np.ndarray:
+	"""Scale bounding boxes coordinates (from detector size) to the original
+	image size.
+
+	Args:
+		xyxy (np.ndarray):
+			Bounding boxes coordinates as
+			[top_left_x, top_left_y, bottom_right_x, bottom_right_y].
+		image_size (Dim2):
+			Detector's input size as [H, W].
+		new_size (Dim2):
+			Original image size as [H, W].
+		ratio_pad:
+
+	Returns:
+		box_xyxy (np.ndarray):
+			Fscaled bounding boxes.
+	"""
+	if ratio_pad is None:  # Calculate from new_size
+		gain = min(image_size[0] / new_size[0],
+		           image_size[1] / new_size[1])  # gain  = old / new
+		pad  = (image_size[1] - new_size[1] * gain) / 2, \
+		       (image_size[0] - new_size[0] * gain) / 2  # wh padding
+	else:
+		gain = ratio_pad[0][0]
+		pad  = ratio_pad[1]
+
+	xyxy[:, [0, 2]] -= pad[0]  # x padding
+	xyxy[:, [1, 3]] -= pad[1]  # y padding
+	xyxy[:, :4]     /= gain
+	return clip_bbox_xyxy_ndarray(xyxy, new_size)
+
+
+def scale_bbox_xyxy(xyxy, image_size, new_size, ratio_pad=None):
+	"""
+	Dispatches to the correct scale_bbox_xyxy function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return scale_bbox_xyxy_tensor(xyxy, image_size, new_size, ratio_pad)
+	elif isinstance(xyxy, np.ndarray):
+		return scale_bbox_xyxy_ndarray(xyxy, image_size, new_size, ratio_pad)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
+
+def shift_bbox_tensor(xyxy: Tensor, ver, hor) -> np.ndarray:
 	"""Shift the bounding box with the given `ver` and `hor` values.
 
 	Args:
@@ -2462,8 +2904,7 @@ def shift_bbox(xyxy: Tensor, ver, hor) -> np.ndarray:
 	return xyxy_shift
 
 
-@dispatch(np.ndarray, (int, float), (int, float))
-def shift_bbox(xyxy: np.ndarray, ver, hor) -> np.ndarray:
+def shift_bbox_ndarray(xyxy: np.ndarray, ver, hor) -> np.ndarray:
 	"""Shift the bounding box with the given `ver` and `hor` values.
 
 	Args:
@@ -2485,6 +2926,19 @@ def shift_bbox(xyxy: np.ndarray, ver, hor) -> np.ndarray:
 	xyxy_shift[:, 2] = xyxy[:, 2] + hor
 	xyxy_shift[:, 3] = xyxy[:, 3] + ver
 	return xyxy_shift
+
+
+def shift_bbox(xyxy, ver, hor):
+	"""
+	Dispatches to the correct shift_bbox function based on input type.
+	"""
+	if isinstance(xyxy, torch.Tensor):
+		return shift_bbox_tensor(xyxy, ver, hor)
+	elif isinstance(xyxy, np.ndarray):
+		return shift_bbox_ndarray(xyxy, ver, hor)
+	else:
+		raise TypeError("Input must be a torch.Tensor or np.ndarray.")
+
 
 # endregion
 
@@ -2558,7 +3012,7 @@ def validate_bbox(boxes: Tensor) -> bool:
 
 # region MARK: - Kalman Filter
 
-def bbox_xyxy_to_z(bbox_xyxy: np.ndarray) -> np.ndarray:
+def bbox_xyxy_to_z_ndarray(bbox_xyxy: np.ndarray) -> np.ndarray:
 	"""Converting bounding box for Kalman Filter.
 	"""
 	w = bbox_xyxy[2] - bbox_xyxy[0]
@@ -2570,7 +3024,7 @@ def bbox_xyxy_to_z(bbox_xyxy: np.ndarray) -> np.ndarray:
 	return np.array([x, y, s, r]).reshape((4, 1))
 
 
-def x_to_bbox_xyxy(x: np.ndarray, score: float = None) -> np.ndarray:
+def x_to_bbox_xyxy_ndarray(x: np.ndarray, score: float = None) -> np.ndarray:
 	"""Return bounding box from Kalman Filter.
 	"""
 	w = np.sqrt(x[2] * x[3])
