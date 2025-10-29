@@ -28,6 +28,7 @@ classifiers = [
 packages = [
     {include = "tfe"        , from = "."},
     {include = "ultralytics", from = "third_party"},
+    {include = "yolox"      , from = "third_party/YOLOX"},
 ]
 include = [
     "LICENSE",
