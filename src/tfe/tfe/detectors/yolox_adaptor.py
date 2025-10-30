@@ -25,8 +25,6 @@ from tfe.detectors import BaseDetector
 
 from yolox.exp import get_exp
 from yolox.data.data_augment import preproc
-from yolox.data.datasets import COCO_CLASSES
-from yolox.exp.build import get_exp_by_name,get_exp_by_file
 from yolox.utils import postprocess
 
 __all__ = [
@@ -46,7 +44,6 @@ class YOLOX_Adapter(BaseDetector):
 	             *args, **kwargs):
 		super().__init__(name=name, *args, **kwargs)
 
-
 	# MARK: Configure
 
 	def init_model(self):
@@ -54,19 +51,23 @@ class YOLOX_Adapter(BaseDetector):
 		# NOTE: Create model
 
 		# Get image size of detector
-		self.exp  = get_exp(None, self.variant)
+		self.exp             = get_exp(exp_file=self.variant)
 		self.exp.test_conf   = self.min_confidence
 		self.exp.nmsthre     = self.nms_max_overlap
 		self.exp.num_classes = self.class_labels.num_classes()
 
 		# Get image size of detector
 		if is_channel_first(np.ndarray(self.shape)):
-			self.exp.test_size = self.shape[2]
+			self.exp.test_size = [self.shape[2], self.shape[1]]
 		else:
-			self.exp.test_size = self.shape[0]
+			self.exp.test_size = [self.shape[1], self.shape[0]]
+
+		self.rgb_means = (0.485, 0.456, 0.406)
+		self.std = (0.229, 0.224, 0.225)
 
 		self.model = self.exp.get_model()
-		self.model.load_state_dict(torch.load(self.weights, map_location=self.device)["model"])
+		checkpoint = torch.load(self.weights, map_location=self.device, weights_only=False)
+		self.model.load_state_dict(checkpoint["model"])
 		self.model.to(self.device)
 		self.model.eval()
 
@@ -116,14 +117,12 @@ class YOLOX_Adapter(BaseDetector):
 			input (Tensor):
 				Models' input.
 		"""
-		input_imgs = images
-		# if self.shape:
-		# 	input = padded_resize(input, self.shape, stride=self.stride)
-		# 	self.resize_original = True
-		# #input = [F.to_tensor(i) for i in input]
-		# #input = torch.stack(input)
-		# input = to_tensor(input, normalize=True)
-		# input = input.to(self.device)
+		input_imgs = []
+		for raw_img in images:
+			img, ratio = preproc(raw_img, self.exp.test_size)
+			img = torch.from_numpy(img).unsqueeze(0)
+			img = img.to(self.device)
+			input_imgs.append(img)
 		return input_imgs
 
 	def forward(self, input_imgs: Tensor):
@@ -137,7 +136,13 @@ class YOLOX_Adapter(BaseDetector):
 			pred (Tensor):
 				Predictions.
 		"""
-		pred = self.model(source=input_imgs)
+		pred = []
+		for img in input_imgs:
+			outputs = self.model(img)
+			outputs = postprocess(
+				outputs, self.exp.num_classes, self.exp.test_conf, self.exp.nmsthre  # TODO:用户可更改
+			)[0].cpu().numpy()
+			pred.append(outputs)
 		return pred
 
 	def postprocess(
@@ -151,13 +156,13 @@ class YOLOX_Adapter(BaseDetector):
 		"""Postprocess the prediction.
 
 		Args:
-			indexes (np.ndarray):
+			indexes (np.ndarray): order of images
 				Image indexes.
-			images (np.ndarray):
+			images (np.ndarray): raw images
 				Images of shape [B, H, W, C].
-			input_imgs (Tensor):
+			input_imgs (Tensor): pre_processed images
 				Input image of shape [B, C, H, W].
-			pred (Tensor):
+			pred (Tensor): results from model
 				Prediction.
 
 		Returns:

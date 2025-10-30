@@ -202,11 +202,11 @@ class Camera(object):
 				self.config.detector.shape[1],
 				self.config.detector.shape[2]
 			),  # [C, H, W] in config.roi.shape  Target size
-			auto       = False, # Use exact new_shape
-			scale_fill = False, # Maintain aspect ratio with padding
-			scaleup    = True,  # Allow upscaling if needed
+			auto       = False, # If True, use minimum rectangle to resize. If False, use new_shape directly.
+			scale_fill = True,  # If True, stretch the image to new_shape without padding.
+			scaleup    = True,  # If True, allow scaling up. If False, only scale down.
 			stride     = 32,    # Model stride (common for YOLO)
-			center     = False
+			center     = True
 		)
 
 		# NOTE: Loop through all frames in self.video_reader

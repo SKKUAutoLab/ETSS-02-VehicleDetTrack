@@ -14,7 +14,6 @@ from typing import Sequence
 import cv2
 import numpy as np
 import torch
-from multipledispatch import dispatch
 from torch import Tensor
 
 from tfe.type.type import Dim2
@@ -2510,6 +2509,7 @@ def clip_bbox_xyxy_tensor(xyxy: Tensor, image_size: Dim2) -> Tensor:
 	xyxy[:, 2].clamp_(0, image_size[1])  # x2
 	xyxy[:, 3].clamp_(0, image_size[0])  # y2
 	return xyxy
+
 
 def clip_bbox_xyxy_ndarray(xyxy: np.ndarray, image_size: Dim2) -> np.ndarray:
 	"""Clip bounding boxes to image size [H, W].

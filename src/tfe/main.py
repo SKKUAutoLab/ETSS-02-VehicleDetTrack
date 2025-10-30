@@ -69,9 +69,9 @@ def main():
 	config_path   = os.path.join(data_dir, args.dataset, "configs", args.config)
 
 	# DEBUG: print args
-	print(data_dir)
-	print(args.dataset)
-	print(config_path)
+	# print(data_dir)
+	# print(args.dataset)
+	# print(config_path)
 
 	camera_hprams = process_config(config_path=config_path)
 

@@ -34,10 +34,9 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
 from tfe.detectors import get_detector
-from tfe.io import AICResultWriter
-from tfe.io import VideoReader
-from tfe.io import VideoWriter
-from tfe.ops import AppleRGB, padded_resize_image
+from tfe.utils.aic_result_writer import AICResultWriter
+from tfe.io.video import VideoLoader
+from tfe.io.video import VideoWriter
 from tfe.objects import GeneralObject
 from tfe.objects import GMO
 from tfe.objects import MovingState
@@ -77,7 +76,7 @@ class CameraQT6(QThread):
 		self.mois: List[MOI]           = None
 		self.detector                  = None
 		self.tracker                   = None
-		self.video_reader: VideoReader = None
+		self.video_reader: VideoLoader = None
 		self.video_writer: VideoWriter = None
 		self.result_writer             = None
 		self.gmos: List[GMO]           = []
@@ -161,7 +160,7 @@ class CameraQT6(QThread):
 	def configure_video_reader(self):
 		"""Configure the video reader."""
 		hparams           = self.config.data.copy()
-		self.video_reader = VideoReader(**hparams)
+		self.video_reader = VideoLoader(**hparams)
 
 	def configure_video_writer(self):
 		"""Configure the video writer."""

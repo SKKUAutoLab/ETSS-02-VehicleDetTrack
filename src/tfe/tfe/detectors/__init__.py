@@ -14,6 +14,7 @@ from loguru import logger
 from .basedetector import BaseDetector
 from .yolov8_adaptor import YOLOv8_Adapter
 from .yolov11_adaptor import YOLOv11_Adapter
+from .yolox_adaptor import YOLOX_Adapter
 
 def get_detector(hparams: Dict, **kwargs) -> BaseDetector:
 	"""Get the detector model based on the given hyperparameters.
@@ -33,5 +34,7 @@ def get_detector(hparams: Dict, **kwargs) -> BaseDetector:
 		return YOLOv8_Adapter(**hparams, **kwargs)
 	elif name == "yolov11":
 		return YOLOv11_Adapter(**hparams, **kwargs)
+	elif name == "yolox":
+		return YOLOX_Adapter(**hparams, **kwargs)
 	else :
 		logger.error(f"Unsupported detector model: {name}.")

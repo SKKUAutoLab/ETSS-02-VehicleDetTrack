@@ -60,12 +60,11 @@ moi:
 detector:
   api: "pytorch"
     # Name of the API that the detector model is implemented from. Possible values: ["darknet", "pytorch", "tensorflow"].
-  name: "yolox"
+  name: "yolov11"
     # The name of the detector model.
-  variant: "third_party/YOLOX/exps/example/custom/yolox_x_etss_8classes.py"
+  variant: "yolov11x"
     # The detector model's variant name.
-    # or the link to the model architecture file. (YOLOX)
-  weights: "suwon#23_03_01/best_ckpt.pth"
+  weights: "yolo11x_suwon#23_03_01/weights/best.pt"
     # The pretrained weights file.
   dataset: *dataset
     # The dataset base on aicity2021 above, mean base on contest, app

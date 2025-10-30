@@ -2,9 +2,9 @@ import argparse
 import os
 from timeit import default_timer as timer
 
-from tfe.cameras import CameraQT6
-from tfe.utils import data_dir
-from tfe.utils import process_config
+from tfe.cameras.camera_qt6 import CameraQT6
+from tfe.configuration import data_dir
+from tfe.utils.config import process_config
 from tfe.views.traffic_flow_estimation_view import *
 
 from loguru import logger

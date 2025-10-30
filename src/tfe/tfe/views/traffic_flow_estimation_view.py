@@ -13,7 +13,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
-from tfe.utils.eval_count.eval import evaluate_one_video
+from tfe.utils.eval_nwrmse import evaluate_one_video
 
 
 class TFE_BUTTON:
@@ -309,10 +309,10 @@ class TFEMainWindow(QMainWindow):
 		self.vehicleNum_array.append(vehicle_num)
 		self.period_process_array.append(total_process_time)
 
-		video_total_frame = list(video_info.values())[self.run_all_video_index]["frame_num"]
+		video_total_frame  = list(video_info.values())[self.run_all_video_index]["frame_num"]
 		score_effetiveness = wRMSE / vehicle_num
-		score_efficiency = 1 - (total_process_time * base_factor) / (1.1 * float(video_total_frame))
-		score_f1 = 0.3 * score_efficiency + 0.7 * score_effetiveness
+		score_efficiency   = 1 - (total_process_time * base_factor) / (1.1 * float(video_total_frame))
+		score_f1           = 0.3 * score_efficiency + 0.7 * score_effetiveness
 
 		print(f"vehicle_num    : {vehicle_num}\n"
 				f"wRMSE        : {wRMSE:.6f}\n"

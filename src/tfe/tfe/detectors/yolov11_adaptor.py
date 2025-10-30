@@ -153,13 +153,13 @@ class YOLOv11_Adapter(BaseDetector):
 		"""Postprocess the prediction.
 
 		Args:
-			indexes (np.ndarray):
+			indexes (np.ndarray): order of images
 				Image indexes.
-			images (np.ndarray):
+			images (np.ndarray): raw images
 				Images of shape [B, H, W, C].
-			input_imgs (Tensor):
+			input_imgs (Tensor): pre_processed images
 				Input image of shape [B, C, H, W].
-			pred (Tensor):
+			pred (Tensor): results from model
 				Prediction.
 
 		Returns:
