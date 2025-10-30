@@ -70,6 +70,7 @@ class YOLOX_Adapter(BaseDetector):
 		self.model.load_state_dict(checkpoint["model"])
 		self.model.to(self.device)
 		self.model.eval()
+		self.ratio = 1.0
 
 	# MARK: Detection
 
@@ -119,7 +120,7 @@ class YOLOX_Adapter(BaseDetector):
 		"""
 		input_imgs = []
 		for raw_img in images:
-			img, ratio = preproc(raw_img, self.exp.test_size)
+			img, self.ratio = preproc(raw_img, self.exp.test_size)
 			img = torch.from_numpy(img).unsqueeze(0)
 			img = img.to(self.device)
 			input_imgs.append(img)
@@ -171,25 +172,19 @@ class YOLOX_Adapter(BaseDetector):
 		"""
 		# NOTE: Create Detection objects
 		instances = []
-		# DEBUG:
-		# print("******")
-		# for result in pred:
-		# 	# detection
-		# 	result.boxes.xyxy  # box with xyxy format, (N, 4)
-		# 	result.boxes.xywh  # box with xywh format, (N, 4)
-		# 	result.boxes.xyxyn  # box with xyxy format but normalized, (N, 4)
-		# 	result.boxes.xywhn  # box with xywh format but normalized, (N, 4)
-		# 	result.boxes.conf  # confidence score, (N, 1)
-		# 	result.boxes.cls  # cls, (N, 1)
-		# print("******")
 
 		for idx, (frame_index, result) in enumerate(zip(indexes, pred)):
-			inst = []
-			xyxyns = result.boxes.xywhn.cpu().numpy()
-			confs = result.boxes.conf.cpu().numpy()
-			clses = result.boxes.cls.cpu().numpy()
+			inst  = []
+			xyxys = result[: , 0 : 4] / self.ratio
+			confs = result[: , 4] * result[: , 5]
+			clses = result[: , 6]
 
-			for bbox_xyxyn, conf, cls in zip(xyxyns, confs, clses):
+			mask  = confs >= self.min_confidence
+			xyxys = xyxys[mask]
+			confs = confs[mask]
+			clses = clses[mask]
+
+			for bbox_xyxy, conf, cls in zip(xyxys, confs, clses):
 				confident   = float(conf)
 				class_id    = int(cls)
 				class_label = self.class_labels.get_class_label(
@@ -198,7 +193,7 @@ class YOLOX_Adapter(BaseDetector):
 				inst.append(
 					Instance(
 						frame_index = frame_index,
-						bbox        = bbox_xyxyn,
+						bbox        = bbox_xyxy,
 						confidence  = confident,
 						class_label = class_label,
 						label       = class_label,

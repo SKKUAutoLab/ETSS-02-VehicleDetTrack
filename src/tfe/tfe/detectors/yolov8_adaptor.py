@@ -182,11 +182,11 @@ class YOLOv8_Adapter(BaseDetector):
 
 		for idx, (frame_index, result) in enumerate(zip(indexes, pred)):
 			inst = []
-			xyxyns = result.boxes.xywhn.cpu().numpy()
+			xyxys = result.boxes.xywh.cpu().numpy()
 			confs = result.boxes.conf.cpu().numpy()
 			clses = result.boxes.cls.cpu().numpy()
 
-			for bbox_xyxyn, conf, cls in zip(xyxyns, confs, clses):
+			for bbox_xyxy, conf, cls in zip(xyxys, confs, clses):
 				confident   = float(conf)
 				class_id    = int(cls)
 				class_label = self.class_labels.get_class_label(
@@ -195,7 +195,7 @@ class YOLOv8_Adapter(BaseDetector):
 				inst.append(
 					Instance(
 						frame_index = frame_index,
-						bbox        = bbox_xyxyn,
+						bbox        = bbox_xyxy,
 						confidence  = confident,
 						class_label = class_label,
 						label       = class_label,
