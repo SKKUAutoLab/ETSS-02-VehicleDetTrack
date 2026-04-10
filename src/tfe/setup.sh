@@ -30,6 +30,9 @@ pip install opencv-python==4.12.0.88  # Open Source Computer Vision Library
 pip install ordered-enum==0.0.10  # An ordered enum class for Python
 pip install loguru==0.7.3 # Python logging made (stupidly) simple.
 pip install PyQt6==6.9.1 # Python bindings for the Qt cross-platform application and UI framework.
+pip install shapely==2.1.2 # Manipulation and analysis of geometric objects
+pip install tabulate==0.10.0 # Pretty-print tabular data
+
 
 # Run line by line
 pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu118

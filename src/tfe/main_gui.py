@@ -3,6 +3,7 @@ import os
 from timeit import default_timer as timer
 
 from tfe.cameras.camera_qt6 import CameraQT6
+from tfe.cameras.camera_qt6_groundtruth import CameraQT6GTH
 from tfe.configuration import data_dir
 from tfe.utils.config import process_config
 from tfe.views.traffic_flow_estimation_view import *
@@ -20,7 +21,7 @@ parser.add_argument(
 parser.add_argument(
 	"--config",
 	default="Town10HD_location_2.yaml",
-	help="The config file for each camera. The final path to the config file is: TSS/data/[dataset]/configs/[config]/"
+	help="The config file for each camera. TSS/data/[dataset]/configs/[config]/"
 )
 parser.add_argument(
 	"--visualize",
@@ -29,14 +30,14 @@ parser.add_argument(
 )
 parser.add_argument(
 	"--write_video",
-	default=False,
+	default=True,
 	help="Should write processed images to video"
 )
 
-
 def create_camera(args):
 	camera_hprams = process_config(config_path=args.config)
-	return CameraQT6(config=camera_hprams, visualize=args.visualize, write_video=args.write_video)
+	# return CameraQT6(config=camera_hprams, visualize=args.visualize, write_video=args.write_video)
+	return CameraQT6GTH(config=camera_hprams, visualize=args.visualize, write_video=args.write_video)
 
 
 def main():
@@ -61,13 +62,6 @@ def main():
 	window = TFEMainWindow(ui_path="tfe/views/tfe.ui")
 
 	# Camera for WINDOW GUI
-	# window.create_display_thread(camera)
-	# window.create_display_thread(
-	# 	partial(
-	# 		create_camera,
-	# 		args
-	# 	)
-	# )
 	window.update_display_thread(create_camera, args)
 
 	# Show the window on the screen

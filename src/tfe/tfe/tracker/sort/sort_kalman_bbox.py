@@ -198,7 +198,7 @@ class Sort(Tracker):
 		"""
 		for m in matched:
 			track_idx     = m[1]
-			instance_idx = m[0]
+			instance_idx  = m[0]
 			# HERE, we call ``GMO.update_gmo()``. This contains all necessary functions to update the whole GMO object.
 			self.tracks[track_idx].update_gmo(instances[instance_idx])
 			
@@ -226,15 +226,25 @@ class Sort(Tracker):
 	def delete_dead_tracks(self):
 		"""Delete dead tracks.
 		"""
-		i = len(self.tracks)
-		for trk in reversed(self.tracks):
-			d = trk.current_motion_state()[0]  # Get the current bounding box of Kalman Filter
-			#if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-				# ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
-			i -= 1
-			# NOTE: Remove dead tracklets
-			if trk.time_since_update > self.max_age:
-				self.tracks.pop(i)
+		# i = len(self.tracks)
+		# for trk in reversed(self.tracks):
+		# 	d = trk.current_motion_state()[0]  # Get the current bounding box of Kalman Filter
+		# 	#if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
+		# 		# ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
+		# 	i -= 1
+		# 	# NOTE: Remove dead tracklets
+		# 	if trk.time_since_update > self.max_age:
+		# 		self.tracks.pop(i)
+
+		self.tracks = [trk for trk in reversed(self.tracks) if trk.time_since_update <= self.max_age]
+
+		# to_del = []
+		# for trk in reversed(self.tracks):
+		# 	# NOTE: Remove dead tracklets
+		# 	if trk.time_since_update > self.max_age:
+		# 		to_del.append(trk)
+		# for t in reversed(to_del):
+		# 	self.tracks.pop(t)
 		
 	def associate_detections_to_tracks(
 		self,

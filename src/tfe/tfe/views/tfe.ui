@@ -99,9 +99,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="button_video">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>VIDEO</string>
        </property>
@@ -109,9 +106,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="button_start">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>START</string>
        </property>
@@ -119,9 +113,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="button_stop">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>STOP</string>
        </property>
@@ -191,7 +182,7 @@
      <x>0</x>
      <y>0</y>
      <width>1307</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

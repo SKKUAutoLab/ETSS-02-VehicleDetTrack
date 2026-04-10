@@ -4,6 +4,8 @@ import math
 import os
 from collections import OrderedDict
 
+from loguru import logger
+
 
 def parse_txt(txt_path, parse_array):
 	'''From the our code'''
@@ -18,7 +20,7 @@ def parse_txt(txt_path, parse_array):
 			parse_array[frame_id, movement_id, vehicle_class_id] = 1
 
 
-def compute_nwRMSE(segment_period, predict_array, groundtruth_array):
+def compute_nwRMSE(segment_period, predict_array, groundtruth_array, number_of_classes):
 	# weight
 	wVect = np.asarray(np.arange(1, segment_period + 1)) / (segment_period * (segment_period + 1) / 2.0)
 	frame_num, movement_num, vehicle_class_num = predict_array.shape
@@ -27,14 +29,14 @@ def compute_nwRMSE(segment_period, predict_array, groundtruth_array):
 	segment_lists  = [lst[i : i + interval] for i in range(0, len(lst), interval)]
 	groundtruth_count_array = np.zeros(movement_num)
 	prediction_count_array  = np.zeros(movement_num)
-	nwRMSE_array            = np.zeros((movement_num, 2))
-	wRMSE_array             = np.zeros((movement_num, 2))
-	vehicleNum_array        = np.zeros((movement_num, 2))
+	nwRMSE_array            = np.zeros((movement_num, number_of_classes))
+	wRMSE_array             = np.zeros((movement_num, number_of_classes))
+	vehicleNum_array        = np.zeros((movement_num, number_of_classes))
 
 	for movement_id in range(0, movement_num):
 		groundtruth_count_array[movement_id] = np.sum(groundtruth_array[:, movement_id, :])
 		prediction_count_array[movement_id]  = np.sum(predict_array[:, movement_id, :])
-		for tId in range(0, 2):
+		for tId in range(0, number_of_classes):
 			# wRMSE
 			diffVectCul = np.zeros(segment_period)
 			for segment_id, frames in enumerate(segment_lists):
@@ -98,46 +100,72 @@ def compute_nwRMSE(segment_period, predict_array, groundtruth_array):
 
 def evaluate_one_video(video_name, video_info, groundtruth_path, prediction_path, segment_period):
 	# get video information
-	movement_num = video_info[video_name]["movement_num"]
-	frame_num    = video_info[video_name]["frame_num"]
-	index_from   = video_info[video_name]["index_from"]
-	index_to     = video_info[video_name]["index_to"]
+	movement_num      = video_info[video_name]["movement_num"]
+	frame_num         = video_info[video_name]["frame_num"]
+	index_from        = video_info[video_name]["index_from"]
+	index_to          = video_info[video_name]["index_to"]
+	number_of_classes = video_info[video_name]["number_of_classes"]
 
 	if index_to > frame_num:
 		index_to = frame_num
 
 	# parse groundtruth
-	groundtruth_array = np.zeros((frame_num, movement_num, 2))
+	groundtruth_array = np.zeros((frame_num, movement_num, number_of_classes))
 	if not os.path.exists(groundtruth_path):
 		raise f"Do not have groundtruth {groundtruth_path}"
 	parse_txt(groundtruth_path, groundtruth_array)
 
 	# parse prediction
-	prediction_array = np.zeros((frame_num, movement_num, 2))
+	prediction_array = np.zeros((frame_num, movement_num, number_of_classes))
 	if not os.path.exists(prediction_path):
 		raise f"Do not have prediction {prediction_path}"
 	parse_txt(prediction_path, prediction_array)
 
 	# extract the period of time in frame
 	groundtruth_array = groundtruth_array[index_from:index_to, :, :]
-	prediction_array = prediction_array[index_from:index_to, :, :]
+	prediction_array  = prediction_array[index_from:index_to, :, :]
 
 	# compute nwRMSE
-	wRMSE, vehicle_num = compute_nwRMSE(segment_period, prediction_array, groundtruth_array)
+	wRMSE, vehicle_num = compute_nwRMSE(segment_period, prediction_array, groundtruth_array, number_of_classes)
 	return wRMSE, vehicle_num
 
 
 def main():
 	# Load hyperparameter
-	groundtruth_folder = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/groundtruths"
-	prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/outputs"
-	# prediction_folder  = groundtruth_folder
-	video_info = {
-		"Town10HD_location_2": {"frame_num": 2000 , "movement_num": 12, "index_from": 0, "index_to": 2000},
-		"Town10HD_location_4": {"frame_num": 2000 , "movement_num": 6 , "index_from": 0, "index_to": 2000},
-		"Town10HD_location_6": {"frame_num": 1761 , "movement_num": 4 , "index_from": 0, "index_to": 1761},
-		"Town10HD_location_7": {"frame_num": 2000 , "movement_num": 2 , "index_from": 0, "index_to": 2000}
+	# groundtruth_folder = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/groundtruths"
+	# prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/outputs"
+	groundtruth_folder = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv/groundtruths"
+	# prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv/outputs"
+	prediction_folder  = groundtruth_folder
+	video_info_carla = {
+		"Town10HD_location_2": {
+			"frame_num" : 2000, "movement_num": 12, "index_from": 0, "index_to": 2000, "number_of_classes": 2,
+			"video_path": "data/carla_weather/video/Town10HD_location_2.mp4"
+		},
+		"Town10HD_location_4": {
+			"frame_num" : 2000, "movement_num": 6 , "index_from": 0, "index_to": 2000, "number_of_classes": 2,
+			"video_path": "data/carla_weather/video/Town10HD_location_4.mp4"
+		},
+		"Town10HD_location_6": {
+			"frame_num" : 1761, "movement_num": 4 , "index_from": 0, "index_to": 1761, "number_of_classes": 2,
+			"video_path": "data/carla_weather/video/Town10HD_location_6.mp4"
+		},
+		"Town10HD_location_7": {
+			"frame_num" : 2000, "movement_num": 2 , "index_from": 0, "index_to": 2000, "number_of_classes": 2,
+			"video_path": "data/carla_weather/video/Town10HD_location_7.mp4"
+		}
 	}
+	video_info_Korea_cctv = {
+		"23_SUWON": {
+			"frame_num" : 6001, "movement_num": 12, "index_from": 0, "index_to": 6000, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/23_SUWON"
+		},
+		"34_SUWON": {
+			"frame_num" : 6001, "movement_num": 12 , "index_from": 0, "index_to": 6000, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/34_SUWON"
+		}
+	}
+	video_info     = video_info_Korea_cctv
 	segment_period = 10  # segment number for nwRMSE, (second)
 
 	# Init parameter

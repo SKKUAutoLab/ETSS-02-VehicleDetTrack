@@ -67,7 +67,8 @@ video_map = {
 	"Town10HD_location_5": 36,
 	"Town10HD_location_6": 37,
 	"Town10HD_location_7": 38,
-	"23"				 : 39,
+	"23_SUWON"   		 : 39,
+	"40_SUWON"   		 : 40,
 }
 
 
@@ -100,11 +101,13 @@ class AICResultWriter(object):
 		self.output_dir = output_dir if (output_dir is not None) else data_dir
 		self.start_time = start_time if (start_time is not None) else time.time()
 
-		if camera_name:
-			self.video_id = video_map[camera_name]
-		else:
-			logger.error(f"The given ``camera_name`` has not been defined in AIC camera list. Please check again!")
-			raise ValueError
+		# NOTE: Use camera_name instead of video_id
+		self.camera_name = camera_name
+		# if camera_name:
+		# 	self.video_id = video_map[camera_name]
+		# else:
+		# 	logger.error(f"The given ``camera_name`` has not been defined in AIC camera list. Please check again!")
+		# 	raise ValueError
 
 		self.result_file_path = os.path.join(self.output_dir, camera_name + ".txt")
 		self.result_writer    = open(self.result_file_path, "w")
@@ -143,9 +146,15 @@ class AICResultWriter(object):
 			frame_id = vehicle.last_frame_index
 			moi_id   = vehicle.moi_uuid
 			class_id = vehicle.label_id_by_majority
-			# if class_id in [1, 2]:
 
-			result_str = f"{gen_time} {self.video_id} {frame_id} {moi_id} {class_id}\n"
+			# DEBUG: only run for Town10HD, carla, because we only have class_id in [1, 2]:
+			# class_id = 1
+
+			# NOTE: Use camera_name instead of video_id
+			# result_str = f"{gen_time} {self.video_id} {frame_id} {moi_id} {class_id}\n"
+			result_str = f"{gen_time} {self.camera_name} {frame_id} {moi_id} {class_id}\n"
+			# camera_id in video_map
+			# result_str = f"{gen_time} {video_map[self.camera_name]} {frame_id} {moi_id} {class_id}\n"
 			self.result_writer.write(result_str)
 
 
@@ -167,7 +176,7 @@ def compress_all_result(
 			The final compress result name
 				e.g.: "track1.txt"
 	"""
-	output_dir = output_dir if (output_dir is not None) else data_dir
+	output_dir  = output_dir if (output_dir is not None) else data_dir
 	output_name = output_name if (output_name is not None) else "track1"
 	output_name = os.path.join(output_dir, f"{output_name}.txt")
 	compress_writer = open(output_name, "w")

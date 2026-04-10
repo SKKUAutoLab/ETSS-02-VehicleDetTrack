@@ -63,6 +63,7 @@ class Instance:
 		class_label: Optional[dict]             = None,
 		frame_index: Optional[int]              = None,
 		class_id   : Optional[int]              = None,
+		track_id   : Optional[int]              = None,
 		image_size : Optional[list, np.ndarray] = None,
 		video_name : Optional[str]              = None,
 		timestamp  : float                      = timer(),
@@ -81,6 +82,7 @@ class Instance:
 		self.class_label = class_label
 		self.frame_index = frame_index
 		self.class_id    = class_id
+		self.track_id    = track_id
 		self.image_size  = image_size
 		self.video_name  = video_name
 		self.timestamp   = timestamp

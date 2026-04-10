@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
+import glob
+import json
 import os
 from timeit import default_timer as timer
 from typing import Dict, Union
@@ -29,29 +31,39 @@ import torch
 
 from loguru import logger
 
-from tfe.detectors import get_detector
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
 
+from tfe.detectors import get_detector
 from tfe.io.video import VideoLoader
 from tfe.io.video import VideoWriter
 from tfe.objects import GeneralObject
 from tfe.objects import GMO
 from tfe.objects import MovingState
 from tfe.objects.class_label import ClassLabels
+from tfe.objects.instance import Instance
 from tfe.tracker import get_tracker
 from tfe.configuration import data_dir
+from tfe.tracker.sort.sort_kalman_bbox import KalmanBBoxTrack
 from tfe.utils.aic_result_writer import AICResultWriter
 from tfe.utils.config import parse_config_from_json
 from tfe.cameras.moi import MOI
 from tfe.cameras.roi import ROI
 
 
+from ultralytics.data.augment import LetterBox
+
 # MARK: - Camera
 
-class Camera(object):
-	"""Camera
+class CameraQT6GTH(QThread):
+	"""Camera QT6 for groundtruth
 	"""
 
 	# MARK: Magic Functions
+
+	# signal to send to QT6 GUI
+	update_information = pyqtSignal(dict)
 
 	def __init__(
 			self,
@@ -99,16 +111,13 @@ class Camera(object):
 		if any(c is None for c in (self.rois, self.mois, self.detector, self.tracker, self.video_reader, self.result_writer)):
 			logger.warning("Camera have not been fully configured. Please check again.")
 			logger.warning(f"\n{self.rois=}\n"
-						   f"{self.mois=}\n"
-						   f"{self.detector=}\n"
-						   f"{self.tracker=}\n"
-						   f"{self.video_reader=}\n"
-						   f"{self.result_writer=}\n")
+			               f"{self.mois=}\n"
+			               f"{self.detector=}\n"
+			               f"{self.tracker=}\n"
+			               f"{self.video_reader=}\n"
+			               f"{self.result_writer=}\n")
 		else:
 			logger.info("Camera have been fully configured.")
-
-		if self.visualize:
-			cv2.namedWindow("image", cv2.WINDOW_KEEPRATIO)
 
 	def configure_labels(self):
 		"""Configure the labels."""
@@ -163,11 +172,14 @@ class Camera(object):
 
 	def configure_reader(self):
 		"""Configure the video reader."""
-		hparams      = self.config.data.copy()
+		hparams           = self.config.data.copy()
 
 		# Update some parameters for video reader
-		hparams.data = os.path.join(self.config.dirs.data_dir, hparams.dataset, "video", hparams.file)
-		self.video_reader = VideoLoader(**hparams)
+		hparams.data      = os.path.join(self.config.dirs.data_dir, hparams.dataset, "video", os.path.splitext(hparams.file)[0])
+		# self.video_reader = VideoLoader(**hparams)
+
+		# Get list image and json
+		self.video_reader = sorted(glob.glob(os.path.join(hparams.data, "*.jpg")) + glob.glob(os.path.join(hparams.data, "*.png")))
 
 	def configure_video_writer(self):
 		"""Configure the video writer."""
@@ -193,92 +205,128 @@ class Camera(object):
 		# NOTE: Start timer
 		start_time = timer()
 		self.result_writer.start_time = start_time
-
-		# configure letterbox for image preprocessing (used in YOLO models)
-		# letterbox = LetterBox(
-		# 	new_shape=(
-		# 		self.config.detector.shape[1],
-		# 		self.config.detector.shape[2]
-		# 	),  # [C, H, W] in config.roi.shape  Target size
-		# 	auto       = False, # If True, use minimum rectangle to resize. If False, use new_shape directly.
-		# 	scale_fill = True,  # If True, stretch the image to new_shape without padding.
-		# 	scaleup    = True,  # If True, allow scaling up. If False, only scale down.
-		# 	stride     = 32,    # Model stride (common for YOLO)
-		# 	center     = True
-		# )
-
-		# NOTE: Loop through all frames in self.video_reader
-		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
+		self.gmos = []
 
 		# NOTE: phai them cai nay khong la bi memory leak
-		with torch.no_grad():
-			for images, frame_indexes, files, rel_paths  in self.video_reader:
-				if len(frame_indexes) == 0:
-					break
+		# for images, frame_indexes, files, rel_paths in self.video_reader:
+		for img_index, img_path in enumerate(tqdm(self.video_reader, desc=f"{self.config.camera_name}")):
+			basename            = os.path.basename(img_path)
+			basename_noext, ext = os.path.splitext(basename)
+			json_path           = img_path.replace(ext, ".json")
+			image               = cv2.imread(img_path)
 
-				# NOTE: Detect (in batch)
-				# images = padded_resize_image(images=images, size=self.detector.dims[1:3])
-				# batch_instances = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
-				# images = [letterbox(image = im) for im in images]
-				batch_instances = self.detector.detect(
-					indexes=frame_indexes, images=images
-				)
 
-				# DEBUG:
-				# print("*" * 100)
-				# for attr_name, attr_value in self.video_writer.__dict__.items():
-				# 	if not attr_name.startswith('__'):  # Filter out special attributes
-				# 		print(f"{attr_name}: {attr_value}")
-				# print(f"{result.shape=}")
-				# print("*" * 100)
-				# exit()
-				# print("*" * 100)
-				# for idx, instances in enumerate(batch_instances):
-				# 	for instance in instances:
-				# 		print(f"{instance.bbox}")
-				# print("*" * 100)
+			# Load JSON
+			instances      = []
+			if os.path.exists(json_path):
+				with open(json_path, 'r') as f:
+					data = json.load(f)
 
-				# NOTE: Associate detections with ROI (in batch)
-				for idx, instances in enumerate(batch_instances):
-					ROI.associate_detections_to_rois(instances=instances, rois=self.rois)
-					batch_instances[idx] = [d for d in instances if d.roi_uuid is not None]
+				# Load all detection and add into instance array
+				for i, shape in enumerate(data['shapes']):
+					confident   = 99.0
+					class_id    = self.class_labels.get_id(key="name", value=shape.get('label'))
+					class_label = self.class_labels.get_class_label_by_name(shape.get('label'))
+					bbox_points = np.array(shape.get('points'))
+					bbox_xyxy   = np.array([
+							int(bbox_points[:, 0].min()),
+							int(bbox_points[:, 1].min()),
+							int(bbox_points[:, 0].max()),
+							int(bbox_points[:, 1].max()),
+						]).astype(np.int32)
+					instances.append(
+						Instance(
+							frame_index = img_index,
+							bbox        = bbox_xyxy,
+							confidence  = confident,
+							class_label = class_label,
+							label       = class_label,
+							class_id    = class_id,
+							track_id    = int(shape.get('group_id')),
+							image_size  = image.shape[:2]  # (H, W)
+						)
+					)
 
-				# NOTE: Track (in batch)
-				for idx, instances in enumerate(batch_instances):
-					self.tracker.update(instances=instances)
-					self.gmos = self.tracker.tracks
+			# NOTE: Associate detections with ROI (in batch)
+			ROI.associate_detections_to_rois(instances=instances, rois=self.rois)
+			instances = [d for d in instances if d.roi_uuid is not None]
 
-					# NOTE: Update moving state
-					for gmo in self.gmos:
-						gmo.update_moving_state(rois=self.rois)
-						gmo.timestamps.append(timer())
+			# First we need add 1 age to all tracklet, so if they get the new instance, they will be minus age
+			for idx, trk in enumerate(self.gmos):
+				self.gmos[idx].time_since_update +=1
 
-					# NOTE: Associate gmos with MOI
-					in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-					if in_roi_gmos:
-						MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
-						to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and not o.is_countable]
-						if to_be_counted_gmos:
-							MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+			# NOTE: Find which Instance below to which tracklet (self.gmos)
+			to_add = []
+			for instance in instances:
+				for idx, gmo in enumerate(self.gmos):
+					if instance.track_id == gmo.id:
+						self.gmos[idx].update_gmo(instance)
+						self.gmos[idx].time_since_update = max(0, self.gmos[idx].time_since_update - 1)
+						to_add.append(instance)
+						break
+			instances = [instance for instance in instances if instance not in to_add]
 
-						# NOTE: Count
-						countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-						if countable_gmos:
-							self.result_writer.write_counting_result(vehicles=countable_gmos)
-							for gmo in countable_gmos:
-								gmo.moving_state = MovingState.Counted
+			# NOTE: If instance not belong to any tracklet (self.gmos), create the new one
+			for instance in instances:
+				tracklet        = KalmanBBoxTrack.track_from_detection(instance)
+				tracklet.id     = instance.track_id
+				self.gmos.append(tracklet)
 
-					# NOTE: Visualize and Debug
-					elapsed_time = timer() - start_time
-					self.post_process(image=images[idx], elapsed_time=elapsed_time)
+			# NOTE: Remove gmos that are out of ROI or death track
+			self.gmos = [trk for trk in self.gmos if trk.time_since_update <= self.tracker.max_age]
 
-				pbar.update(len(frame_indexes))  # Update pbar
+			# NOTE: Update moving state
+			for gmo in self.gmos:
+				gmo.update_moving_state(rois=self.rois)
+				gmo.timestamps.append(timer())
 
-		# NOTE: Finish
-		pbar.close()
-		cv2.destroyAllWindows()
+			# NOTE: Associate gmos with MOI
+			in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+			MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
+			to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and o.is_countable is False]
+			MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+
+			# NOTE: Count
+			countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+			self.result_stored_counting = self.extract_mois_information(countable_gmos)  # NOTE: store for GUI
+
+			self.result_writer.write_counting_result(vehicles=countable_gmos)
+
+			# NOTE: Update moving state
+			for gmo in countable_gmos:
+				gmo.moving_state = MovingState.Counted
+
+			# NOTE: Visualize and Debug
+			elapsed_time = timer() - start_time
+			self.post_process(image=image, elapsed_time=elapsed_time)
+
+		# NOTE: need to delete because the output txt has to be finish becafore evaluation,
+		# we run Qthread so the thread might be run in different time
+		del self.result_writer
+
+		# send the stop process
+		self.update_information.emit({
+			"frame_index" : None,
+			"result_count": None,
+			"result_frame": None,
+			"is_run"      : False
+		}) # NOTE: send to GUI
+
+	def stop(self):
+		"""Sets run flag to False and waits for thread to finish"""
+		# self.run_flag = False
+		self.wait()
 
 	# MARK: Visualize and Debug
+
+	def extract_mois_information(self, countable_gmos):
+		for vehicle in countable_gmos:
+			moi_id = vehicle.moi_uuid
+			self.mois_display[moi_id] += 1
+		results = []
+		for key, values in self.mois_display.items():
+			results.append(f"Movement {key} : {values}")
+		return results
 
 	def post_process(self, image: np.ndarray, elapsed_time: float):
 		"""Post processing step.
@@ -288,8 +336,16 @@ class Camera(object):
 			return
 		result = self.draw(drawing=image, elapsed_time=elapsed_time)
 		if self.visualize:
-			cv2.imshow("image", result)
-			cv2.waitKey(1)
+			# Display the resulting frame
+			self.result_stored_image_drawed = result  # NOTE: store for GUI
+			self.update_information.emit({
+				"frame_index"  : None,
+				"result_count" : self.result_stored_counting,
+				"result_frame" : self.result_stored_image_drawed,
+				"is_run"       : True
+			}) # NOTE: send to GUI
+			# Frame per second show on display
+			self.msleep(3)
 		if self.write_video:
 			if self.video_writer is None:
 				self.config.output.shape = result.shape # Same as input (H, W, C)
@@ -308,11 +364,13 @@ class Camera(object):
 		[gmo.draw(drawing=drawing) for gmo in self.gmos]
 		# NOTE: Draw frame index
 		# NOTE: Write frame rate
-		fps  = self.video_reader.index / elapsed_time
-		text = f"Frame: {self.video_reader.index}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
-		font = cv2.FONT_HERSHEY_SIMPLEX
-		org  = (20, 30)
+		# fps  = self.video_reader.index / elapsed_time
+		# text = f"Frame: {self.video_reader.index}: {format(elapsed_time, '.3f')}s ({format(fps, '.1f')} fps)"
+		# font = cv2.FONT_HERSHEY_SIMPLEX
+		# org  = (20, 30)
 		# NOTE: show the framerate on top left
 		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
 		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing
+
+

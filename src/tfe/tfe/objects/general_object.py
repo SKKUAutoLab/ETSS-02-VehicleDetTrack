@@ -33,6 +33,7 @@ from tfe.utils.bbox import bbox_xyxy_center
 from tfe.utils.distance import get_distance_function
 # from tfe.utils.point import distance_between_points
 from tfe.utils.label import get_majority_label
+from loguru import logger
 
 
 # MARK: - GeneralObject
@@ -207,7 +208,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			font       = cv2.FONT_HERSHEY_SIMPLEX
 			org        = (bbox_tl[0] + 5, bbox_tl[1])
 			cv2.putText(img=drawing, text=curr_label.name, fontFace=font, fontScale=1.0, org=np.array(org, dtype=int), color=color, thickness=2)
-		
+
 		if trajectory:
 			pts = self.trajectory.reshape((-1, 1, 2))
 			cv2.polylines(img=drawing, pts=[np.array(pts, dtype=int)], isClosed=False, color=color, thickness=2)

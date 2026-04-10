@@ -181,7 +181,7 @@ class YOLOv11_Adapter(BaseDetector):
 		# print("******")
 
 		for idx, (frame_index, result) in enumerate(zip(indexes, pred)):
-			inst = []
+			inst  = []
 			xyxys = result.boxes.xyxy.cpu().numpy()
 			confs = result.boxes.conf.cpu().numpy()
 			clses = result.boxes.cls.cpu().numpy()
