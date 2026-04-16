@@ -16,19 +16,52 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
+  <property name="styleSheet">
+   <string>QMainWindow {
+    background-color: #F5F5F7;
+    }
+    QWidget {
+        font-family: -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
+        color: #1D1D1F;
+    }
+    QPushButton {
+        background-color: #007AFF;
+        color: white;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-weight: bold;
+        border: none;
+    }
+    QPushButton:hover {
+        background-color: #0056b3;
+    }
+    QPushButton:pressed {
+        background-color: #004085;
+    }
+    QLabel {
+        background-color: transparent;
+    }
+    QLabel#display_frame, QLabel#label_result {
+        background-color: #FFFFFF;
+        border: 1px solid #D2D2D7;
+        border-radius: 8px;
+    }
+   </string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label_result">
     <property name="geometry">
      <rect>
       <x>1100</x>
       <y>30</y>
-      <width>181</width>
-      <height>721</height>
+      <width>201</width>
+      <height>691</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>16</pointsize>
+      <family>-apple-system</family>
+      <pointsize>14</pointsize>
      </font>
     </property>
     <property name="frameShape">
@@ -55,6 +88,7 @@
     </property>
     <property name="font">
      <font>
+      <family>-apple-system</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -138,6 +172,7 @@
     </property>
     <property name="font">
      <font>
+      <family>-apple-system</family>
       <pointsize>12</pointsize>
      </font>
     </property>
@@ -159,6 +194,7 @@
     </property>
     <property name="font">
      <font>
+      <family>-apple-system</family>
       <pointsize>9</pointsize>
      </font>
     </property>
@@ -182,7 +218,7 @@
      <x>0</x>
      <y>0</y>
      <width>1307</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

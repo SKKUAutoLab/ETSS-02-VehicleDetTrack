@@ -88,12 +88,13 @@ class CameraQT6GTH(QThread):
 		self.video_writer: VideoWriter = None
 		self.result_writer             = None
 		self.gmos: List[GMO]           = []
+		self.is_run                    = False
 
 		# NOTE: Setup components
 		self.configure_labels()
 		self.configure_roi()
 		self.configure_mois()
-		self.configure_detector()
+		# self.configure_detector()
 		self.configure_tracker()
 		self.configure_gmo()
 		self.configure_reader()
@@ -114,7 +115,7 @@ class CameraQT6GTH(QThread):
 			               f"{self.mois=}\n"
 			               f"{self.detector=}\n"
 			               f"{self.tracker=}\n"
-			               f"{self.video_reader=}\n"
+			               f"self.video_reader={self.video_reader is not None}\n"
 			               f"{self.result_writer=}\n")
 		else:
 			logger.info("Camera have been fully configured.")
@@ -197,15 +198,29 @@ class CameraQT6GTH(QThread):
 			output_dir  = self.config.dirs.data_output_dir
 		)
 
+	# MARK: Adjust Running
+	@pyqtSlot()
+	def request_stop(self):
+		self.is_run = False
+
+	@pyqtSlot(bool)
+	def set_visualize(self, value: bool):
+		self.visualize = value
+
+	@pyqtSlot(bool)
+	def set_write_video(self, value: bool):
+		self.write_video = value
+
 	# MARK: Processing
 
 	def run(self):
 		"""The main processing loop.
 		"""
 		# NOTE: Start timer
-		start_time = timer()
+		start_time  = timer()
 		self.result_writer.start_time = start_time
-		self.gmos = []
+		self.gmos   = []
+		self.is_run = True
 
 		# NOTE: phai them cai nay khong la bi memory leak
 		# for images, frame_indexes, files, rel_paths in self.video_reader:
@@ -214,6 +229,9 @@ class CameraQT6GTH(QThread):
 			basename_noext, ext = os.path.splitext(basename)
 			json_path           = img_path.replace(ext, ".json")
 			image               = cv2.imread(img_path)
+
+			if not self.is_run:  # if the hook running is false, we can out
+				break
 
 
 			# Load JSON
@@ -302,7 +320,7 @@ class CameraQT6GTH(QThread):
 
 		# NOTE: need to delete because the output txt has to be finish becafore evaluation,
 		# we run Qthread so the thread might be run in different time
-		del self.result_writer
+		self.result_writer.close()
 
 		# send the stop process
 		self.update_information.emit({
@@ -314,7 +332,7 @@ class CameraQT6GTH(QThread):
 
 	def stop(self):
 		"""Sets run flag to False and waits for thread to finish"""
-		# self.run_flag = False
+		self.is_run = False
 		self.wait()
 
 	# MARK: Visualize and Debug
@@ -372,5 +390,3 @@ class CameraQT6GTH(QThread):
 		# cv2.rectangle(img=drawing, pt1= (10, 0), pt2=(600, 40), color=AppleRGB.BLACK.value, thickness=-1)
 		# cv2.putText(img=drawing, text=text, fontFace=font, fontScale=1.0, org=org, color=AppleRGB.WHITE.value, thickness=2)
 		return drawing
-
-

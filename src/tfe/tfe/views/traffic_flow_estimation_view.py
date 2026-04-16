@@ -12,6 +12,7 @@ from PyQt6 import uic
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
+from urllib3.util import wait
 
 from tfe.utils.eval_nwrmse import evaluate_one_video
 
@@ -290,6 +291,11 @@ class TFEMainWindow(QMainWindow):
 	def stop_process(self, do_evaluation: bool = True):
 		self.is_run_one = False
 		logger.info("Camera stoping")
+		# stop the inference
+		if self.thread_video is not None:
+			self.thread_video.request_stop()
+			time.sleep(0.5)  # Wait for 0.5 seconds
+
 		# stop the thread
 		thread = self.thread_video
 		self.thread_video = None  # detach early to prevent re-entry issues
@@ -317,6 +323,7 @@ class TFEMainWindow(QMainWindow):
 
 		# evaluation
 		if do_evaluation and self.video_name is not None:
+			time.sleep(0.5)  # Wait for 0.5 seconds
 			self.evaluate_one_result()
 
 			# If the last video of run_all video finished

@@ -120,6 +120,15 @@ class AICResultWriter(object):
 		"""
 		self.result_writer.close()
 
+	def close(self):
+		""" Close the writer
+
+		Returns:
+
+		"""
+		self.result_writer.close()
+
+
 	# MARK: Write
 
 	def write_counting_result(
@@ -146,6 +155,7 @@ class AICResultWriter(object):
 			frame_id = vehicle.last_frame_index
 			moi_id   = vehicle.moi_uuid
 			class_id = vehicle.label_id_by_majority
+			# track_id = vehicle.id
 
 			# DEBUG: only run for Town10HD, carla, because we only have class_id in [1, 2]:
 			# class_id = 1
@@ -153,8 +163,7 @@ class AICResultWriter(object):
 			# NOTE: Use camera_name instead of video_id
 			# result_str = f"{gen_time} {self.video_id} {frame_id} {moi_id} {class_id}\n"
 			result_str = f"{gen_time} {self.camera_name} {frame_id} {moi_id} {class_id}\n"
-			# camera_id in video_map
-			# result_str = f"{gen_time} {video_map[self.camera_name]} {frame_id} {moi_id} {class_id}\n"
+			# result_str = f"{gen_time} {self.camera_name} {frame_id} {moi_id} {class_id} {track_id}\n"
 			self.result_writer.write(result_str)
 
 
