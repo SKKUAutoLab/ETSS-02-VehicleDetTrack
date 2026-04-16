@@ -18,7 +18,21 @@ __all__ = [
 ]
 
 
-class AppleRGB(Enum):
+class ColorEnum(Enum):
+	"""Base Enum for color palettes."""
+	
+	@classmethod
+	def values(cls):
+		"""Return the list of all values.
+
+		Returns:
+			(list):
+				List of all color tuple.
+		"""
+		return [e.value for e in cls]
+
+
+class AppleRGB(ColorEnum):
 	"""Define 12 Apple colors."""
 	GRAY   = (128, 128, 128)
 	RED    = (255, 59 , 48 )
@@ -33,19 +47,9 @@ class AppleRGB(Enum):
 	INDIGO = ( 85, 190, 240)
 	BLACK  = (  0, 0  , 0  )
 	WHITE  = (255, 255, 255)
-	
-	@staticmethod
-	def values():
-		"""Return the list of all values.
-
-		Returns:
-			(list):
-				List of all color tuple.
-		"""
-		return [e.value for e in AppleRGB]
 
 
-class BasicRGB(Enum):
+class BasicRGB(ColorEnum):
 	"""Define 12 basic colors."""
 	BLACK   = (0  , 0  , 0  )
 	WHITE   = (255, 255, 255)
@@ -63,19 +67,9 @@ class BasicRGB(Enum):
 	PURPLE  = (128, 0  , 128)
 	TEAL    = (0  , 128, 128)
 	NAVY    = (0  , 0  , 128)
-	
-	@staticmethod
-	def values():
-		"""Return the list of all values.
-		
-		Returns:
-			(list):
-				List of all color tuple.
-		"""
-		return [e.value for e in BasicRGB]
 
 
-class RGB(Enum):
+class RGB(ColorEnum):
 	"""Define list of 138 colors."""
 	MAROON                  = (128, 0  , 0  )
 	DARK_RED                = (139, 0  , 0  )
@@ -216,16 +210,6 @@ class RGB(Enum):
 	GAINSBORO               = (220, 220, 220)
 	WHITE_SMOKE             = (245, 245, 245)
 	WHITE                   = (255, 255, 255)
-	
-	@staticmethod
-	def values():
-		"""Return the list of all values.
-
-		Returns:
-			(list):
-				List of all color tuple.
-		"""
-		return [e.value for e in RGB]
 
 DEFAULT_CROP_PCT        = 0.875
 IMAGENET_DEFAULT_MEAN   = (0.485, 0.456, 0.406)

@@ -33,6 +33,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
+
 from tfe.detectors import get_detector
 from tfe.io.video import VideoLoader
 from tfe.io.video import VideoWriter
@@ -83,6 +84,7 @@ class CameraQT6(QThread):
 		self.video_writer: VideoWriter = None
 		self.result_writer             = None
 		self.gmos: List[GMO]           = []
+		self.is_run                    = False
 
 		# NOTE: Setup components
 		self.configure_labels()
@@ -189,14 +191,28 @@ class CameraQT6(QThread):
 			output_dir  = self.config.dirs.data_output_dir
 		)
 
+	# MARK: Adjust Running
+	@pyqtSlot()
+	def request_stop(self):
+		self.is_run = False
+
+	@pyqtSlot(bool)
+	def set_visualize(self, value: bool):
+		self.visualize = value
+
+	@pyqtSlot(bool)
+	def set_write_video(self, value: bool):
+		self.write_video = value
+
 	# MARK: Processing
 
 	def run(self):
 		"""The main processing loop.
 		"""
 		# NOTE: Start timer
-		start_time = timer()
+		start_time  = timer()
 		self.result_writer.start_time = start_time
+		self.is_run = True
 
 		# NOTE: Loop through all frames in self.video_reader
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
@@ -205,6 +221,9 @@ class CameraQT6(QThread):
 		with torch.no_grad():
 			for images, frame_indexes, files, rel_paths in self.video_reader:
 				if len(frame_indexes) == 0:  # which mean no frame, so there is no index
+					break
+
+				if not self.is_run:  # if the hook running is false, we can out
 					break
 
 				# NOTE: Detect (in batch)
@@ -251,7 +270,7 @@ class CameraQT6(QThread):
 
 		# NOTE: need to delete because the output txt has to be finish becafore evaluation,
 		# we run Qthread so the thread might be run in different time
-		del self.result_writer
+		self.result_writer.close()
 
 		# send the stop process
 		self.update_information.emit({
@@ -266,7 +285,7 @@ class CameraQT6(QThread):
 
 	def stop(self):
 		"""Sets run flag to False and waits for thread to finish"""
-		# self.run_flag = False
+		self.is_run = False
 		self.wait()
 
 	# MARK: Visualize and Debug

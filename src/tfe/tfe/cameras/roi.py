@@ -18,9 +18,7 @@
 # from __future__ import annotations
 
 import os
-from typing import List
-from typing import Optional
-from typing import Union
+from typing import Iterable, List, Optional, Sequence, Union
 
 import cv2
 import numpy as np
@@ -67,11 +65,20 @@ class ROI(object):
 	
 	@points.setter
 	def points(self, points: Union[List, np.ndarray, None]):
-		if isinstance(points, list):
-			self._points = np.array(points, np.int32)
-		elif isinstance(points, np.ndarray):
+		if points is None:
+			self._points = None
+			return
+
+		if isinstance(points, np.ndarray):
 			self._points = points
-			
+			return
+
+		if isinstance(points, Sequence):
+			self._points = np.array(points, dtype=np.int32)
+			return
+
+		logger.error(f"Unsupported points type: {type(points)}")
+
 	# MARK: Configure
 	
 	@classmethod
@@ -93,8 +100,7 @@ class ROI(object):
 			raise FileNotFoundError
 		
 		# NOTE: Create moi road_objects
-		data       = parse_config_from_json(json_path=path)
-		data       = Munch.fromDict(d=data)
+		data       = Munch.fromDict(d=parse_config_from_json(json_path=path))
 		rois_data  = data.roi
 		
 		rois: List = []
@@ -127,8 +133,7 @@ class ROI(object):
 		return None
 	
 	def is_bbox_in_or_touch_roi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
-		""" Check the bounding box touch ROI or not
-		"""
+		""" Check the bounding box touch ROI or not"""
 		# DEBUG:
 		# print(type(self.points))
 		# print(self.points)
@@ -152,8 +157,7 @@ class ROI(object):
 			return 0
 	
 	def is_center_in_or_touch_roi(self, bbox_xyxy: np.ndarray, compute_distance: bool = False) -> int:
-		""" Check the bounding box touch ROI or not.
-		"""
+		""" Check the bounding box touch ROI or not."""
 		c_x = (bbox_xyxy[0] + bbox_xyxy[2]) / 2
 		c_y = (bbox_xyxy[1] + bbox_xyxy[3]) / 2
 		return int(cv2.pointPolygonTest(self.points, (c_x, c_y), compute_distance))
@@ -161,8 +165,7 @@ class ROI(object):
 	# MARK: Visualize
 
 	def draw(self, drawing: np.ndarray):
-		"""Draw the ROI.
-		"""
+		"""Draw the ROI."""
 		color = colors.GREEN.value
 		pts   = self.points.reshape((-1, 1, 2))
 		cv2.polylines(img=drawing, pts=[pts], isClosed=True, color=color, thickness=2)
