@@ -29,9 +29,16 @@ pip install einops==0.8.1  # A new flavour of deep learning operations
 pip install opencv-python==4.12.0.88  # Open Source Computer Vision Library
 pip install ordered-enum==0.0.10  # An ordered enum class for Python
 pip install loguru==0.7.3 # Python logging made (stupidly) simple.
-pip install PyQt6==6.9.1 # Python bindings for the Qt cross-platform application and UI framework.
 pip install shapely==2.1.2 # Manipulation and analysis of geometric objects
 pip install tabulate==0.10.0 # Pretty-print tabular data
+
+pip install fastapi==0.141.1 # Web framework of the browser GUI (main_web.py)
+pip install starlette==1.6.0 # ASGI toolkit under FastAPI
+pip install pydantic==2.13.4 # Data validation used by FastAPI
+pip install "uvicorn[standard]==0.52.4" # ASGI server of the browser GUI
+pip install websockets==16.1.1 # WebSocket protocol for uvicorn
+pip install httpx==0.28.1 # HTTP client of the web GUI tests (TestClient)
+pip install pytest==9.1.1 # Test runner
 
 
 # Run line by line

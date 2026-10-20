@@ -76,7 +76,6 @@ dependencies:
       - xmltodict         # Makes working with XML feel like you are working with JSON.
       - munch             # Store data
       # UI                
-      - PyQt6             # Python bindings for the Qt cross-platform application toolkit.
       - rich              # Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal.
       - tabulate          # Pretty-print tabular data in Python, a library and a command-line utility.
       - tqdm              # Fast, Extensible Progress Meter.
