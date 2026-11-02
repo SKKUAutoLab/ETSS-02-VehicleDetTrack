@@ -18,26 +18,19 @@
 from __future__ import annotations
 
 import os
-from typing import Callable
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Callable, List, Optional, Tuple, Union
 
-import numpy as np
 import cv2
+import numpy as np
+from loguru import logger
 from munch import Munch
 
-from tfe.objects import GMO
-from tfe.utils.config import parse_config_from_json
-from tfe.utils.distance import angle_between_arrays
-from tfe.utils.distance import get_distance_function
-from tfe.utils.constants import AppleRGB
 from tfe.configuration import data_dir
 from tfe.io.filedir import is_json_file
-
-from loguru import logger
-
+from tfe.objects import GMO
+from tfe.utils.config import parse_config_from_json
+from tfe.utils.constants import RGB, AppleRGB
+from tfe.utils.distance import angle_between_arrays, get_distance_function
 
 # MARK: - MOI (Movement of Interest)
 
@@ -69,7 +62,8 @@ class MOI(object):
 		if uuid is None:
 			self.color = AppleRGB.WHITE.value
 		else:
-			self.color = color if color else AppleRGB.values()[uuid]
+			# self.color = color if color else AppleRGB.values()[uuid]
+			self.color = color if color else RGB.values()[uuid]
 		
 		self.distance_function: Callable[[np.ndarray, np.ndarray], float] \
 			= get_distance_function(name=distance_function)

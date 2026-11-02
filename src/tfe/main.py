@@ -20,12 +20,9 @@ import os
 from timeit import default_timer as timer
 
 from loguru import logger
-
 from tfe.cameras.camera import Camera
 from tfe.configuration import data_dir
 from tfe.utils.config import process_config
-
-
 
 # MARK: - Args
 

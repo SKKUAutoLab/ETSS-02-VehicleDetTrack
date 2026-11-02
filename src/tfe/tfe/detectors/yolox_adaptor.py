@@ -15,6 +15,7 @@ from collections import OrderedDict
 import numpy as np
 import platform
 
+import cv2
 from loguru import logger
 from torch import Tensor
 import torch
@@ -25,7 +26,7 @@ from tfe.detectors import BaseDetector
 
 from yolox.exp import get_exp
 from yolox.data.data_augment import preproc
-from yolox.utils import postprocess
+from yolox.utils import fuse_model, postprocess
 
 __all__ = [
 	"YOLOX_Adapter"
@@ -70,6 +71,8 @@ class YOLOX_Adapter(BaseDetector):
 		self.model.load_state_dict(checkpoint["model"])
 		self.model.to(self.device)
 		self.model.eval()
+		if self.half:
+			self.model = fuse_model(self.model).half()  # Conv+BN fusion with FP16, as YOLOX's demo --fp16 --fuse
 		self.ratio = 1.0
 
 	# MARK: Detection
@@ -107,44 +110,41 @@ class YOLOX_Adapter(BaseDetector):
 
 		return instances
 
-	def preprocess(self, images: np.ndarray):
-		"""Preprocess the input images to model's input image.
+	def preprocess(self, images: list) -> Tensor:
+		"""Letterbox the frames as ``yolox.data.data_augment.preproc`` does, but in uint8,
+		and cast them on the device: a quarter of the bytes to upload.
 
 		Args:
-			images (np.ndarray):
-				Images of shape [B, H, W, C].
+			images (list):
+				Frames of shape [H, W, C], BGR uint8.
 
 		Returns:
 			input (Tensor):
-				Models' input.
+				[B, C, H, W] on ``self.device``: float16 when ``self.half``, else float32 equal to ``preproc``'s output.
 		"""
-		input_imgs = []
-		for raw_img in images:
-			img, self.ratio = preproc(raw_img, self.exp.test_size)
-			img = torch.from_numpy(img).unsqueeze(0)
-			img = img.to(self.device)
-			input_imgs.append(img)
-		return input_imgs
+		height, width = self.exp.test_size  # the (rows, cols) order preproc uses
+		batch = np.full((len(images), height, width, 3), 114, dtype=np.uint8)
+		for i, image in enumerate(images):
+			self.ratio = min(height / image.shape[0], width / image.shape[1])
+			resized    = cv2.resize(image, (int(image.shape[1] * self.ratio), int(image.shape[0] * self.ratio)), interpolation=cv2.INTER_LINEAR)
+			batch[i, :resized.shape[0], :resized.shape[1]] = resized
+		input_imgs = torch.from_numpy(batch).to(self.device).permute(0, 3, 1, 2).contiguous()
+		return input_imgs.half() if self.half else input_imgs.float()
 
-	def forward(self, input_imgs: Tensor):
-		"""Forward pass.
+	def forward(self, input_imgs: Tensor) -> list:
+		"""One forward pass and one NMS call for the whole batch.
 
 		Args:
 			input_imgs (Tensor):
-				Input image of shape [B, C, H, W].
+				Input images of shape [B, C, H, W].
 
 		Returns:
-			pred (Tensor):
-				Predictions.
+			pred (list):
+				One [N, 7] ndarray per image (x1, y1, x2, y2, obj_conf, class_conf, class);
+				[0, 7] when nothing is detected (yolox's postprocess gives None there).
 		"""
-		pred = []
-		for img in input_imgs:
-			outputs = self.model(img)
-			outputs = postprocess(
-				outputs, self.exp.num_classes, self.exp.test_conf, self.exp.nmsthre  # TODO:用户可更改
-			)[0].cpu().numpy()
-			pred.append(outputs)
-		return pred
+		outputs = postprocess(self.model(input_imgs).float(), self.exp.num_classes, self.exp.test_conf, self.exp.nmsthre)  # NMS in float32, also under FP16
+		return [np.empty((0, 7), dtype=np.float32) if output is None else output.cpu().numpy() for output in outputs]
 
 	def postprocess(
 			self,

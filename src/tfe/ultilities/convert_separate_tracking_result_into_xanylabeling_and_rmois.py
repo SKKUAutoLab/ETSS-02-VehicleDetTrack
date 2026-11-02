@@ -233,6 +233,7 @@ def load_and_filter_tracking_results(args):
 		video_capture.release()
 	cv2.destroyAllWindows()
 
+
 def main():
 	parser = argparse.ArgumentParser(description="Config parser for running")
 	parser.add_argument(

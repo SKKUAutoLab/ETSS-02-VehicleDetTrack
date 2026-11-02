@@ -58,6 +58,8 @@ class BaseDetector(metaclass=abc.ABCMeta):
 		resize_original (bool):
 			Should resize the predictions back to original image resolution?
 			Default: `False`.
+		half (bool):
+			FP16 inference (YAML ``detector.half``). Default: `False`.
 	"""
 
 	# MARK: Magic Functions
@@ -74,6 +76,7 @@ class BaseDetector(metaclass=abc.ABCMeta):
 			device         : Optional[str]   = None,
 			variant        : Optional[str]   = None,
 			batch_size     : Optional[int]   = 1,
+			half           : bool            = False,
 			*args, **kwargs
 	):
 		super().__init__()
@@ -92,6 +95,7 @@ class BaseDetector(metaclass=abc.ABCMeta):
 		self.resize_original = False
 		self.stride          = 32
 		self.batch_size	     = batch_size
+		self.half            = half
 
 		# NOTE: Load model
 		self.init_model()

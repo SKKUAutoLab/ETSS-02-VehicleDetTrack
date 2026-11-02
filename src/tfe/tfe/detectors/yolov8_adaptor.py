@@ -68,7 +68,8 @@ class YOLOv8_Adapter(BaseDetector):
 			'verbose' : False,
 			'save'    : False,
 			'device'  : self.device,
-			'max_det' : 300
+			'max_det' : 300,
+			'half'    : self.half,  # FP16 (YAML detector.half)
 		})
 		_ = self.model(source=np.zeros([self.img_size, self.img_size, 3]), model=self.weights)
 

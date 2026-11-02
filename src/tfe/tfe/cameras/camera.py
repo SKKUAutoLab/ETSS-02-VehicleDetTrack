@@ -17,37 +17,29 @@
 # ==================================================================== #
 import os
 from timeit import default_timer as timer
-from typing import Dict, Union
-from typing import List
+from typing import Dict, List, Union
 
 import cv2
 import numpy as np
+import torch
+from loguru import logger
 from munch import Munch
 from tqdm.auto import tqdm
 
-import torch
-
-from loguru import logger
-
-from tfe.detectors import get_detector
-
-from tfe.io.video import VideoLoader
-from tfe.io.video import VideoWriter
-from tfe.objects import GeneralObject
-from tfe.objects import GMO
-from tfe.objects import MovingState
-from tfe.objects.class_label import ClassLabels
-from tfe.tracker import get_tracker
-from tfe.configuration import data_dir
-from tfe.utils.aic_result_writer import AICResultWriter
-from tfe.utils.config import parse_config_from_json
 from tfe.cameras.moi import MOI
 from tfe.cameras.roi import ROI
-
+from tfe.configuration import data_dir
+from tfe.detectors import get_detector
+from tfe.io.video import VideoLoader, VideoWriter
+from tfe.objects import GMO, GeneralObject, MovingState
+from tfe.objects.class_label import ClassLabels
+from tfe.tracker import get_tracker
+from tfe.utils.aic_result_writer import AICResultWriter
+from tfe.utils.config import parse_config_from_json
 
 # MARK: - Camera
 
-class Camera(object):
+class Camera:
 	"""Camera
 	"""
 
@@ -55,7 +47,7 @@ class Camera(object):
 
 	def __init__(
 			self,
-			config     : Dict,
+			config     : dict,
 			visualize  : bool = False,
 			write_video: bool = False,
 			write_image: bool = False,
@@ -68,14 +60,14 @@ class Camera(object):
 		self.write_video               = write_video
 		self.write_image               = write_image
 		self.labels                    = None
-		self.rois: List[ROI]           = None
-		self.mois: List[MOI]           = None
+		self.rois: list[ROI]           = None
+		self.mois: list[MOI]           = None
 		self.detector                  = None
 		self.tracker                   = None
 		self.video_reader: VideoLoader = None
 		self.video_writer: VideoWriter = None
 		self.result_writer             = None
-		self.gmos: List[GMO]           = []
+		self.gmos: list[GMO]           = []
 
 		# NOTE: Setup components
 		self.configure_labels()
@@ -211,72 +203,76 @@ class Camera(object):
 		pbar = tqdm(total=self.video_reader.num_frames, desc=f"{self.config.camera_name}")
 
 		# NOTE: phai them cai nay khong la bi memory leak
-		with torch.no_grad():
-			for images, frame_indexes, files, rel_paths  in self.video_reader:
-				if len(frame_indexes) == 0:
-					break
+		try:
+			with torch.no_grad():
+				for images, frame_indexes, files, rel_paths  in self.video_reader:
+					if len(frame_indexes) == 0:
+						break
 
-				# NOTE: Detect (in batch)
-				# images = padded_resize_image(images=images, size=self.detector.dims[1:3])
-				# batch_instances = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
-				# images = [letterbox(image = im) for im in images]
-				batch_instances = self.detector.detect(
-					indexes=frame_indexes, images=images
-				)
+					# NOTE: Detect (in batch)
+					# images = padded_resize_image(images=images, size=self.detector.dims[1:3])
+					# batch_instances = self.detector.detect_objects(frame_indexes=frame_indexes, images=images)
+					# images = [letterbox(image = im) for im in images]
+					batch_instances = self.detector.detect(
+						indexes=frame_indexes, images=images
+					)
 
-				# DEBUG:
-				# print("*" * 100)
-				# for attr_name, attr_value in self.video_writer.__dict__.items():
-				# 	if not attr_name.startswith('__'):  # Filter out special attributes
-				# 		print(f"{attr_name}: {attr_value}")
-				# print(f"{result.shape=}")
-				# print("*" * 100)
-				# exit()
-				# print("*" * 100)
-				# for idx, instances in enumerate(batch_instances):
-				# 	for instance in instances:
-				# 		print(f"{instance.bbox}")
-				# print("*" * 100)
+					# DEBUG:
+					# print("*" * 100)
+					# for attr_name, attr_value in self.video_writer.__dict__.items():
+					# 	if not attr_name.startswith('__'):  # Filter out special attributes
+					# 		print(f"{attr_name}: {attr_value}")
+					# print(f"{result.shape=}")
+					# print("*" * 100)
+					# exit()
+					# print("*" * 100)
+					# for idx, instances in enumerate(batch_instances):
+					# 	for instance in instances:
+					# 		print(f"{instance.bbox}")
+					# print("*" * 100)
 
-				# NOTE: Associate detections with ROI (in batch)
-				for idx, instances in enumerate(batch_instances):
-					ROI.associate_detections_to_rois(instances=instances, rois=self.rois)
-					batch_instances[idx] = [d for d in instances if d.roi_uuid is not None]
+					# NOTE: Associate detections with ROI (in batch)
+					for idx, instances in enumerate(batch_instances):
+						ROI.associate_detections_to_rois(instances=instances, rois=self.rois)
+						batch_instances[idx] = [d for d in instances if d.roi_uuid is not None]
 
-				# NOTE: Track (in batch)
-				for idx, instances in enumerate(batch_instances):
-					self.tracker.update(instances=instances)
-					self.gmos = self.tracker.tracks
+					# NOTE: Track (in batch)
+					for idx, instances in enumerate(batch_instances):
+						self.tracker.update(instances=instances)
+						self.gmos = self.tracker.tracks
 
-					# NOTE: Update moving state
-					for gmo in self.gmos:
-						gmo.update_moving_state(rois=self.rois)
-						gmo.timestamps.append(timer())
+						# NOTE: Update moving state
+						for gmo in self.gmos:
+							gmo.update_moving_state(rois=self.rois)
+							gmo.timestamps.append(timer())
 
-					# NOTE: Associate gmos with MOI
-					in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
-					if in_roi_gmos:
-						MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
-						to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and not o.is_countable]
-						if to_be_counted_gmos:
-							MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
+						# NOTE: Associate gmos with MOI
+						in_roi_gmos = [o for o in self.gmos if o.is_confirmed or o.is_counting or o.is_to_be_counted]
+						if in_roi_gmos:
+							MOI.associate_moving_objects_to_mois(gmos=in_roi_gmos, mois=self.mois, shape_type="polygon")
+							to_be_counted_gmos = [o for o in in_roi_gmos if o.is_to_be_counted and not o.is_countable]
+							if to_be_counted_gmos:
+								MOI.associate_moving_objects_to_mois(gmos=to_be_counted_gmos, mois=self.mois, shape_type="linestrip")
 
-						# NOTE: Count
-						countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
-						if countable_gmos:
-							self.result_writer.write_counting_result(vehicles=countable_gmos)
-							for gmo in countable_gmos:
-								gmo.moving_state = MovingState.Counted
+							# NOTE: Count
+							countable_gmos = [o for o in in_roi_gmos if (o.is_countable and o.is_to_be_counted)]
+							if countable_gmos:
+								self.result_writer.write_counting_result(vehicles=countable_gmos)
+								for gmo in countable_gmos:
+									gmo.moving_state = MovingState.Counted
 
-					# NOTE: Visualize and Debug
-					elapsed_time = timer() - start_time
-					self.post_process(image=images[idx], elapsed_time=elapsed_time)
+						# NOTE: Visualize and Debug
+						elapsed_time = timer() - start_time
+						self.post_process(image=images[idx], elapsed_time=elapsed_time)
 
-				pbar.update(len(frame_indexes))  # Update pbar
-
-		# NOTE: Finish
-		pbar.close()
-		cv2.destroyAllWindows()
+					pbar.update(len(frame_indexes))  # Update pbar
+		finally:
+			# NOTE: close the writer on Ctrl+C or a crash too, so the partial mp4 stays playable
+			# NOTE: Finish
+			pbar.close()
+			if self.video_writer is not None:
+				self.video_writer.close()  # the writer thread encodes the queued frames first
+			cv2.destroyAllWindows()
 
 	# MARK: Visualize and Debug
 

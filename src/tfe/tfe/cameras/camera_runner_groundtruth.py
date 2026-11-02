@@ -15,94 +15,36 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # ==================================================================== #
+"""Ground-truth runner of the web GUI.
+
+``GroundTruthRunner`` runs the counting loop on labelled frames: the boxes and
+track ids come from the labelme JSON next to each frame (``group_id`` is the
+track id) instead of a detector and a tracker.
+"""
 import glob
 import json
 import os
 from timeit import default_timer as timer
-from typing import Dict, Union
-from typing import List
 
 import cv2
 import numpy as np
-from munch import Munch
+from loguru import logger
 from tqdm.auto import tqdm
 
-import torch
-
-from loguru import logger
-
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
-
-from tfe.detectors import get_detector
-from tfe.io.video import VideoLoader
-from tfe.io.video import VideoWriter
-from tfe.objects import GeneralObject
-from tfe.objects import GMO
-from tfe.objects import MovingState
-from tfe.objects.class_label import ClassLabels
-from tfe.objects.instance import Instance
-from tfe.tracker import get_tracker
-from tfe.configuration import data_dir
-from tfe.tracker.sort.sort_kalman_bbox import KalmanBBoxTrack
-from tfe.utils.aic_result_writer import AICResultWriter
-from tfe.utils.config import parse_config_from_json
+from tfe.cameras.camera_runner import CameraRunner
 from tfe.cameras.moi import MOI
 from tfe.cameras.roi import ROI
+from tfe.objects import MovingState
+from tfe.objects.instance import Instance
+from tfe.tracker.sort.sort_kalman_bbox import KalmanBBoxTrack
 
+# MARK: - GroundTruthRunner
 
-from ultralytics.data.augment import LetterBox
+class GroundTruthRunner(CameraRunner):
+	"""Ground-truth loop of ``CameraQT6GTH``, without Qt.
 
-# MARK: - Camera
-
-class CameraQT6GTH(QThread):
-	"""Camera QT6 for groundtruth
+	``video_reader`` is the sorted list of frame paths and ``detector`` stays ``None``.
 	"""
-
-	# MARK: Magic Functions
-
-	# signal to send to QT6 GUI
-	update_information = pyqtSignal(dict)
-
-	def __init__(
-			self,
-			config     : Dict,
-			visualize  : bool = False,
-			write_video: bool = False,
-			write_image: bool = False,
-			**kwargs
-	):
-		super().__init__(**kwargs)
-		# NOTE: Define attributes
-		self.config                    = config if isinstance(config, Munch) else Munch.fromDict(config)  # A simple check just to make sure
-		self.visualize                 = visualize
-		self.write_video               = write_video
-		self.write_image               = write_image
-		self.labels                    = None
-		self.rois: List[ROI]           = None
-		self.mois: List[MOI]           = None
-		self.detector                  = None
-		self.tracker                   = None
-		self.video_reader: VideoLoader = None
-		self.video_writer: VideoWriter = None
-		self.result_writer             = None
-		self.gmos: List[GMO]           = []
-		self.is_run                    = False
-
-		# NOTE: Setup components
-		self.configure_labels()
-		self.configure_roi()
-		self.configure_mois()
-		# self.configure_detector()
-		self.configure_tracker()
-		self.configure_gmo()
-		self.configure_reader()
-		self.configure_result_writer()
-		# self.configure_video_writer()
-
-		# NOTE: Final check before running
-		self.check_components()
 
 	# MARK: Configure
 
@@ -120,56 +62,8 @@ class CameraQT6GTH(QThread):
 		else:
 			logger.info("Camera have been fully configured.")
 
-	def configure_labels(self):
-		"""Configure the labels."""
-		dataset_dir       = os.path.join(data_dir, self.config.data.dataset)
-		labels            = parse_config_from_json(json_path = os.path.join(dataset_dir, "labels.json"))
-		labels            = Munch.fromDict(labels)
-		self.labels       = labels.labels
-		self.class_labels = ClassLabels(self.labels)
-
-	def configure_roi(self):
-		"""Configure the camera's ROIs."""
-		hparams   = self.config.roi.copy()
-		dataset   = hparams.pop("dataset")
-		file      = hparams.pop("file")
-		self.rois = ROI.load_rois_from_file(dataset=dataset, file=file, **hparams)
-
-	def configure_mois(self):
-		"""Configure the camera's MOIs."""
-		hparams    = self.config.moi.copy()
-		dataset    = hparams.pop("dataset")
-		file       = hparams.pop("file")
-		self.mois  = MOI.load_mois_from_file(dataset=dataset, file=file, **hparams)
-		self.mois_display = {}
-		for moi in self.mois:
-			self.mois_display[moi.uuid] = 0
-
 	def configure_detector(self):
-		"""Configure the detector."""
-		hparams                 = self.config.detector.copy()
-		hparams["class_labels"] = self.class_labels
-
-		# check the path of weights
-		if isinstance(hparams.weights, str) and (not os.path.isabs(hparams.weights)):
-			hparams["weights"] = os.path.join(self.config.dirs.models_zoo_dir, hparams.weights)
-		elif isinstance(hparams.weights, Union[list, tuple]) and len(hparams.weights) > 0 and (not os.path.isabs(hparams.weights[0])):
-			hparams["weights"] = [os.path.join(self.config.dirs.models_zoo_dir, w) for w in hparams.weights]
-		self.detector = get_detector(hparams=hparams)
-
-	def configure_tracker(self):
-		"""Configure the tracker."""
-		hparams      = self.config.tracker.copy()
-		self.tracker = get_tracker(hparams=hparams)
-
-	def configure_gmo(self):
-		"""Configure the GMO class property."""
-		hparams                              = self.config.gmo.copy()
-		GeneralObject.min_travelled_distance = hparams.min_traveled_distance
-		GMO.min_traveled_distance            = hparams.min_traveled_distance
-		GMO.min_entering_distance            = hparams.min_entering_distance
-		GMO.min_hit_streak                   = hparams.min_hit_streak
-		GMO.max_age                          = hparams.max_age
+		"""Ground truth needs no detector (``CameraQT6GTH`` skips it, gth:105)."""
 
 	def configure_reader(self):
 		"""Configure the video reader."""
@@ -182,40 +76,17 @@ class CameraQT6GTH(QThread):
 		# Get list image and json
 		self.video_reader = sorted(glob.glob(os.path.join(hparams.data, "*.jpg")) + glob.glob(os.path.join(hparams.data, "*.png")))
 
-	def configure_video_writer(self):
-		"""Configure the video writer."""
-		if self.write_video:
-			hparams           = self.config.output.copy()
-
-			# Update some parameters for video reader
-			hparams.dst = os.path.join(self.config.dirs.data_output_dir, hparams.file)
-			self.video_writer = VideoWriter(output_dir=self.config.dirs.data_output_dir, **hparams)
-
-	def configure_result_writer(self):
-		"""Configure the result writer."""
-		self.result_writer = AICResultWriter(
-			camera_name = self.config.camera_name,
-			output_dir  = self.config.dirs.data_output_dir
-		)
-
-	# MARK: Adjust Running
-	@pyqtSlot()
-	def request_stop(self):
-		self.is_run = False
-
-	@pyqtSlot(bool)
-	def set_visualize(self, value: bool):
-		self.visualize = value
-
-	@pyqtSlot(bool)
-	def set_write_video(self, value: bool):
-		self.write_video = value
-
 	# MARK: Processing
 
-	def run(self):
-		"""The main processing loop.
+	def _loop(self):
+		"""The loop of ``CameraQT6GTH.run()`` (gth:229-332), reading ``self.stop_event``.
+
+		Returns:
+			(stopped, None): True if the stop event ended the loop; tqdm wraps the
+			frame list and closes itself, so there is no bar to close.
 		"""
+		stopped = False
+
 		# NOTE: Start timer
 		start_time  = timer()
 		self.result_writer.start_time = start_time
@@ -230,8 +101,12 @@ class CameraQT6GTH(QThread):
 			json_path           = img_path.replace(ext, ".json")
 			image               = cv2.imread(img_path)
 
-			if not self.is_run:  # if the hook running is false, we can out
+			if self.stop_event.is_set():
+				stopped = True
 				break
+
+			# if not self.is_run:  # if the hook running is false, we can out
+			# 	break
 
 
 			# Load JSON
@@ -318,58 +193,9 @@ class CameraQT6GTH(QThread):
 			elapsed_time = timer() - start_time
 			self.post_process(image=image, elapsed_time=elapsed_time)
 
-		# NOTE: need to delete because the output txt has to be finish becafore evaluation,
-		# we run Qthread so the thread might be run in different time
-		self.result_writer.close()
-
-		# send the stop process
-		self.update_information.emit({
-			"frame_index" : None,
-			"result_count": None,
-			"result_frame": None,
-			"is_run"      : False
-		}) # NOTE: send to GUI
-
-	def stop(self):
-		"""Sets run flag to False and waits for thread to finish"""
-		self.is_run = False
-		self.wait()
+		return stopped, None
 
 	# MARK: Visualize and Debug
-
-	def extract_mois_information(self, countable_gmos):
-		for vehicle in countable_gmos:
-			moi_id = vehicle.moi_uuid
-			self.mois_display[moi_id] += 1
-		results = []
-		for key, values in self.mois_display.items():
-			results.append(f"Movement {key} : {values}")
-		return results
-
-	def post_process(self, image: np.ndarray, elapsed_time: float):
-		"""Post processing step.
-		"""
-		# NOTE: Visualize results
-		if not self.visualize and not self.write_video:
-			return
-		result = self.draw(drawing=image, elapsed_time=elapsed_time)
-		if self.visualize:
-			# Display the resulting frame
-			self.result_stored_image_drawed = result  # NOTE: store for GUI
-			self.update_information.emit({
-				"frame_index"  : None,
-				"result_count" : self.result_stored_counting,
-				"result_frame" : self.result_stored_image_drawed,
-				"is_run"       : True
-			}) # NOTE: send to GUI
-			# Frame per second show on display
-			self.msleep(3)
-		if self.write_video:
-			if self.video_writer is None:
-				self.config.output.shape = result.shape # Same as input (H, W, C)
-				self.configure_video_writer()
-
-			self.video_writer.write_frame(image=result)
 
 	def draw(self, drawing: np.ndarray, elapsed_time: float):
 		"""Visualize the results on the drawing.
