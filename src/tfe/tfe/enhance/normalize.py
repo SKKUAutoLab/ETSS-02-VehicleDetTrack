@@ -12,18 +12,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 from multipledispatch import dispatch
+from thermal_pedestrian.core.factory.builder import TRANSFORMS
 from torch import Tensor
 from torchvision.transforms import Normalize
 from torchvision.transforms.functional import normalize
 
-from thermal_pedestrian.core.factory.builder import TRANSFORMS
-
 __all__ = [
-    "denormalize",
     "Denormalize",
+    "Normalize",
+    "denormalize",
     "denormalize_naive",
     "normalize",
-    "Normalize",
     "normalize_min_max",
     "normalize_naive"
 ]

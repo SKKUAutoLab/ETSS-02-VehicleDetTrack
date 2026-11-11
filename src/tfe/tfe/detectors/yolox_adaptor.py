@@ -1,32 +1,27 @@
 from __future__ import annotations
 
+import os
+import platform
 import sys
 import warnings
-from typing import Optional
-import numpy as np
-
-import torch
-import torch.nn as nn
-import os
-import sys
-from pathlib import Path
 from collections import OrderedDict
-
-import numpy as np
-import platform
+from pathlib import Path
+from typing import Optional
 
 import cv2
+import numpy as np
+import torch
+import torch.nn as nn
 from loguru import logger
 from torch import Tensor
-import torch
-from tfe.utils.image import is_channel_first
+from yolox.data.data_augment import preproc
+from yolox.exp import get_exp
+from yolox.utils import fuse_model, postprocess
+
+from tfe.detectors import BaseDetector
 from tfe.factory.builder import DETECTORS
 from tfe.objects.instance import Instance
-from tfe.detectors import BaseDetector
-
-from yolox.exp import get_exp
-from yolox.data.data_augment import preproc
-from yolox.utils import fuse_model, postprocess
+from tfe.utils.image import is_channel_first
 
 __all__ = [
 	"YOLOX_Adapter"
