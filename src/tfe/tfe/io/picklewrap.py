@@ -8,33 +8,32 @@ from __future__ import annotations
 
 import multiprocessing
 import os
+import pickle
 from glob import glob
 from pathlib import Path
-from typing import Optional
-from typing import Union
+from typing import Optional, Union
 
 import cv2
 import numpy as np
-import pickle
+
 # import pyvips
 import torch
 import torchvision
-from joblib import delayed
-from joblib import Parallel
+from joblib import Parallel, delayed
 from multipledispatch import dispatch
-from PIL import ExifTags
-from PIL import Image
+from PIL import ExifTags, Image
 from torch import Tensor
 
-from tfe.io.filedir import create_dirs
-from tfe.type.type import Arrays
 from tfe.enhance.normalize import denormalize_naive
-from tfe.utils.backend import interpolation_vision_backend_from_int
-from tfe.utils.backend import interpolation_vision_backend_from_str
-from tfe.utils.backend import VisionBackend
-from tfe.utils.image import is_channel_first
-from tfe.utils.image import to_channel_last
+from tfe.io.filedir import create_dirs
 from tfe.io.format import ImageFormat
+from tfe.type.type import Arrays
+from tfe.utils.backend import (
+	VisionBackend,
+	interpolation_vision_backend_from_int,
+	interpolation_vision_backend_from_str,
+)
+from tfe.utils.image import is_channel_first, to_channel_last
 
 __all__ = [
 	"PickleLoader",
@@ -137,6 +136,3 @@ class PickleLoader:
 	def list_pickle_files(self, data: str):
 		"""Alias of `init_pickle_files()`."""
 		self.init_pickle_files(data=data)
-
-
-

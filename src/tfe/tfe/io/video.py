@@ -14,17 +14,17 @@ import cv2
 import numpy as np
 
 from tfe.io.filedir import create_dirs
-from tfe.type.type import Arrays
-# from tfe.type.type import Dim3
-from tfe.utils.image import is_channel_first
-from tfe.utils.image import to_channel_last
 from tfe.io.format import VideoFormat
+from tfe.type.type import Arrays
+
+# from tfe.type.type import Dim3
+from tfe.utils.image import is_channel_first, to_channel_last
 
 __all__ = [
-	"is_video_file",
-	"is_video_stream",
 	"VideoLoader",
-	"VideoWriter"
+	"VideoWriter",
+	"is_video_file",
+	"is_video_stream"
 ]
 
 
