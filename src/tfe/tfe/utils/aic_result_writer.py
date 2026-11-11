@@ -98,8 +98,11 @@ class AICResultWriter(object):
 			**kwargs
 	):
 		super().__init__(**kwargs)
+
 		self.output_dir = output_dir if (output_dir is not None) else data_dir
 		self.start_time = start_time if (start_time is not None) else time.time()
+
+		
 
 		# NOTE: Use camera_name instead of video_id
 		self.camera_name = camera_name
@@ -109,8 +112,11 @@ class AICResultWriter(object):
 		# 	logger.error(f"The given ``camera_name`` has not been defined in AIC camera list. Please check again!")
 		# 	raise ValueError
 
+		
+
 		self.result_file_path = os.path.join(self.output_dir, camera_name + ".txt")
 		self.result_writer    = open(self.result_file_path, "w")
+		
 
 	def __del__(self):
 		""" Close the writer
