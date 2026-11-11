@@ -32,7 +32,6 @@ from tfe.objects.instance import Instance
 from tfe.utils.bbox import bbox_xyxy_center
 from tfe.utils.distance import get_distance_function
 # from tfe.utils.point import distance_between_points
-from tfe.utils.label import get_majority_label
 from loguru import logger
 
 
@@ -69,6 +68,10 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self._trajectory   = np.array([self.current_bbox_center]) if (bbox is not None) else np.empty((0, 2))
 		self.confidence    = confidence
 		self.labels        = [label]       if (label is not None)       else []
+		self._label_votes  = {}  # label id -> votes, in first-seen order (get_majority_label's tie-break)
+		self._label_first  = {}  # label id -> the first label seen with that id
+		if label is not None:
+			self._vote_label(label)
 		self.distance_function: Callable[[np.ndarray, np.ndarray], float] \
 			= get_distance_function(name=distance_function)
 
@@ -109,7 +112,8 @@ class GeneralObject(metaclass=abc.ABCMeta):
 	
 	@property
 	def label_by_majority(self) -> Dict:
-		return get_majority_label(object_labels=self.labels)
+		# max() keeps the first-seen id on a tie, as get_majority_label does over the whole list
+		return self._label_first[max(self._label_votes, key=self._label_votes.get)]
 	
 	@property
 	def label_id_by_majority(self) -> int:
@@ -147,6 +151,7 @@ class GeneralObject(metaclass=abc.ABCMeta):
 		self.timestamps.append(timestamp)
 		self.bboxes.append(bbox)
 		self.labels.append(label)
+		self._vote_label(label)
 		self.confidence = confidence
 		if polygon:
 			self.polygons = np.append(self.polygons, [polygon], axis=0)
@@ -164,7 +169,14 @@ class GeneralObject(metaclass=abc.ABCMeta):
 			label       = instance.label,
 			polygon     = instance.polygon
 		)
-		
+
+	def _vote_label(self, label: Dict):
+		"""Count one vote for ``label``, so ``label_by_majority`` never rescans ``self.labels``."""
+		if label.id not in self._label_votes:
+			self._label_votes[label.id] = 0
+			self._label_first[label.id] = label
+		self._label_votes[label.id] += 1
+
 	# MARK: Visualize
 	
 	def draw(

@@ -6,15 +6,15 @@
 
 from __future__ import annotations
 
-import torch
-
 # from ordered_enum import OrderedEnum
 from enum import Enum
 
+import torch
+
 __all__ = [
+	"RGB",
 	"AppleRGB",
-	"BasicRGB",
-	"RGB"
+	"BasicRGB"
 ]
 
 

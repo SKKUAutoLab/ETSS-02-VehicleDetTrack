@@ -1,9 +1,9 @@
 
-import numpy as np
 import math
 import os
 from collections import OrderedDict
 
+import numpy as np
 from loguru import logger
 
 
@@ -14,10 +14,19 @@ def parse_txt(txt_path, parse_array):
 		lines = fp.readlines()
 		for line in lines:
 			words            = line.rstrip("\n").split(" ")
+
+			# words are always str, so parse to skip headers/blank lines
+			try:
+				float(words[0])
+			except ValueError:
+				continue
+
 			frame_id         = int(words[2]) - 1
 			movement_id      = int(words[3]) - 1
 			vehicle_class_id = int(words[4]) - 1
 			parse_array[frame_id, movement_id, vehicle_class_id] = 1
+
+	return parse_array
 
 
 def compute_nwRMSE(segment_period, predict_array, groundtruth_array, number_of_classes):
@@ -106,8 +115,7 @@ def evaluate_one_video(video_name, video_info, groundtruth_path, prediction_path
 	index_to          = video_info[video_name]["index_to"]
 	number_of_classes = video_info[video_name]["number_of_classes"]
 
-	if index_to > frame_num:
-		index_to = frame_num
+	index_to = min(index_to, frame_num)
 
 	# DEBUG:
 	print("*" * 10)
@@ -122,13 +130,13 @@ def evaluate_one_video(video_name, video_info, groundtruth_path, prediction_path
 	groundtruth_array = np.zeros((frame_num, movement_num, number_of_classes))
 	if not os.path.exists(groundtruth_path):
 		raise f"Do not have groundtruth {groundtruth_path}"
-	parse_txt(groundtruth_path, groundtruth_array)
+	groundtruth_array = parse_txt(groundtruth_path, groundtruth_array)
 
 	# parse prediction
 	prediction_array = np.zeros((frame_num, movement_num, number_of_classes))
 	if not os.path.exists(prediction_path):
 		raise f"Do not have prediction {prediction_path}"
-	parse_txt(prediction_path, prediction_array)
+	prediction_array = parse_txt(prediction_path, prediction_array)
 
 	# extract the period of time in frame
 	groundtruth_array = groundtruth_array[index_from:index_to, :, :]
@@ -144,7 +152,7 @@ def main():
 	# groundtruth_folder = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/groundtruths"
 	# prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/carla_weather/outputs"
 	groundtruth_folder = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv/groundtruths"
-	prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv/outputs"
+	prediction_folder  = "/media/sugarubuntu/DataSKKU3/3_Workspace/traffic_surveillance_system/ETSS-02-VehicleDetTrack/src/tfe/data/Korea_cctv/temps"
 	# prediction_folder  = groundtruth_folder
 	video_info_carla = {
 		"Town10HD_location_2": {
@@ -172,7 +180,28 @@ def main():
 		"34_SUWON": {
 			"frame_num" : 6001, "movement_num": 11 , "index_from": 0, "index_to": 6000, "number_of_classes": 8,
 			"video_path": "data/Korea_cctv/video/34_SUWON"
-		}
+		},
+		"40_SUWON": {
+			"frame_num" : 12000, "movement_num": 15 , "index_from": 0, "index_to": 11999, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/40_SUWON"
+		},
+		"45a_SUWON": {
+			"frame_num" : 6328, "movement_num": 13 , "index_from": 0, "index_to": 6327, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/45a_SUWON"
+		},
+		"60_SUWON": {
+			"frame_num" : 17968, "movement_num": 6 , "index_from": 0, "index_to": 17967, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/60_SUWON"
+		},
+		"12_01_SUWON": {
+			"frame_num" : 11904, "movement_num": 5 , "index_from": 0, "index_to": 11903, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/12_01_SUWON"
+		},
+		"12_02_SUWON": {
+			"frame_num" : 18000, "movement_num": 5 , "index_from": 0, "index_to": 17999, "number_of_classes": 8,
+			"video_path": "data/Korea_cctv/video/12_02_SUWON"
+		},
+		
 	}
 	video_info     = video_info_Korea_cctv
 	segment_period = 10  # segment number for nwRMSE, (second)
@@ -212,8 +241,8 @@ def main():
 	time = 480
 	score_efficiency = 1 - (time * base_factor) / (1.1 * float(video_total_frame))
 
-	score_f1 = 0.3 * score_efficiency + 0.7 * score_effetiveness
-	print(f"\ns1: {score_f1:.6f}; effectiveness: {score_effetiveness:.6f}; efficiency: {score_efficiency:.6f}")
+	score_s1 = 0.3 * score_efficiency + 0.7 * score_effetiveness
+	print(f"\ns1: {score_s1:.6f}; effectiveness: {score_effetiveness:.6f}; efficiency: {score_efficiency:.6f}")
 
 
 if __name__ == "__main__":

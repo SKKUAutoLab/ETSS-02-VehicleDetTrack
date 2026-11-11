@@ -20,13 +20,11 @@
 from typing import List
 
 from tfe.cameras.roi import ROI
-from tfe.objects.instance import Instance
-from tfe.utils.constants import AppleRGB
 from tfe.objects.general_object import GeneralObject
+from tfe.objects.instance import Instance
 from tfe.objects.motion_model import MotionModel
-from tfe.objects.moving_model import MovingModel
-from tfe.objects.moving_model import MovingState
-
+from tfe.objects.moving_model import MovingModel, MovingState
+from tfe.utils.constants import RGB, AppleRGB
 
 # MARK: - GMO (General Moving Object)
 
@@ -102,6 +100,8 @@ class GMO(GeneralObject, MotionModel, MovingModel):
 		elif self.is_counting:
 			GeneralObject.draw(self, drawing=drawing, label=True, **kwargs)
 		elif self.is_counted:
-			GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=AppleRGB.values()[self.moi_uuid], **kwargs)
+			# GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=AppleRGB.values()[self.moi_uuid], **kwargs)
+			GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=RGB.values()[self.moi_uuid], **kwargs)
 		elif self.is_exiting:
-			GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=AppleRGB.values()[self.moi_uuid], **kwargs)
+			# GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=AppleRGB.values()[self.moi_uuid], **kwargs)
+			GeneralObject.draw(self, drawing=drawing, label=True, trajectory=True, color=RGB.values()[self.moi_uuid], **kwargs)
